@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Link from "next/link";
+import { supabase } from '@/lib/supabase';
 
 interface LoginFormProps {
   onSwitchToSignUp?: () => void;
@@ -9,12 +10,27 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIsLoading(true);
-    // TODO: Implement authentication logic
-    setTimeout(() => setIsLoading(false), 1000);
+    setHasError(null);
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    setIsLoading(false);
+
+    if (error) {
+      setHasError(error.message);
+      return;
+    }
+
+    // Optionally redirect or show success
+    // e.g., router.push('/dashboard')
   }
 
   return (
@@ -83,6 +99,9 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
                 onChange={e => setPassword(e.target.value)}
               />
             </div>
+            {hasError && (
+              <p className="text-red-600 text-xs">{hasError}</p>
+            )}
             <button
               type="submit"
               className="w-full bg-neutral-900 text-white rounded-md py-2 font-semibold"

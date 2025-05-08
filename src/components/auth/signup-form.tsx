@@ -1,5 +1,7 @@
 import { useState } from "react";
 import Link from "next/link";
+import { supabase } from '@/lib/supabase';
+import { toast } from "sonner";
 
 interface SignUpFormProps {
   onSwitchToLogin?: () => void;
@@ -12,16 +14,44 @@ export function SignUpForm({ onSwitchToLogin }: SignUpFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setHasError(null);
+
     if (password !== confirmPassword) {
       setHasError("Passwords do not match.");
       return;
     }
+
     setIsLoading(true);
-    // TODO: Implement sign-up logic
-    setTimeout(() => setIsLoading(false), 1000);
+
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      }
+    });
+
+    setIsLoading(false);
+
+    if (error) {
+      setHasError(error.message);
+      return;
+    }
+
+    toast(
+      "Please check your email and click the link to confirm your account.",
+      {
+        unstyled: true,
+        className: "bg-green-100 text-green-900 border border-green-300 rounded-xl shadow p-4 flex items-center gap-3",
+        icon: <span className="text-green-600">✔️</span>
+      }
+    );
+
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
   }
 
   return (
