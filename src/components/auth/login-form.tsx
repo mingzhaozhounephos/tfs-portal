@@ -59,7 +59,7 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
         <div />
         <div className="mb-4">
           <p className="text-sm">
-            "This platform has revolutionized how we train our drivers. The video assignments and tracking features have improved our compliance and safety records significantly."
+            &quot;This platform has revolutionized how we train our drivers. The video assignments and tracking features have improved our compliance and safety records significantly.&quot;
           </p>
           <p className="text-xs mt-2">Sofia Davis, Fleet Manager</p>
         </div>
