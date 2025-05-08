@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase } from '@/lib/supabase';
 
 interface LoginFormProps {
@@ -11,6 +12,20 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState<string | null>(null);
+  const router = useRouter();
+
+  // Redirect to dashboard if already logged in
+  useEffect(() => {
+    async function checkSession() {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        router.replace("/dashboard");
+      } else {
+        router.replace("/login");
+      }
+    }
+    checkSession();
+  }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -29,8 +44,8 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
       return;
     }
 
-    // Optionally redirect or show success
-    // e.g., router.push('/dashboard')
+    // Redirect to dashboard after successful login
+    router.replace("/dashboard");
   }
 
   return (
