@@ -11,6 +11,7 @@ interface AdminVideoCardProps {
     duration: string;
     num_users_assigned: number;
     num_users_completed: number;
+    youtube_url?: string;
   };
   onEdit?: () => void;
   showEdit?: boolean;
@@ -24,6 +25,16 @@ function formatDate(date: string | Date) {
     day: "numeric",
     year: "numeric",
   });
+}
+
+function getYouTubeThumbnail(url: string) {
+  if (!url) return "";
+  const match = url.match(
+    /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+  );
+  return match
+    ? `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`
+    : "";
 }
 
 export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUsers }: AdminVideoCardProps) {
@@ -74,7 +85,11 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
         {video.description}
       </div>
       <div className="relative aspect-video rounded overflow-hidden mb-2">
-        <img src={video.image} alt={video.title} className="object-cover w-full h-full" />
+        <img
+          src={getYouTubeThumbnail(video.youtube_url)}
+          alt={video.title}
+          className="object-cover w-full h-full"
+        />
         <button className="absolute inset-0 flex items-center justify-center">
           <span className="bg-white/80 rounded-full p-2">
             <svg width="32" height="32" fill="none"><circle cx="16" cy="16" r="16" fill="#000"/><polygon points="13,11 23,16 13,21" fill="#fff"/></svg>
