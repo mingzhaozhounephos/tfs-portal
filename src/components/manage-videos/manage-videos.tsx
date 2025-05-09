@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { VideoFormModal } from "./video-form-modal";
+import { supabase } from "@/lib/supabase";
 
 const videoData = [
   {
@@ -68,6 +70,18 @@ const tags = ["All Videos", "Van", "Truck", "Office"];
 export function ManageVideos() {
   const [search, setSearch] = useState("");
   const [selectedTag, setSelectedTag] = useState("All Videos");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingVideo, setEditingVideo] = useState<any>(null);
+  const [adminUserId, setAdminUserId] = useState<string>("");
+
+  // Fetch admin user id on mount
+  useEffect(() => {
+    async function fetchUser() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) setAdminUserId(session.user.id);
+    }
+    fetchUser();
+  }, []);
 
   const filteredVideos = videoData.filter(
     v =>
@@ -80,7 +94,10 @@ export function ManageVideos() {
     <div className="flex-1 p-8 bg-[#f6fbf9] min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Manage Training Videos</h1>
-        <button className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-gray-900">
+        <button
+          className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-gray-900"
+          onClick={() => { setEditingVideo(null); setModalOpen(true); }}
+        >
           <svg width="18" height="18" fill="none"><circle cx="9" cy="9" r="8" stroke="currentColor" strokeWidth="2"/><path d="M9 5v8M5 9h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
           Add Video
         </button>
@@ -111,7 +128,17 @@ export function ManageVideos() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {filteredVideos.map((video, i) => (
-          <div key={i} className="bg-white rounded-xl shadow p-4 flex flex-col gap-2">
+          <div key={i} className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative">
+            {/* Pencil icon for edit */}
+            <button
+              className="absolute top-3 right-3 text-gray-400 hover:text-black"
+              onClick={() => { setEditingVideo(video); setModalOpen(true); }}
+              aria-label="Edit video"
+            >
+              <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+                <path d="M14.7 3.29a1 1 0 0 1 1.41 1.42l-9.08 9.08a1 1 0 0 0-.26.46l-1 3a1 1 0 0 0 1.26 1.26l3-1a1 1 0 0 0 .46-.26l9.08-9.08a1 1 0 0 0-1.42-1.42l-9.08 9.08a1 1 0 0 1-.46.26l-3 1a1 1 0 0 1-1.26-1.26l1-3a1 1 0 0 1 .26-.46l9.08-9.08z" fill="currentColor"/>
+              </svg>
+            </button>
             <div className="font-bold">{video.title}</div>
             <span className={`inline-block text-xs rounded px-2 py-0.5 mb-1 ${
               video.tag === "van"
@@ -139,10 +166,23 @@ export function ManageVideos() {
               <span>{video.assigned} assigned</span>
               <span>{video.completed} completed</span>
             </div>
-            <button className="mt-2 w-full border rounded py-1 text-sm font-medium">Assign to Users</button>
+            <button
+              className="mt-2 w-full border rounded py-1 text-sm font-medium"
+              // Assign to Users button remains at the bottom
+              onClick={() => {/* handle assign to users */}}
+            >
+              Assign to Users
+            </button>
           </div>
         ))}
       </div>
+      <VideoFormModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSuccess={() => {/* Optionally refresh videos here */}}
+        video={editingVideo}
+        adminUserId={adminUserId}
+      />
     </div>
   );
 }

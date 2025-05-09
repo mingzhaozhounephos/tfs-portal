@@ -1,0 +1,179 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+
+interface VideoFormModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+  video?: {
+    id?: string;
+    title: string;
+    description: string;
+    youtube_url: string;
+    category: string;
+    duration?: string;
+  };
+  adminUserId: string;
+}
+
+const categories = ["Van", "Truck", "Office"];
+
+export function VideoFormModal({
+  open,
+  onClose,
+  onSuccess,
+  video,
+  adminUserId,
+}: VideoFormModalProps) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [category, setCategory] = useState(categories[0]);
+  const [duration, setDuration] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (video) {
+      setTitle(video.title || "");
+      setDescription(video.description || "");
+      setYoutubeUrl(video.youtube_url || "");
+      setCategory(video.category || categories[0]);
+      setDuration(video.duration || "");
+    } else {
+      setTitle("");
+      setDescription("");
+      setYoutubeUrl("");
+      setCategory(categories[0]);
+      setDuration("");
+    }
+  }, [video, open]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const payload = {
+      title,
+      description,
+      youtube_url: youtubeUrl,
+      category,
+      duration,
+      admin_user_id: adminUserId,
+    };
+
+    let error;
+    if (video && video.id) {
+      // Update
+      ({ error } = await supabase
+        .from("videos")
+        .update(payload)
+        .eq("id", video.id));
+    } else {
+      // Insert
+      ({ error } = await supabase.from("videos").insert([payload]));
+    }
+
+    setIsLoading(false);
+    if (!error) {
+      onSuccess();
+      onClose();
+    } else {
+      alert(error.message);
+    }
+  }
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
+        <button
+          className="absolute top-4 right-4 text-gray-500 hover:text-black"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          &times;
+        </button>
+        <h2 className="text-xl font-bold mb-1">
+          {video ? "Edit Training Video" : "Add New Training Video"}
+        </h2>
+        <p className="text-sm text-gray-600 mb-4">
+          {video
+            ? "Edit the YouTube video in your training library."
+            : "Add a YouTube video to your training library."}
+        </p>
+        <form className="space-y-3" onSubmit={handleSubmit}>
+          <div>
+            <label className="block text-sm mb-1">Title</label>
+            <input
+              className="w-full border rounded px-3 py-2"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              required
+              placeholder="Enter video title"
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Description</label>
+            <textarea
+              className="w-full border rounded px-3 py-2"
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              required
+              placeholder="Enter video description"
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">YouTube URL</label>
+            <input
+              className="w-full border rounded px-3 py-2"
+              value={youtubeUrl}
+              onChange={e => setYoutubeUrl(e.target.value)}
+              required
+              placeholder="https://www.youtube.com/watch?v=..."
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Category</label>
+            <select
+              className="w-full border rounded px-3 py-2"
+              value={category}
+              onChange={e => setCategory(e.target.value)}
+              required
+            >
+              {categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Duration (optional)</label>
+            <input
+              className="w-full border rounded px-3 py-2"
+              value={duration}
+              onChange={e => setDuration(e.target.value)}
+              placeholder="10:00"
+            />
+          </div>
+          <div className="flex justify-end gap-2 mt-4">
+            <button
+              type="button"
+              className="px-4 py-2 rounded border"
+              onClick={onClose}
+              disabled={isLoading}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 rounded bg-black text-white"
+              disabled={isLoading}
+            >
+              {video ? "Save Changes" : "Add Video"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+} 
