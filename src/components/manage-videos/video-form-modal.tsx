@@ -16,7 +16,7 @@ interface VideoFormModalProps {
   adminUserId: string;
 }
 
-const categories = ["Van", "Truck", "Office"];
+const categories = ["van", "truck", "office"];
 
 export function VideoFormModal({
   open,

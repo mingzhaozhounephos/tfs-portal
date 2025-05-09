@@ -1,19 +1,29 @@
 import React from "react";
+import { Calendar, Clock, Users, CheckCircle } from "lucide-react";
 
 interface AdminVideoCardProps {
   video: {
     title: string;
-    tag: string;
+    category: string;
     description: string;
     image: string;
-    date: string;
+    created_at: string | Date;
     duration: string;
-    assigned: number;
-    completed: string;
+    num_users_assigned: number;
+    num_users_completed: number;
   };
   onEdit?: () => void;
   showEdit?: boolean;
   onAssignToUsers?: () => void;
+}
+
+function formatDate(date: string | Date) {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUsers }: AdminVideoCardProps) {
@@ -32,16 +42,37 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
         </button>
       )}
       <div className="font-bold">{video.title}</div>
-      <span className={`inline-block text-xs rounded px-2 py-0.5 mb-1 ${
-        video.tag === "van"
-          ? "bg-blue-100 text-blue-700"
-          : video.tag === "truck"
-          ? "bg-green-100 text-green-700"
-          : "bg-gray-100 text-gray-700"
-      }`}>
-        {video.tag}
-      </span>
-      <div className="text-xs text-gray-600 mb-2">{video.description}</div>
+      <div className="flex items-center gap-2 mb-1">
+        <span
+          className={
+            `inline-block text-xs font-semibold rounded-full px-3 py-0.5
+            ${
+              video.category?.toLowerCase() === "office"
+                ? "bg-purple-100 text-purple-700 border border-purple-200"
+                : video.category?.toLowerCase() === "truck"
+                ? "bg-green-100 text-green-700 border border-green-200"
+                : video.category?.toLowerCase() === "van"
+                ? "bg-blue-100 text-blue-700 border border-blue-200"
+                : "bg-gray-100 text-gray-700 border border-gray-200"
+            }`
+          }
+          style={{ minWidth: "fit-content" }}
+        >
+          {video.category}
+        </span>
+      </div>
+      <div
+        className="text-xs text-gray-600 mb-2 line-clamp-2"
+        style={{
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}
+      >
+        {video.description}
+      </div>
       <div className="relative aspect-video rounded overflow-hidden mb-2">
         <img src={video.image} alt={video.title} className="object-cover w-full h-full" />
         <button className="absolute inset-0 flex items-center justify-center">
@@ -51,12 +82,24 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
         </button>
       </div>
       <div className="flex justify-between text-xs text-gray-500">
-        <span>{video.date}</span>
-        <span>{video.duration}</span>
+        <span className="flex items-center gap-1">
+          <Calendar size={16} className="text-gray-400" />
+          {formatDate(video.created_at)}
+        </span>
+        <span className="flex items-center gap-1">
+          <Clock size={16} className="text-gray-400" />
+          {video.duration}
+        </span>
       </div>
       <div className="flex justify-between text-xs text-gray-500">
-        <span>{video.assigned} assigned</span>
-        <span>{video.completed} completed</span>
+        <span className="flex items-center gap-1">
+          <Users size={16} className="text-gray-400" />
+          {video.num_users_assigned} assigned
+        </span>
+        <span className="flex items-center gap-1">
+          <CheckCircle size={16} className="text-gray-400" />
+          {video.num_users_completed}% completed
+        </span>
       </div>
       <button
         className="mt-2 w-full border rounded py-1 text-sm font-medium"
