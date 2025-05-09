@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Calendar, Clock, Users, CheckCircle } from "lucide-react";
 
 interface AdminVideoCardProps {
@@ -27,17 +27,18 @@ function formatDate(date: string | Date) {
   });
 }
 
-function getYouTubeThumbnail(url: string) {
+function getYouTubeId(url?: string) {
   if (!url) return "";
   const match = url.match(
     /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
   );
-  return match
-    ? `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`
-    : "";
+  return match ? match[1] : "";
 }
 
 export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUsers }: AdminVideoCardProps) {
+  const [showModal, setShowModal] = useState(false);
+  const youtubeId = getYouTubeId(video.youtube_url);
+
   return (
     <div className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative">
       {/* Pencil icon for edit */}
@@ -86,11 +87,14 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
       </div>
       <div className="relative aspect-video rounded overflow-hidden mb-2">
         <img
-          src={getYouTubeThumbnail(video.youtube_url)}
+          src={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg` : video.image}
           alt={video.title}
           className="object-cover w-full h-full"
         />
-        <button className="absolute inset-0 flex items-center justify-center">
+        <button
+          className="absolute inset-0 flex items-center justify-center"
+          onClick={() => setShowModal(true)}
+        >
           <span className="bg-white/80 rounded-full p-2">
             <svg width="32" height="32" fill="none"><circle cx="16" cy="16" r="16" fill="#000"/><polygon points="13,11 23,16 13,21" fill="#fff"/></svg>
           </span>
@@ -122,6 +126,34 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
       >
         Assign to Users
       </button>
+
+      {/* YouTube Modal */}
+      {showModal && youtubeId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+          <div className="bg-white rounded-xl shadow-lg p-4 max-w-2xl w-full relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-black text-2xl"
+              onClick={() => setShowModal(false)}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <div className="font-bold text-lg mb-2">{video.title}</div>
+            <div className="aspect-video w-full">
+              <iframe
+                width="100%"
+                height="100%"
+                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`}
+                title={video.title}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="rounded-lg w-full h-full"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
