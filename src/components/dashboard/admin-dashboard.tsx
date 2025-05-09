@@ -1,7 +1,8 @@
-import { JSX, useState } from "react";
+import { JSX, useState, useEffect } from "react";
 import { SideMenu } from "@/components/side-menu/side-menu";
 import { ManageVideos } from "@/components/manage-videos/manage-videos";
 import { AdminVideoCard } from "@/components/admin-video-card/admin-video-card";
+import { supabase } from "@/lib/supabase";
 
 const videoData = [
   {
@@ -66,6 +67,50 @@ const userData = [
 export function AdminDashboard() {
   const [tab, setTab] = useState<"videos" | "users">("videos");
   const [active, setActive] = useState("dashboard");
+  const [videos, setVideos] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let channel: any;
+    async function fetchVideos() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data, error } = await supabase
+          .from("videos")
+          .select("*")
+          .eq("admin_user_id", session.user.id)
+          .order("created_at", { ascending: false });
+        if (!error && data) setVideos(data);
+
+        // Real-time subscription
+        channel = supabase
+          .channel('videos-admin-dashboard')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'videos', filter: `admin_user_id=eq.${session.user.id}` },
+            payload => {
+              // Refetch videos on any change
+              supabase
+                .from("videos")
+                .select("*")
+                .eq("admin_user_id", session.user.id)
+                .order("created_at", { ascending: false })
+                .then(({ data, error }) => {
+                  if (!error && data) setVideos(data);
+                });
+            }
+          )
+          .subscribe();
+      }
+      setLoading(false);
+    }
+    if (active === "dashboard" && tab === "videos") {
+      fetchVideos();
+    }
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [active, tab]);
 
   return (
     <div className="flex bg-[#f6fbf9] min-h-screen">
@@ -106,7 +151,7 @@ export function AdminDashboard() {
             {/* Content */}
             {tab === "videos" ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {videoData.map((video, i) => (
+                {videos.map((video, i) => (
                   <AdminVideoCard
                     key={i}
                     video={video}

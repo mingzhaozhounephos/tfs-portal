@@ -74,21 +74,58 @@ export function ManageVideos() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingVideo, setEditingVideo] = useState<any>(null);
   const [adminUserId, setAdminUserId] = useState<string>("");
+  const [videos, setVideos] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch admin user id on mount
+  // Fetch admin user id and videos on mount
   useEffect(() => {
-    async function fetchUser() {
+    let channel: any;
+    async function fetchUserAndVideos() {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) setAdminUserId(session.user.id);
-    }
-    fetchUser();
-  }, []);
+      if (session) {
+        setAdminUserId(session.user.id);
+        // Fetch videos for this admin
+        const { data, error } = await supabase
+          .from("videos")
+          .select("*")
+          .eq("admin_user_id", session.user.id)
+          .order("created_at", { ascending: false });
+        if (!error && data) setVideos(data);
 
-  const filteredVideos = videoData.filter(
+        // Real-time subscription
+        channel = supabase
+          .channel('videos-admin')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'videos', filter: `admin_user_id=eq.${session.user.id}` },
+            payload => {
+              // Refetch videos on any change
+              supabase
+                .from("videos")
+                .select("*")
+                .eq("admin_user_id", session.user.id)
+                .order("created_at", { ascending: false })
+                .then(({ data, error }) => {
+                  if (!error && data) setVideos(data);
+                });
+            }
+          )
+          .subscribe();
+      }
+      setLoading(false);
+    }
+    fetchUserAndVideos();
+
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [modalOpen]);
+
+  const filteredVideos = videos.filter(
     v =>
-      (selectedTag === "All Videos" || v.tag.toLowerCase() === selectedTag.toLowerCase()) &&
-      (v.title.toLowerCase().includes(search.toLowerCase()) ||
-        v.description.toLowerCase().includes(search.toLowerCase()))
+      (selectedTag === "All Videos" || v.category?.toLowerCase() === selectedTag.toLowerCase()) &&
+      (v.title?.toLowerCase().includes(search.toLowerCase()) ||
+        v.description?.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
