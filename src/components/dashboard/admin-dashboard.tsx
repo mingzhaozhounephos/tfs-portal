@@ -113,9 +113,9 @@ export function AdminDashboard() {
   }, [active, tab]);
 
   return (
-    <div className="flex bg-[#f6fbf9] min-h-screen">
+    <div className="flex bg-[#f6fbf9] min-h-screen h-screen">
       <SideMenu role="admin" active={active} onNavigate={setActive} />
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-8 h-screen overflow-y-auto">
         {active === "manage-videos" ? (
           <ManageVideos />
         ) : (
