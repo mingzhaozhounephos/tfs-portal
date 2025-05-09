@@ -1,6 +1,7 @@
 import { JSX, useState } from "react";
 import { SideMenu } from "@/components/side-menu/side-menu";
 import { ManageVideos } from "@/components/manage-videos/manage-videos";
+import { AdminVideoCard } from "@/components/admin-video-card/admin-video-card";
 
 const videoData = [
   {
@@ -106,7 +107,12 @@ export function AdminDashboard() {
             {tab === "videos" ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {videoData.map((video, i) => (
-                  <VideoCard key={i} {...video} />
+                  <AdminVideoCard
+                    key={i}
+                    video={video}
+                    showEdit={true}
+                    onAssignToUsers={() => {/* handle assign to users */}}
+                  />
                 ))}
               </div>
             ) : (
@@ -139,34 +145,6 @@ function Widget({ title, value, sub, icon }: { title: string; value: string; sub
       </div>
       <div className="text-2xl font-bold">{value}</div>
       {sub && <div className="text-xs text-gray-500">{sub}</div>}
-    </div>
-  );
-}
-
-// VideoCard component
-function VideoCard(props: any) {
-  return (
-    <div className="bg-white rounded-xl shadow p-4 flex flex-col gap-2">
-      <div className="font-bold">{props.title}</div>
-      <span className="inline-block text-xs bg-purple-100 text-purple-700 rounded px-2 py-0.5 mb-1">{props.tag}</span>
-      <div className="text-xs text-gray-600 mb-2">{props.description}</div>
-      <div className="relative aspect-video rounded overflow-hidden mb-2">
-        <img src={props.image} alt={props.title} className="object-cover w-full h-full" />
-        <button className="absolute inset-0 flex items-center justify-center">
-          <span className="bg-white/80 rounded-full p-2">
-            <svg width="32" height="32" fill="none"><circle cx="16" cy="16" r="16" fill="#000"/><polygon points="13,11 23,16 13,21" fill="#fff"/></svg>
-          </span>
-        </button>
-      </div>
-      <div className="flex justify-between text-xs text-gray-500">
-        <span>{props.date}</span>
-        <span>{props.duration}</span>
-      </div>
-      <div className="flex justify-between text-xs text-gray-500">
-        <span>{props.assigned} assigned</span>
-        <span>{props.completed} completed</span>
-      </div>
-      <button className="mt-2 w-full border rounded py-1 text-sm font-medium">Assign to Users</button>
     </div>
   );
 }

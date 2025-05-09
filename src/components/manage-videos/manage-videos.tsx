@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { VideoFormModal } from "./video-form-modal";
 import { supabase } from "@/lib/supabase";
+import { AdminVideoCard } from "@/components/admin-video-card/admin-video-card";
 
 const videoData = [
   {
@@ -128,52 +129,13 @@ export function ManageVideos() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {filteredVideos.map((video, i) => (
-          <div key={i} className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative">
-            {/* Pencil icon for edit */}
-            <button
-              className="absolute top-3 right-3 text-gray-400 hover:text-black"
-              onClick={() => { setEditingVideo(video); setModalOpen(true); }}
-              aria-label="Edit video"
-            >
-              <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
-                <path d="M14.7 3.29a1 1 0 0 1 1.41 1.42l-9.08 9.08a1 1 0 0 0-.26.46l-1 3a1 1 0 0 0 1.26 1.26l3-1a1 1 0 0 0 .46-.26l9.08-9.08a1 1 0 0 0-1.42-1.42l-9.08 9.08a1 1 0 0 1-.46.26l-3 1a1 1 0 0 1-1.26-1.26l1-3a1 1 0 0 1 .26-.46l9.08-9.08z" fill="currentColor"/>
-              </svg>
-            </button>
-            <div className="font-bold">{video.title}</div>
-            <span className={`inline-block text-xs rounded px-2 py-0.5 mb-1 ${
-              video.tag === "van"
-                ? "bg-blue-100 text-blue-700"
-                : video.tag === "truck"
-                ? "bg-green-100 text-green-700"
-                : "bg-gray-100 text-gray-700"
-            }`}>
-              {video.tag}
-            </span>
-            <div className="text-xs text-gray-600 mb-2">{video.description}</div>
-            <div className="relative aspect-video rounded overflow-hidden mb-2">
-              <img src={video.image} alt={video.title} className="object-cover w-full h-full" />
-              <button className="absolute inset-0 flex items-center justify-center">
-                <span className="bg-white/80 rounded-full p-2">
-                  <svg width="32" height="32" fill="none"><circle cx="16" cy="16" r="16" fill="#000"/><polygon points="13,11 23,16 13,21" fill="#fff"/></svg>
-                </span>
-              </button>
-            </div>
-            <div className="flex justify-between text-xs text-gray-500">
-              <span>{video.date}</span>
-              <span>{video.duration}</span>
-            </div>
-            <div className="flex justify-between text-xs text-gray-500">
-              <span>{video.assigned} assigned</span>
-              <span>{video.completed} completed</span>
-            </div>
-            <button
-              className="mt-2 w-full border rounded py-1 text-sm font-medium"
-              // Assign to Users button remains at the bottom
-              onClick={() => {/* handle assign to users */}}
-            >
-              Assign to Users
-            </button>
-          </div>
+          <AdminVideoCard
+            key={i}
+            video={video}
+            showEdit={true}
+            onEdit={() => { setEditingVideo(video); setModalOpen(true); }}
+            onAssignToUsers={() => {/* handle assign to users */}}
+          />
         ))}
       </div>
       <VideoFormModal
