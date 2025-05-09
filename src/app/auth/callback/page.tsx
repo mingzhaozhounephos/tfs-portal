@@ -22,20 +22,21 @@ export default function AuthCallback() {
         });
 
         if (!error) {
+          const userId = data.session?.user.id;
           const userEmail = data.session?.user.email;
-          if (userEmail) {
+          if (userId && userEmail) {
             // Check if user record exists
-            const { data: existing, error: findError } = await supabase
+            const { data: existing } = await supabase
               .from('users')
               .select('id')
-              .eq('email', userEmail)
+              .eq('id', userId)
               .maybeSingle();
 
             if (!existing) {
-              // No record: insert new user
+              // No record: insert new user with id from auth session
               await supabase
                 .from('users')
-                .insert([{ email: userEmail }]);
+                .insert([{ id: userId, email: userEmail }]);
             }
           }
           router.replace('/dashboard');
