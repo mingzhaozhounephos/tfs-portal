@@ -1,5 +1,6 @@
 import { JSX, useState } from "react";
 import { SideMenu } from "@/components/side-menu/side-menu";
+import { ManageVideos } from "@/components/manage-videos/manage-videos";
 
 const videoData = [
   {
@@ -63,55 +64,59 @@ const userData = [
 
 export function AdminDashboard() {
   const [tab, setTab] = useState<"videos" | "users">("videos");
-
-  // For navigation, you can use state or router as needed
   const [active, setActive] = useState("dashboard");
 
   return (
     <div className="flex bg-[#f6fbf9] min-h-screen">
       <SideMenu role="admin" active={active} onNavigate={setActive} />
       <main className="flex-1 p-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <div className="text-sm text-gray-600">
-            Welcome, Administrator (admin@admin)
-          </div>
-        </div>
-        {/* Widgets */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Widget title="Total Videos" value="9" sub="+2 videos added this week" icon="bell" />
-          <Widget title="Total Users" value="6" sub="+3 users added this month" icon="users" />
-          <Widget title="Completion Rate" value="0%" sub="" icon="activity" />
-          <Widget title="Videos Watched" value="0" sub="+0 videos watched this week" icon="play" />
-        </div>
-        {/* Toggle */}
-        <div className="flex gap-2 mb-4">
-          <button
-            className={`px-4 py-2 rounded ${tab === "videos" ? "bg-black text-white" : "bg-white border"}`}
-            onClick={() => setTab("videos")}
-          >
-            Recent Videos
-          </button>
-          <button
-            className={`px-4 py-2 rounded ${tab === "users" ? "bg-black text-white" : "bg-white border"}`}
-            onClick={() => setTab("users")}
-          >
-            Recent Users
-          </button>
-        </div>
-        {/* Content */}
-        {tab === "videos" ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {videoData.map((video, i) => (
-              <VideoCard key={i} {...video} />
-            ))}
-          </div>
+        {active === "manage-videos" ? (
+          <ManageVideos />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {userData.map((user, i) => (
-              <UserCard key={i} {...user} />
-            ))}
-          </div>
+          <>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-3xl font-bold">Dashboard</h1>
+              <div className="text-sm text-gray-600">
+                Welcome, Administrator (admin@admin)
+              </div>
+            </div>
+            {/* Widgets */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <Widget title="Total Videos" value="9" sub="+2 videos added this week" icon="bell" />
+              <Widget title="Total Users" value="6" sub="+3 users added this month" icon="users" />
+              <Widget title="Completion Rate" value="0%" sub="" icon="activity" />
+              <Widget title="Videos Watched" value="0" sub="+0 videos watched this week" icon="play" />
+            </div>
+            {/* Toggle */}
+            <div className="flex gap-2 mb-4">
+              <button
+                className={`px-4 py-2 rounded ${tab === "videos" ? "bg-black text-white" : "bg-white border"}`}
+                onClick={() => setTab("videos")}
+              >
+                Recent Videos
+              </button>
+              <button
+                className={`px-4 py-2 rounded ${tab === "users" ? "bg-black text-white" : "bg-white border"}`}
+                onClick={() => setTab("users")}
+              >
+                Recent Users
+              </button>
+            </div>
+            {/* Content */}
+            {tab === "videos" ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {videoData.map((video, i) => (
+                  <VideoCard key={i} {...video} />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {userData.map((user, i) => (
+                  <UserCard key={i} {...user} />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>
