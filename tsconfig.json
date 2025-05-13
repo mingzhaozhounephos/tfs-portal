@@ -24,8 +24,11 @@
     ],
     "baseUrl": "src",
     "paths": {
-      "@/*": ["*"]
-    }
+      "@/*": [
+        "*"
+      ]
+    },
+    "strictNullChecks": true
   },
   "include": [
     "next-env.d.ts",
@@ -35,6 +38,5 @@
   ],
   "exclude": [
     "node_modules"
-  ],
- 
+  ]
 }

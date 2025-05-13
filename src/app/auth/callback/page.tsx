@@ -24,6 +24,10 @@ export default function AuthCallback() {
         if (!error) {
           const userId = data.session?.user.id;
           const userEmail = data.session?.user.email;
+          const userMeta = data.session?.user.user_metadata || {};
+          const fullName = userMeta.name || null;
+          const role = userMeta.role || null;
+
           if (userId && userEmail) {
             // Check if user record exists
             const { data: existing } = await supabase
@@ -33,10 +37,15 @@ export default function AuthCallback() {
               .maybeSingle();
 
             if (!existing) {
-              // No record: insert new user with id from auth session
+              // No record: insert new user with id from auth session, full_name, and role
               await supabase
                 .from('users')
-                .insert([{ id: userId, email: userEmail }]);
+                .insert([{
+                  id: userId,
+                  email: userEmail,
+                  full_name: fullName,
+                  role: role,
+                }]);
             }
           }
           router.replace('/dashboard');

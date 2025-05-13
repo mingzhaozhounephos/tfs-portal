@@ -2,6 +2,7 @@ import { JSX, useState, useEffect } from "react";
 import { SideMenu } from "@/components/side-menu/side-menu";
 import { ManageVideos } from "@/components/manage-videos/manage-videos";
 import { AdminVideoCard } from "@/components/admin-video-card/admin-video-card";
+import { ManageUsers } from "@/components/manage-users/manage-users";
 import { supabase } from "@/lib/supabase";
 
 const videoData = [
@@ -118,6 +119,8 @@ export function AdminDashboard() {
       <main className="flex-1 p-8 h-screen overflow-y-auto">
         {active === "manage-videos" ? (
           <ManageVideos />
+        ) : active === "manage-users" ? (
+          <ManageUsers />
         ) : (
           <>
             <div className="flex justify-between items-center mb-6">
