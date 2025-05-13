@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { Calendar, Clock, Users, CheckCircle } from "lucide-react";
+import { AssignVideoModal } from "@/components/manage-users/assign-video-modal";
+
 
 interface AdminVideoCardProps {
   video: {
+    id: string;
     title: string;
     category: string;
     description: string;
@@ -37,6 +40,7 @@ function getYouTubeId(url?: string) {
 
 export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUsers }: AdminVideoCardProps) {
   const [showModal, setShowModal] = useState(false);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
   const youtubeId = getYouTubeId(video.youtube_url);
 
   return (
@@ -121,11 +125,17 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
         </span>
       </div>
       <button
-        className="mt-2 w-full border rounded py-1 text-sm font-medium"
-        onClick={onAssignToUsers}
-      >
-        Assign to Users
-      </button>
+    className="mt-2 w-full border rounded py-1 text-sm font-medium"
+    onClick={() => setAssignModalOpen(true)}
+  >
+    Assign to Users
+  </button>
+  <AssignVideoModal
+    open={assignModalOpen}
+    onClose={() => setAssignModalOpen(false)}
+    videoId={video.id}
+    videoTitle={video.title}
+  />
 
       {/* YouTube Modal */}
       {showModal && youtubeId && (
