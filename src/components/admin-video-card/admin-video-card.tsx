@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Calendar, Clock, Users, CheckCircle } from "lucide-react";
 import { AssignVideoModal } from "@/components/manage-users/assign-video-modal";
-
+import { supabase } from "@/lib/supabase";
 
 interface AdminVideoCardProps {
   video: {
@@ -41,7 +41,71 @@ function getYouTubeId(url?: string) {
 export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUsers }: AdminVideoCardProps) {
   const [showModal, setShowModal] = useState(false);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [stats, setStats] = useState({
+    assigned: 0,
+    completed: 0
+  });
   const youtubeId = getYouTubeId(video.youtube_url);
+
+  useEffect(() => {
+    async function fetchVideoStats() {
+      try {
+        // Get total assigned users
+        const { data: assignedData, error: assignedError } = await supabase
+          .from('users_videos')
+          .select('*', { count: 'exact' })
+          .eq('video', video.id);
+
+        if (assignedError) throw assignedError;
+
+        // Get completed users
+        const { data: completedData, error: completedError } = await supabase
+          .from('users_videos')
+          .select('*', { count: 'exact' })
+          .eq('video', video.id)
+          .eq('is_completed', true);
+
+        if (completedError) throw completedError;
+
+        const assignedCount = assignedData?.length || 0;
+        const completedCount = completedData?.length || 0;
+
+        setStats({
+          assigned: assignedCount,
+          completed: assignedCount ? Math.round((completedCount / assignedCount) * 100) : 0
+        });
+      } catch (error) {
+        console.error('Error fetching video stats:', error);
+      }
+    }
+
+    // Initial fetch
+    fetchVideoStats();
+
+    // Subscribe to changes
+    const channel = supabase.channel(`video-${video.id}-changes`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'users_videos',
+          filter: `video=eq.${video.id}`
+        },
+        (payload) => {
+          console.log('Change detected:', payload);
+          fetchVideoStats();
+        }
+      )
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
+
+    // Cleanup subscription on unmount
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [video.id]);
 
   return (
     <div className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative">
@@ -117,11 +181,11 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
       <div className="flex justify-between text-xs text-gray-500">
         <span className="flex items-center gap-1">
           <Users size={16} className="text-gray-400" />
-          {video.num_users_assigned} assigned
+          {stats.assigned} assigned
         </span>
         <span className="flex items-center gap-1">
           <CheckCircle size={16} className="text-gray-400" />
-          {video.num_users_completed}% completed
+          {stats.completed}% completed
         </span>
       </div>
       <button
