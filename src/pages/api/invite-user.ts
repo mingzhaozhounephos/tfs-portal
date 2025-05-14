@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { email, name, role } = req.body;
 
   const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-    data: { name, role },
+    data: { name, role, from_invitation: true },
     redirectTo: `${req.headers.origin}/auth/callback`,
   });
 
