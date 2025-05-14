@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Calendar, Clock, Users, CheckCircle } from "lucide-react";
 import { AssignVideoModal } from "@/components/manage-users/assign-video-modal";
 import { supabase } from "@/lib/supabase";
+import Image from 'next/image';
 
 interface AdminVideoCardProps {
   video: {
@@ -153,20 +154,14 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
       >
         {video.description}
       </div>
-      <div className="relative aspect-video rounded overflow-hidden mb-2">
-        <img
-          src={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg` : video.image}
+      <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+        <Image
+          src={video.image}
           alt={video.title}
-          className="object-cover w-full h-full"
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
-        <button
-          className="absolute inset-0 flex items-center justify-center"
-          onClick={() => setShowModal(true)}
-        >
-          <span className="bg-white/80 rounded-full p-2">
-            <svg width="32" height="32" fill="none"><circle cx="16" cy="16" r="16" fill="#000"/><polygon points="13,11 23,16 13,21" fill="#fff"/></svg>
-          </span>
-        </button>
       </div>
       <div className="flex justify-between text-xs text-gray-500">
         <span className="flex items-center gap-1">

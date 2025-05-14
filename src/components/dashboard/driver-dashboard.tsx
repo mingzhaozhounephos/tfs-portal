@@ -124,7 +124,7 @@ export function DriverDashboard() {
           <div className="bg-white rounded-xl p-4 shadow flex flex-col gap-2 min-h-[100px]">
             <div className="font-semibold">Last Activity</div>
             <div className="text-2xl font-bold">{lastActivity}</div>
-            <div className="text-xs text-gray-500">Completed "Safe Driving Techniques"</div>
+            <div className="text-xs text-gray-500">Completed &quot;Safe Driving Techniques&quot;</div>
           </div>
         </div>
         <div className="mb-4 mt-8">

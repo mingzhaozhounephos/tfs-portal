@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 interface TrainingVideo {
   id: string;
@@ -73,24 +74,14 @@ export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGr
             >
               {video.description}
             </div>
-            <div className="relative aspect-video rounded overflow-hidden mb-2">
-              <img
-                src={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg` : video.image}
+            <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+              <Image
+                src={video.image}
                 alt={video.title}
-                className="object-cover w-full h-full"
-                loading="lazy"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
-              <button
-                className="absolute inset-0 flex items-center justify-center"
-                tabIndex={-1}
-                aria-label="Play video"
-                type="button"
-                disabled
-              >
-                <span className="bg-white/80 rounded-full p-2">
-                  <svg width="32" height="32" fill="none"><circle cx="16" cy="16" r="16" fill="#000"/><polygon points="13,11 23,16 13,21" fill="#fff"/></svg>
-                </span>
-              </button>
             </div>
             <div className="flex justify-between text-xs text-gray-500">
               <span className="flex items-center gap-1">
