@@ -33,7 +33,7 @@ const adminItems = [
 
 const driverItems = [
   { label: "Dashboard", icon: icons.dashboard, route: "dashboard" },
-  { label: "My Training Videos", icon: icons.videos, route: "my-videos" },
+  { label: "My Training Videos", icon: icons.videos, route: "my-training-videos" },
 ];
 
 export function SideMenu({ role, active, onNavigate }: SideMenuProps) {
@@ -94,6 +94,7 @@ export function SideMenu({ role, active, onNavigate }: SideMenuProps) {
               )}
               onClick={() => {
                 setOpen(false);
+                router.push(`/${item.route}`);
                 onNavigate(item.route);
               }}
             >
