@@ -73,6 +73,8 @@ export function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [totalVideos, setTotalVideos] = useState(0);
   const [videosThisWeek, setVideosThisWeek] = useState(0);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [usersThisMonth, setUsersThisMonth] = useState(0);
 
   function isThisWeek(dateString: string) {
     const date = new Date(dateString);
@@ -83,6 +85,12 @@ export function AdminDashboard() {
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 7);
     return date >= startOfWeek && date < endOfWeek;
+  }
+
+  function isThisMonth(dateString: string) {
+    const date = new Date(dateString);
+    const now = new Date();
+    return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
   }
 
   useEffect(() => {
@@ -133,6 +141,46 @@ export function AdminDashboard() {
     };
   }, [active, tab]);
 
+  useEffect(() => {
+    let channel: any;
+    async function fetchUsers() {
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (!error && data) {
+        setTotalUsers(data.length);
+        setUsersThisMonth(data.filter(u => u.created_at && isThisMonth(u.created_at)).length);
+      }
+      // Real-time subscription
+      channel = supabase
+        .channel('users-admin-dashboard')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'users' },
+          payload => {
+            supabase
+              .from("users")
+              .select("*")
+              .order("created_at", { ascending: false })
+              .then(({ data, error }) => {
+                if (!error && data) {
+                  setTotalUsers(data.length);
+                  setUsersThisMonth(data.filter(u => u.created_at && isThisMonth(u.created_at)).length);
+                }
+              });
+          }
+        )
+        .subscribe();
+    }
+    if (active === "dashboard") {
+      fetchUsers();
+    }
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [active]);
+
   return (
     <div className="flex bg-[#f6fbf9] min-h-screen h-screen">
       <SideMenu role="admin" active={active} onNavigate={setActive} />
@@ -152,7 +200,7 @@ export function AdminDashboard() {
             {/* Widgets */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <Widget title="Total Videos" value={String(totalVideos)} sub={`+${videosThisWeek} videos added this week`} icon={<Bell className="w-5 h-5 text-gray-400" />} />
-              <Widget title="Total Users" value="6" sub="+3 users added this month" icon={<Users className="w-5 h-5 text-gray-400" />} />
+              <Widget title="Total Users" value={String(totalUsers)} sub={`+${usersThisMonth} users added this month`} icon={<Users className="w-5 h-5 text-gray-400" />} />
               <Widget title="Completion Rate" value="0%" sub="" icon={<Activity className="w-5 h-5 text-gray-400" />} />
               <Widget title="Videos Watched" value="0" sub="+0 videos watched this week" icon={<Play className="w-5 h-5 text-gray-400" />} />
             </div>
