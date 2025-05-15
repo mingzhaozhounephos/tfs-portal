@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Calendar, Clock, Users, CheckCircle } from "lucide-react";
+import { Calendar, Clock, Users, CheckCircle, PlayCircle } from "lucide-react";
 import { AssignVideoModal } from "@/components/manage-users/assign-video-modal";
 import { supabase } from "@/lib/supabase";
 import Image from 'next/image';
@@ -159,7 +159,7 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
       >
         {video.description}
       </div>
-      <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+      <div className="relative aspect-video w-full overflow-hidden rounded-lg group cursor-pointer" onClick={() => youtubeId && setShowModal(true)}>
         <Image
           src={thumbnailUrl}
           alt={video.title}
@@ -167,6 +167,13 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
           className="object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
+        {youtubeId && (
+          <span className="absolute inset-0 flex items-center justify-center">
+            <span className="rounded-full bg-white/60 flex items-center justify-center">
+              <PlayCircle className="w-16 h-16 text-black/70" fill="none" />
+            </span>
+          </span>
+        )}
       </div>
       <div className="flex justify-between text-xs text-gray-500">
         <span className="flex items-center gap-1">
