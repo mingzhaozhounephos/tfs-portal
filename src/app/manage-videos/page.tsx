@@ -5,9 +5,11 @@ import { ManageVideos } from "@/components/manage-videos/manage-videos";
 
 export default function ManageVideosPage() {
   return (
-    <div className="flex bg-[#f6fbf9] min-h-screen h-screen">
+    <div className="flex h-screen min-h-screen">
       <SideMenu role="admin" active="manage-videos" onNavigate={() => {}} />
-      <ManageVideos />
+      <div className="flex-1 h-screen overflow-y-auto">
+        <ManageVideos />
+      </div>
     </div>
   );
 } 

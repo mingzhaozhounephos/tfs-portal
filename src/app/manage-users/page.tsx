@@ -5,9 +5,11 @@ import { ManageUsers } from "@/components/manage-users/manage-users";
 
 export default function ManageUsersPage() {
   return (
-    <div className="flex bg-[#f6fbf9] min-h-screen h-screen">
+    <div className="flex h-screen min-h-screen">
       <SideMenu role="admin" active="manage-users" onNavigate={() => {}} />
-      <ManageUsers />
+      <div className="flex-1 h-screen overflow-y-auto">
+        <ManageUsers />
+      </div>
     </div>
   );
 } 
