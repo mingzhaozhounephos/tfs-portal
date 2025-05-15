@@ -75,6 +75,7 @@ export function AdminDashboard() {
   const [videosThisWeek, setVideosThisWeek] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
   const [usersThisMonth, setUsersThisMonth] = useState(0);
+  const [completionRate, setCompletionRate] = useState("0%");
 
   function isThisWeek(dateString: string) {
     const date = new Date(dateString);
@@ -181,6 +182,48 @@ export function AdminDashboard() {
     };
   }, [active]);
 
+  useEffect(() => {
+    let channel: any;
+    async function fetchCompletionRate() {
+      const { data: allData, error: allError } = await supabase
+        .from("users_videos")
+        .select("id, is_completed");
+      if (!allError && allData) {
+        const total = allData.length;
+        const completed = allData.filter((uv: any) => uv.is_completed).length;
+        const rate = total === 0 ? 0 : Math.round((completed / total) * 100);
+        setCompletionRate(`${rate}%`);
+      }
+      // Real-time subscription
+      channel = supabase
+        .channel('users-videos-admin-dashboard')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'users_videos' },
+          payload => {
+            supabase
+              .from("users_videos")
+              .select("id, is_completed")
+              .then(({ data, error }) => {
+                if (!error && data) {
+                  const total = data.length;
+                  const completed = data.filter((uv: any) => uv.is_completed).length;
+                  const rate = total === 0 ? 0 : Math.round((completed / total) * 100);
+                  setCompletionRate(`${rate}%`);
+                }
+              });
+          }
+        )
+        .subscribe();
+    }
+    if (active === "dashboard") {
+      fetchCompletionRate();
+    }
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [active]);
+
   return (
     <div className="flex bg-[#f6fbf9] min-h-screen h-screen">
       <SideMenu role="admin" active={active} onNavigate={setActive} />
@@ -201,7 +244,7 @@ export function AdminDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <Widget title="Total Videos" value={String(totalVideos)} sub={`+${videosThisWeek} videos added this week`} icon={<Bell className="w-5 h-5 text-gray-400" />} />
               <Widget title="Total Users" value={String(totalUsers)} sub={`+${usersThisMonth} users added this month`} icon={<Users className="w-5 h-5 text-gray-400" />} />
-              <Widget title="Completion Rate" value="0%" sub="" icon={<Activity className="w-5 h-5 text-gray-400" />} />
+              <Widget title="Completion Rate" value={completionRate} sub="" icon={<Activity className="w-5 h-5 text-gray-400" />} />
               <Widget title="Videos Watched" value="0" sub="+0 videos watched this week" icon={<Play className="w-5 h-5 text-gray-400" />} />
             </div>
             {/* Toggle */}
