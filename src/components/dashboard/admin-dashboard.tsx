@@ -76,6 +76,8 @@ export function AdminDashboard() {
   const [totalUsers, setTotalUsers] = useState(0);
   const [usersThisMonth, setUsersThisMonth] = useState(0);
   const [completionRate, setCompletionRate] = useState("0%");
+  const [videosWatched, setVideosWatched] = useState(0);
+  const [videosWatchedThisWeek, setVideosWatchedThisWeek] = useState(0);
 
   function isThisWeek(dateString: string) {
     const date = new Date(dateString);
@@ -224,6 +226,48 @@ export function AdminDashboard() {
     };
   }, [active]);
 
+  useEffect(() => {
+    let channel: any;
+    async function fetchVideosWatched() {
+      const { data, error } = await supabase
+        .from("users_videos")
+        .select("last_watched");
+      if (!error && data) {
+        const watched = data.filter((uv: any) => uv.last_watched).length;
+        const watchedThisWeek = data.filter((uv: any) => uv.last_watched && isThisWeek(uv.last_watched)).length;
+        setVideosWatched(watched);
+        setVideosWatchedThisWeek(watchedThisWeek);
+      }
+      // Real-time subscription
+      channel = supabase
+        .channel('users-videos-watched-admin-dashboard')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'users_videos' },
+          payload => {
+            supabase
+              .from("users_videos")
+              .select("last_watched")
+              .then(({ data, error }) => {
+                if (!error && data) {
+                  const watched = data.filter((uv: any) => uv.last_watched).length;
+                  const watchedThisWeek = data.filter((uv: any) => uv.last_watched && isThisWeek(uv.last_watched)).length;
+                  setVideosWatched(watched);
+                  setVideosWatchedThisWeek(watchedThisWeek);
+                }
+              });
+          }
+        )
+        .subscribe();
+    }
+    if (active === "dashboard") {
+      fetchVideosWatched();
+    }
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [active]);
+
   return (
     <div className="flex bg-[#f6fbf9] min-h-screen h-screen">
       <SideMenu role="admin" active={active} onNavigate={setActive} />
@@ -245,7 +289,7 @@ export function AdminDashboard() {
               <Widget title="Total Videos" value={String(totalVideos)} sub={`+${videosThisWeek} videos added this week`} icon={<Bell className="w-5 h-5 text-gray-400" />} />
               <Widget title="Total Users" value={String(totalUsers)} sub={`+${usersThisMonth} users added this month`} icon={<Users className="w-5 h-5 text-gray-400" />} />
               <Widget title="Completion Rate" value={completionRate} sub="" icon={<Activity className="w-5 h-5 text-gray-400" />} />
-              <Widget title="Videos Watched" value="0" sub="+0 videos watched this week" icon={<Play className="w-5 h-5 text-gray-400" />} />
+              <Widget title="Videos Watched" value={String(videosWatched)} sub={`+${videosWatchedThisWeek} videos watched this week`} icon={<Play className="w-5 h-5 text-gray-400" />} />
             </div>
             {/* Toggle */}
             <div className="flex gap-2 mb-4">
