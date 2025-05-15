@@ -83,6 +83,7 @@ export function AdminDashboard() {
   const { user } = useAuth();
   const [adminName, setAdminName] = useState<string>("Administrator");
   const [adminEmail, setAdminEmail] = useState<string>("");
+  const [recentUsers, setRecentUsers] = useState<any[]>([]);
 
   function isThisWeek(dateString: string) {
     const date = new Date(dateString);
@@ -175,6 +176,7 @@ export function AdminDashboard() {
       if (!error && data) {
         setTotalUsers(data.length);
         setUsersThisMonth(data.filter(u => u.created_at && isThisMonth(u.created_at)).length);
+        setRecentUsers(data.filter(u => u.created_at && isThisMonth(u.created_at)));
       }
       // Real-time subscription
       channel = supabase
@@ -191,6 +193,7 @@ export function AdminDashboard() {
                 if (!error && data) {
                   setTotalUsers(data.length);
                   setUsersThisMonth(data.filter(u => u.created_at && isThisMonth(u.created_at)).length);
+                  setRecentUsers(data.filter(u => u.created_at && isThisMonth(u.created_at)));
                 }
               });
           }
@@ -341,8 +344,8 @@ export function AdminDashboard() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {userData.map((user, i) => (
-                  <UserCard key={i} user={user} />
+                {recentUsers.map((user, i) => (
+                  <UserCard key={user.id || i} user={user} />
                 ))}
               </div>
             )}
