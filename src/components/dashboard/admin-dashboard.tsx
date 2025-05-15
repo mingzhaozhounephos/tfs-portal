@@ -6,6 +6,7 @@ import { ManageUsers } from "@/components/manage-users/manage-users";
 import { supabase } from "@/lib/supabase";
 import { Bell, Users, Activity, Play } from "lucide-react";
 import { useAuth } from '@/hooks/use-auth';
+import { UserCard } from "../manage-users/user-card";
 
 const videoData = [
   {
@@ -341,7 +342,7 @@ export function AdminDashboard() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {userData.map((user, i) => (
-                  <UserCard key={i} {...user} />
+                  <UserCard key={i} user={user} />
                 ))}
               </div>
             )}
@@ -377,30 +378,6 @@ function Widget({ title, value, sub, icon, progress }: WidgetProps) {
           />
         </div>
       )}
-    </div>
-  );
-}
-
-// UserCard component
-function UserCard(props: any) {
-  return (
-    <div className="bg-white rounded-xl shadow p-4 flex flex-col gap-2">
-      <div className="flex items-center gap-2">
-        <div className="w-10 h-10 bg-gray-200 rounded-full" />
-        <div>
-          <div className="font-bold">{props.name}</div>
-          <div className="text-xs text-gray-500">{props.email}</div>
-        </div>
-      </div>
-      <span className="inline-block text-xs bg-gray-100 text-gray-700 rounded px-2 py-0.5">{props.role}</span>
-      <div className="flex justify-between text-xs text-gray-500">
-        <span>{props.joined}</span>
-        <span>{props.assigned} videos assigned</span>
-      </div>
-      <div className="flex justify-between text-xs text-gray-500">
-        <span>{props.completed} completed</span>
-      </div>
-      <button className="mt-2 w-full border rounded py-1 text-sm font-medium">View Details</button>
     </div>
   );
 }
