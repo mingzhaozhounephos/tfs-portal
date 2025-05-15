@@ -210,6 +210,7 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
       </div>
       <button
     className="mt-2 w-full border rounded py-1 text-sm font-medium"
+    style={{ borderColor: 'var(--border-default)' }}
     onClick={() => setAssignModalOpen(true)}
   >
     Assign to Users

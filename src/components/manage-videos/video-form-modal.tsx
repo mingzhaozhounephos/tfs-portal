@@ -107,6 +107,7 @@ export function VideoFormModal({
             <label className="block text-sm mb-1">Title</label>
             <input
               className="w-full border rounded px-3 py-2"
+              style={{ borderColor: 'var(--border-default)' }}
               value={title}
               onChange={e => setTitle(e.target.value)}
               required
@@ -117,6 +118,7 @@ export function VideoFormModal({
             <label className="block text-sm mb-1">Description</label>
             <textarea
               className="w-full border rounded px-3 py-2"
+              style={{ borderColor: 'var(--border-default)' }}
               value={description}
               onChange={e => setDescription(e.target.value)}
               required
@@ -127,6 +129,7 @@ export function VideoFormModal({
             <label className="block text-sm mb-1">YouTube URL</label>
             <input
               className="w-full border rounded px-3 py-2"
+              style={{ borderColor: 'var(--border-default)' }}
               value={youtubeUrl}
               onChange={e => setYoutubeUrl(e.target.value)}
               required
@@ -137,6 +140,7 @@ export function VideoFormModal({
             <label className="block text-sm mb-1">Category</label>
             <select
               className="w-full border rounded px-3 py-2"
+              style={{ borderColor: 'var(--border-default)' }}
               value={category}
               onChange={e => setCategory(e.target.value)}
               required
@@ -150,6 +154,7 @@ export function VideoFormModal({
             <label className="block text-sm mb-1">Duration (optional)</label>
             <input
               className="w-full border rounded px-3 py-2"
+              style={{ borderColor: 'var(--border-default)' }}
               value={duration}
               onChange={e => setDuration(e.target.value)}
               placeholder="10:00"
@@ -159,6 +164,7 @@ export function VideoFormModal({
             <button
               type="button"
               className="px-4 py-2 rounded border"
+              style={{ borderColor: 'var(--border-default)' }}
               onClick={onClose}
               disabled={isLoading}
             >
@@ -166,7 +172,8 @@ export function VideoFormModal({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded bg-black text-white"
+              className="px-4 py-2 rounded bg-black text-white border"
+              style={{ borderColor: 'var(--border-default)' }}
               disabled={isLoading}
             >
               {video ? "Save Changes" : "Add Video"}

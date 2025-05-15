@@ -36,7 +36,7 @@ export function UserCard({ user }: UserCardProps) {
   }, [user.id]);
 
   return (
-    <div className="bg-white rounded-xl shadow p-6 flex flex-col gap-2 border">
+    <div className="bg-white rounded-xl shadow p-6 flex flex-col gap-2 border" style={{ borderColor: 'var(--border-default)' }}>
       <div className="flex items-center gap-3 mb-2">
         <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
           <Users size={28} />
@@ -51,7 +51,7 @@ export function UserCard({ user }: UserCardProps) {
       </div>
       <div className="flex justify-between items-center text-xs text-gray-700 mb-2 gap-2">
         <div className="flex flex-col gap-2 flex-1">
-          <span className="inline-block font-semibold border border-gray-300 rounded-full px-3 py-0.5 bg-white text-black text-xs text-center w-fit mb-1">
+          <span className="inline-block font-semibold border rounded-full px-3 py-0.5 bg-white text-black text-xs text-center w-fit mb-1" style={{ borderColor: 'var(--border-default)' }}>
             {user.role}
           </span>
           <span className="flex items-center gap-1">
@@ -70,7 +70,7 @@ export function UserCard({ user }: UserCardProps) {
           </span>
         </div>
       </div>
-      <button className="w-full border rounded py-1 text-sm font-medium">View Details</button>
+      <button className="w-full border rounded py-1 text-sm font-medium" style={{ borderColor: 'var(--border-default)' }}>View Details</button>
     </div>
   );
 } 

@@ -113,12 +113,13 @@ export function AssignVideoModal({ open, onClose, videoId, videoTitle }: AssignV
         </p>
         <input
           className="w-full border rounded px-3 py-2 mb-3"
+          style={{ borderColor: 'var(--border-default)' }}
           placeholder="Search users..."
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
-        <div className="max-h-64 overflow-y-auto border rounded mb-3">
-          <div className="flex items-center px-3 py-2 border-b">
+        <div className="max-h-64 overflow-y-auto border rounded mb-3" style={{ borderColor: 'var(--border-default)' }}>
+          <div className="flex items-center px-3 py-2 border-b" style={{ borderBottom: '1px solid var(--border-default)' }}>
             <input
               type="checkbox"
               checked={allSelected}
@@ -162,6 +163,7 @@ export function AssignVideoModal({ open, onClose, videoId, videoTitle }: AssignV
             <button
               type="button"
               className="px-4 py-2 rounded border"
+              style={{ borderColor: 'var(--border-default)' }}
               onClick={onClose}
               disabled={assigning}
             >

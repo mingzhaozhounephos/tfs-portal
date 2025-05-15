@@ -62,9 +62,9 @@ export function SideMenu({ role, active, onNavigate }: SideMenuProps) {
           "fixed z-50 md:static top-0 left-0 h-full w-64 bg-white border-r flex flex-col transition-transform",
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
-        style={{ minHeight: "100vh" }}
+        style={{ minHeight: "100vh", borderRight: '1px solid var(--border-default)' }}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b">
+        <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderBottom: '1px solid var(--border-default)' }}>
           <div>
             <span className="font-bold text-lg">Driver Training</span>
             <div className="text-xs text-gray-500">{role === "admin" ? "Admin Dashboard" : "Driver Dashboard"}</div>
@@ -95,9 +95,10 @@ export function SideMenu({ role, active, onNavigate }: SideMenuProps) {
             </button>
           ))}
         </nav>
-        <div className="p-4 border-t mt-auto">
+        <div className="p-4 border-t mt-auto" style={{ borderTop: '1px solid var(--border-default)' }}>
           <button
-            className="flex items-center gap-2 w-full px-4 py-2 rounded-lg border border-black text-black hover:bg-gray-100"
+            className="flex items-center gap-2 w-full px-4 py-2 rounded-lg border text-black hover:bg-gray-100"
+            style={{ borderColor: 'var(--border-default)' }}
             onClick={handleLogout}
           >
             {icons.logout}

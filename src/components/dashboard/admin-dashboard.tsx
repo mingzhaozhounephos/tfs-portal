@@ -319,12 +319,14 @@ export function AdminDashboard() {
             <div className="flex gap-2 mb-4">
               <button
                 className={`px-4 py-2 rounded ${tab === "videos" ? "bg-black text-white" : "bg-white border"}`}
+                style={tab === "videos" ? {} : { borderColor: 'var(--border-default)' }}
                 onClick={() => setTab("videos")}
               >
                 Recent Videos
               </button>
               <button
                 className={`px-4 py-2 rounded ${tab === "users" ? "bg-black text-white" : "bg-white border"}`}
+                style={tab === "users" ? {} : { borderColor: 'var(--border-default)' }}
                 onClick={() => setTab("users")}
               >
                 Recent Users
