@@ -2,21 +2,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import clsx from "clsx";
+import { Home, Video, Users as UsersIcon, LogOut } from "lucide-react";
 
-// Simple SVG icons for demonstration; replace with Lucide or other icon libs as needed
 const icons = {
-  dashboard: (
-    <svg width="18" height="18" fill="none"><rect x="2" y="2" width="14" height="14" rx="3" stroke="currentColor" strokeWidth="2"/></svg>
-  ),
-  videos: (
-    <svg width="18" height="18" fill="none"><rect x="3" y="5" width="12" height="8" rx="2" stroke="currentColor" strokeWidth="2"/><polygon points="8,7 12,9 8,11" fill="currentColor"/></svg>
-  ),
-  users: (
-    <svg width="18" height="18" fill="none"><circle cx="9" cy="7" r="3" stroke="currentColor" strokeWidth="2"/><path d="M3 15c0-2.5 3-4 6-4s6 1.5 6 4" stroke="currentColor" strokeWidth="2"/></svg>
-  ),
-  logout: (
-    <svg width="18" height="18" fill="none"><path d="M15 12v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3M10 12l3-3m0 0l-3-3m3 3H7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-  ),
+  dashboard: <Home className="w-5 h-5" />,
+  videos: <Video className="w-5 h-5" />,
+  users: <UsersIcon className="w-5 h-5" />,
+  logout: <LogOut className="w-5 h-5" />,
 };
 
 interface SideMenuProps {
