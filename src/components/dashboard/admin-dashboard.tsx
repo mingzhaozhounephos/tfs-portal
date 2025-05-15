@@ -4,6 +4,7 @@ import { ManageVideos } from "@/components/manage-videos/manage-videos";
 import { AdminVideoCard } from "@/components/admin-video-card/admin-video-card";
 import { ManageUsers } from "@/components/manage-users/manage-users";
 import { supabase } from "@/lib/supabase";
+import { Bell, Users, Activity, Play } from "lucide-react";
 
 const videoData = [
   {
@@ -70,6 +71,19 @@ export function AdminDashboard() {
   const [active, setActive] = useState("dashboard");
   const [videos, setVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalVideos, setTotalVideos] = useState(0);
+  const [videosThisWeek, setVideosThisWeek] = useState(0);
+
+  function isThisWeek(dateString: string) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+    startOfWeek.setHours(0, 0, 0, 0);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7);
+    return date >= startOfWeek && date < endOfWeek;
+  }
 
   useEffect(() => {
     let channel: any;
@@ -79,9 +93,12 @@ export function AdminDashboard() {
         const { data, error } = await supabase
           .from("videos")
           .select("*")
-          .eq("admin_user_id", session.user.id)
           .order("created_at", { ascending: false });
-        if (!error && data) setVideos(data);
+        if (!error && data) {
+          setVideos(data);
+          setTotalVideos(data.length);
+          setVideosThisWeek(data.filter(v => v.created_at && isThisWeek(v.created_at)).length);
+        }
 
         // Real-time subscription
         channel = supabase
@@ -90,14 +107,17 @@ export function AdminDashboard() {
             'postgres_changes',
             { event: '*', schema: 'public', table: 'videos', filter: `admin_user_id=eq.${session.user.id}` },
             payload => {
-              // Refetch videos on any change
               supabase
                 .from("videos")
                 .select("*")
                 .eq("admin_user_id", session.user.id)
                 .order("created_at", { ascending: false })
                 .then(({ data, error }) => {
-                  if (!error && data) setVideos(data);
+                  if (!error && data) {
+                    setVideos(data);
+                    setTotalVideos(data.length);
+                    setVideosThisWeek(data.filter(v => v.created_at && isThisWeek(v.created_at)).length);
+                  }
                 });
             }
           )
@@ -131,10 +151,10 @@ export function AdminDashboard() {
             </div>
             {/* Widgets */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <Widget title="Total Videos" value="9" sub="+2 videos added this week" icon="bell" />
-              <Widget title="Total Users" value="6" sub="+3 users added this month" icon="users" />
-              <Widget title="Completion Rate" value="0%" sub="" icon="activity" />
-              <Widget title="Videos Watched" value="0" sub="+0 videos watched this week" icon="play" />
+              <Widget title="Total Videos" value={String(totalVideos)} sub={`+${videosThisWeek} videos added this week`} icon={<Bell className="w-5 h-5 text-gray-400" />} />
+              <Widget title="Total Users" value="6" sub="+3 users added this month" icon={<Users className="w-5 h-5 text-gray-400" />} />
+              <Widget title="Completion Rate" value="0%" sub="" icon={<Activity className="w-5 h-5 text-gray-400" />} />
+              <Widget title="Videos Watched" value="0" sub="+0 videos watched this week" icon={<Play className="w-5 h-5 text-gray-400" />} />
             </div>
             {/* Toggle */}
             <div className="flex gap-2 mb-4">
@@ -177,19 +197,19 @@ export function AdminDashboard() {
   );
 }
 
-// Widget component
-function Widget({ title, value, sub, icon }: { title: string; value: string; sub: string; icon: string }) {
-  const icons: Record<string, JSX.Element> = {
-    bell: <span className="inline-block w-5 h-5 bg-gray-200 rounded-full" />,
-    users: <span className="inline-block w-5 h-5 bg-gray-200 rounded-full" />,
-    activity: <span className="inline-block w-5 h-5 bg-gray-200 rounded-full" />,
-    play: <span className="inline-block w-5 h-5 bg-gray-200 rounded-full" />,
-  };
+interface WidgetProps {
+  title: string;
+  value: string;
+  sub: string;
+  icon: JSX.Element;
+}
+
+function Widget({ title, value, sub, icon }: WidgetProps) {
   return (
     <div className="bg-white rounded-xl p-4 shadow flex flex-col gap-2 min-h-[100px]">
       <div className="flex justify-between items-center">
         <div className="font-semibold">{title}</div>
-        {icons[icon]}
+        {icon}
       </div>
       <div className="text-2xl font-bold">{value}</div>
       {sub && <div className="text-xs text-gray-500">{sub}</div>}
