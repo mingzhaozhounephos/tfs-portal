@@ -39,6 +39,10 @@ function getYouTubeId(url?: string) {
   return match ? match[1] : "";
 }
 
+function getYouTubeThumbnail(videoId: string) {
+  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+}
+
 export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUsers }: AdminVideoCardProps) {
   const [showModal, setShowModal] = useState(false);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
@@ -47,6 +51,7 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
     completed: 0
   });
   const youtubeId = getYouTubeId(video.youtube_url);
+  const thumbnailUrl = youtubeId ? getYouTubeThumbnail(youtubeId) : video.image || "/rick-astley.jpg";
 
   useEffect(() => {
     async function fetchVideoStats() {
@@ -156,7 +161,7 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
       </div>
       <div className="relative aspect-video w-full overflow-hidden rounded-lg">
         <Image
-          src={video.image || "/rick-astley.jpg"}
+          src={thumbnailUrl}
           alt={video.title}
           fill
           className="object-cover"
