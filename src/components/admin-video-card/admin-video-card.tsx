@@ -156,7 +156,7 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
       </div>
       <div className="relative aspect-video w-full overflow-hidden rounded-lg">
         <Image
-          src={video.image}
+          src={video.image || "/rick-astley.jpg"}
           alt={video.title}
           fill
           className="object-cover"
