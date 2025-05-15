@@ -5,6 +5,7 @@ import { AdminVideoCard } from "@/components/admin-video-card/admin-video-card";
 import { ManageUsers } from "@/components/manage-users/manage-users";
 import { supabase } from "@/lib/supabase";
 import { Bell, Users, Activity, Play } from "lucide-react";
+import { useAuth } from '@/hooks/use-auth';
 
 const videoData = [
   {
@@ -78,6 +79,9 @@ export function AdminDashboard() {
   const [completionRate, setCompletionRate] = useState("0%");
   const [videosWatched, setVideosWatched] = useState(0);
   const [videosWatchedThisWeek, setVideosWatchedThisWeek] = useState(0);
+  const { user } = useAuth();
+  const [adminName, setAdminName] = useState<string>("Administrator");
+  const [adminEmail, setAdminEmail] = useState<string>("");
 
   function isThisWeek(dateString: string) {
     const date = new Date(dateString);
@@ -95,6 +99,22 @@ export function AdminDashboard() {
     const now = new Date();
     return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
   }
+
+  useEffect(() => {
+    async function fetchAdminInfo() {
+      if (!user?.id) return;
+      const { data, error } = await supabase
+        .from("users")
+        .select("full_name, email")
+        .eq("id", user.id)
+        .single();
+      if (!error && data) {
+        setAdminName(data.full_name?.trim() ? data.full_name : "Administrator");
+        setAdminEmail(data.email || "");
+      }
+    }
+    fetchAdminInfo();
+  }, [user]);
 
   useEffect(() => {
     let channel: any;
@@ -281,7 +301,7 @@ export function AdminDashboard() {
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold">Dashboard</h1>
               <div className="text-sm text-gray-600">
-                Welcome, Administrator (admin@admin)
+                Welcome, {adminName} ({adminEmail})
               </div>
             </div>
             {/* Widgets */}
