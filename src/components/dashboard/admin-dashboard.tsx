@@ -308,7 +308,7 @@ export function AdminDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <Widget title="Total Videos" value={String(totalVideos)} sub={`+${videosThisWeek} videos added this week`} icon={<Bell className="w-5 h-5 text-gray-400" />} />
               <Widget title="Total Users" value={String(totalUsers)} sub={`+${usersThisMonth} users added this month`} icon={<Users className="w-5 h-5 text-gray-400" />} />
-              <Widget title="Completion Rate" value={completionRate} sub="" icon={<Activity className="w-5 h-5 text-gray-400" />} />
+              <Widget title="Completion Rate" value={completionRate} sub="" icon={<Activity className="w-5 h-5 text-gray-400" />} progress={parseInt(completionRate)} />
               <Widget title="Videos Watched" value={String(videosWatched)} sub={`+${videosWatchedThisWeek} videos watched this week`} icon={<Play className="w-5 h-5 text-gray-400" />} />
             </div>
             {/* Toggle */}
@@ -357,9 +357,10 @@ interface WidgetProps {
   value: string;
   sub: string;
   icon: JSX.Element;
+  progress?: number;
 }
 
-function Widget({ title, value, sub, icon }: WidgetProps) {
+function Widget({ title, value, sub, icon, progress }: WidgetProps) {
   return (
     <div className="bg-white rounded-xl p-4 shadow flex flex-col gap-2 min-h-[100px]">
       <div className="flex justify-between items-center">
@@ -368,6 +369,14 @@ function Widget({ title, value, sub, icon }: WidgetProps) {
       </div>
       <div className="text-2xl font-bold">{value}</div>
       {sub && <div className="text-xs text-gray-500">{sub}</div>}
+      {typeof progress === 'number' && (
+        <div className="mt-2 w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            className="h-2 bg-green-200 rounded-full transition-all"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
     </div>
   );
 }
