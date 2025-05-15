@@ -3,6 +3,7 @@ import { Calendar, Clock, Users, CheckCircle, PlayCircle } from "lucide-react";
 import { AssignVideoModal } from "@/components/manage-users/assign-video-modal";
 import { supabase } from "@/lib/supabase";
 import Image from 'next/image';
+import { useAuth } from '@/hooks/use-auth';
 
 interface AdminVideoCardProps {
   video: {
@@ -50,6 +51,7 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
     assigned: 0,
     completed: 0
   });
+  const { user } = useAuth();
   const youtubeId = getYouTubeId(video.youtube_url);
   const thumbnailUrl = youtubeId ? getYouTubeThumbnail(youtubeId) : video.image || "/rick-astley.jpg";
 
@@ -113,6 +115,17 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
     };
   }, [video.id]);
 
+  async function handleOpenModal() {
+    if (user && video.id) {
+      await supabase
+        .from('users_videos')
+        .update({ last_watched: new Date().toISOString() })
+        .eq('user', user.id)
+        .eq('video', video.id);
+    }
+    setShowModal(true);
+  }
+
   return (
     <div className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative">
       {/* Pencil icon for edit */}
@@ -159,7 +172,7 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
       >
         {video.description}
       </div>
-      <div className="relative aspect-video w-full overflow-hidden rounded-lg group cursor-pointer" onClick={() => youtubeId && setShowModal(true)}>
+      <div className="relative aspect-video w-full overflow-hidden rounded-lg group cursor-pointer" onClick={() => youtubeId && handleOpenModal()}>
         <Image
           src={thumbnailUrl}
           alt={video.title}
