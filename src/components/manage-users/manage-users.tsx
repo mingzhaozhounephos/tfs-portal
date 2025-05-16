@@ -10,7 +10,8 @@ export function ManageUsers() {
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
-  const [selectedVideoId, setSelectedVideoId] = useState<string>("");
+  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+  const [selectedVideoTitle, setSelectedVideoTitle] = useState<string>("");
   const { users, loading, error, searchUsers, refresh } = useUsers();
 
   const filteredUsers = searchUsers(search);
@@ -68,7 +69,8 @@ export function ManageUsers() {
       <AssignVideoModal
         isOpen={assignModalOpen}
         onClose={() => setAssignModalOpen(false)}
-        videoId={selectedVideoId}
+        videoId={selectedVideoId || ""}
+        videoTitle={selectedVideoTitle}
       />
     </div>
   );
