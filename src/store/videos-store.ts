@@ -7,6 +7,7 @@ interface VideosStore {
   loading: boolean;
   error: Error | null;
   initialized: boolean;
+  cleanup?: () => void;
   initialize: () => Promise<void>;
   refresh: () => Promise<void>;
   searchVideos: (query: string) => Video[];
@@ -18,6 +19,7 @@ export const useVideosStore = create<VideosStore>((set, get) => ({
   loading: false,
   error: null,
   initialized: false,
+  cleanup: undefined,
 
   initialize: async () => {
     // If already initialized, don't fetch again
@@ -59,10 +61,8 @@ export const useVideosStore = create<VideosStore>((set, get) => ({
         )
         .subscribe();
 
-      // Cleanup subscription on store reset
-      return () => {
-        supabase.removeChannel(channel);
-      };
+      // Store cleanup function in state
+      set({ cleanup: () => supabase.removeChannel(channel) });
     } catch (err) {
       set({ 
         error: err as Error,

@@ -8,6 +8,7 @@ interface UserVideosStore {
   loading: Record<string, boolean>;
   error: Record<string, Error | null>;
   initialized: Record<string, boolean>;
+  cleanups: Record<string, () => void>;
   initialize: (userId: string) => Promise<void>;
   refresh: (userId: string) => Promise<void>;
   assignVideos: (videoId: string, userIds: string[]) => Promise<void>;
@@ -19,6 +20,7 @@ export const useUserVideosStore = create<UserVideosStore>((set, get) => ({
   loading: {},
   error: {},
   initialized: {},
+  cleanups: {},
 
   initialize: async (userId: string) => {
     // If already initialized for this user, don't fetch again
@@ -95,10 +97,10 @@ export const useUserVideosStore = create<UserVideosStore>((set, get) => ({
         )
         .subscribe();
 
-      // Cleanup subscription on store reset
-      return () => {
-        supabase.removeChannel(channel);
-      };
+      // Store cleanup function in state
+      set(state => ({
+        cleanups: { ...state.cleanups, [userId]: () => supabase.removeChannel(channel) }
+      }));
     } catch (err) {
       set(state => ({
         error: { ...state.error, [userId]: err as Error },
