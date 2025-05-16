@@ -7,6 +7,7 @@ interface DashboardStore {
   loading: boolean;
   error: Error | null;
   initialized: boolean;
+  cleanup?: () => void;
   initialize: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -16,6 +17,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
   loading: false,
   error: null,
   initialized: false,
+  cleanup: undefined,
 
   initialize: async () => {
     // If already initialized, don't fetch again
@@ -164,10 +166,13 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         )
         .subscribe();
 
-      // Cleanup subscription on store reset
-      return () => {
+      // Store cleanup function
+      const cleanup = () => {
         supabase.removeChannel(channel);
       };
+
+      // Add cleanup to store
+      set({ cleanup });
     } catch (err) {
       set({ 
         error: err as Error,

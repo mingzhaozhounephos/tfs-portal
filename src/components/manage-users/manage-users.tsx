@@ -18,6 +18,7 @@ export function ManageUsers() {
 
   const handleAssignVideo = (userId: string) => {
     setSelectedVideoId(userId);
+    setSelectedVideoTitle("Selected Video"); // This should be replaced with actual video title
     setAssignModalOpen(true);
   };
 
@@ -54,7 +55,7 @@ export function ManageUsers() {
             <UserCard 
               key={user.id} 
               user={user} 
-              onAssignVideo={handleAssignVideo}
+              onAssignVideo={(userId) => handleAssignVideo(userId)}
             />
           ))}
         </div>

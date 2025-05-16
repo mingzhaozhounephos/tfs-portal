@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUsers } from '@/hooks/use-users';
 import { useUserVideosStore } from '@/store/user-videos-store';
 import { User } from '@/types';
@@ -14,8 +14,14 @@ interface AssignVideoModalProps {
 export function AssignVideoModal({ isOpen, onClose, videoId, videoTitle }: AssignVideoModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [mounted, setMounted] = useState(false);
   const { users, loading, error, searchUsers } = useUsers();
   const { assignVideos } = useUserVideosStore();
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   if (!isOpen) return null;
 
@@ -147,9 +153,6 @@ export function AssignVideoModal({ isOpen, onClose, videoId, videoTitle }: Assig
     </div>
   );
 
-  // Use portal to render modal at the root
-  if (typeof window !== 'undefined') {
-    return createPortal(modalContent, document.body);
-  }
-  return null;
+  if (!mounted) return null;
+  return createPortal(modalContent, document.body);
 }
