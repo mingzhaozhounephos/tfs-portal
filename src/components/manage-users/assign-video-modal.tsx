@@ -1,179 +1,143 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-
+import { useState } from 'react';
+import { useUsers } from '@/hooks/use-users';
+import { useUserVideosStore } from '@/store/user-videos-store';
+import { User } from '@/types';
+import { createPortal } from 'react-dom';
 
 interface AssignVideoModalProps {
-  open: boolean;
+  isOpen: boolean;
   onClose: () => void;
-  videoId: string; // uuid of the video
+  videoId: string;
   videoTitle: string;
 }
 
-export function AssignVideoModal({ open, onClose, videoId, videoTitle }: AssignVideoModalProps) {
-  const [users, setUsers] = useState<any[]>([]);
-  const [userVideoMap, setUserVideoMap] = useState<Record<string, boolean>>({});
-  const [search, setSearch] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [assigning, setAssigning] = useState(false);
+export function AssignVideoModal({ isOpen, onClose, videoId, videoTitle }: AssignVideoModalProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const { users, loading, error, searchUsers } = useUsers();
+  const { assignVideos } = useUserVideosStore();
 
-  // Fetch users and user-video assignments
-  useEffect(() => {
-    if (!open) return;
-    setIsLoading(true);
-    async function fetchData() {
-      // Get all users
-      const { data: usersData } = await supabase.from("users").select("*");
-      // Get all user-video assignments for this video
-      const { data: userVideosData } = await supabase
-        .from("users_videos")
-        .select("user, video")
-        .eq("video", videoId);
+  if (!isOpen) return null;
 
-      // Map userId to assigned status
-      const assignedMap: Record<string, boolean> = {};
-      userVideosData?.forEach((uv: any) => {
-        assignedMap[uv.user] = true;
-      });
+  // Filtered users for search
+  const filteredUsers = searchQuery ? users.filter(
+    (user: User) =>
+      user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  ) : users;
 
-      setUsers(usersData || []);
-      setUserVideoMap(assignedMap);
-      setIsLoading(false);
-    }
-    fetchData();
-  }, [open, videoId]);
-
-  // Filter users by search
-  const filteredUsers = users.filter(
-    u =>
-      u.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-      u.email?.toLowerCase().includes(search.toLowerCase())
-  );
-
-  // Selection state
-  const [selected, setSelected] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    // Pre-check already assigned users
-    if (open) {
-      const initial: Record<string, boolean> = {};
-      Object.keys(userVideoMap).forEach(userId => {
-        if (userVideoMap[userId]) initial[userId] = true;
-      });
-      setSelected(initial);
-    }
-  }, [userVideoMap, open]);
-
-  // Select all logic
-  const allFilteredIds = filteredUsers.map(u => u.id);
-  const allSelected = allFilteredIds.every(id => selected[id]);
-  const selectedCount = Object.values(selected).filter(Boolean).length;
-
-  function handleSelectAll() {
-    const newSelected: Record<string, boolean> = { ...selected };
+  // Select All logic
+  const allSelected = filteredUsers.length > 0 && filteredUsers.every(u => selectedUsers.includes(u.id));
+  const handleSelectAll = () => {
     if (allSelected) {
-      allFilteredIds.forEach(id => { newSelected[id] = false; });
+      setSelectedUsers(selectedUsers.filter(id => !filteredUsers.some(u => u.id === id)));
     } else {
-      allFilteredIds.forEach(id => { newSelected[id] = true; });
+      setSelectedUsers([
+        ...selectedUsers,
+        ...filteredUsers.filter(u => !selectedUsers.includes(u.id)).map(u => u.id)
+      ]);
     }
-    setSelected(newSelected);
-  }
+  };
 
-  function handleToggleUser(id: string) {
-    setSelected(prev => ({ ...prev, [id]: !prev[id] }));
-  }
+  const handleUserSelect = (userId: string) => {
+    setSelectedUsers(prev =>
+      prev.includes(userId)
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
 
-  async function handleAssign() {
-    setAssigning(true);
-    const toAssign = Object.entries(selected)
-      .filter(([id, checked]) => checked && !userVideoMap[id])
-      .map(([id]) => ({ user: id, video: videoId }));
-
-    if (toAssign.length > 0) {
-      await supabase.from("users_videos").insert(toAssign);
+  const handleAssign = async () => {
+    try {
+      await assignVideos(videoId, selectedUsers);
+      onClose();
+    } catch (err) {
+      console.error('Failed to assign videos:', err);
     }
-    setAssigning(false);
-    onClose();
-  }
+  };
 
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
-        <button
-          className="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl"
-          onClick={onClose}
-          aria-label="Close"
-        >
-          &times;
-        </button>
-        <h2 className="text-lg font-bold mb-1">Assign Video to Users</h2>
-        <p className="text-sm text-gray-600 mb-4">
-          Select users to assign <span className="font-semibold">&quot;{videoTitle}&quot;</span> to.
-        </p>
+  // Modal content
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+      {/* Overlay: semi-transparent black */}
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      {/* Modal */}
+      <div className="relative bg-white rounded-xl border border-gray-200 p-6 w-full max-w-md mx-auto shadow-lg z-10 flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-semibold">Assign Video to Users</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-black text-xl px-2" aria-label="Close">&times;</button>
+        </div>
+        {/* Subtitle with video title */}
+        <div className="text-sm text-gray-600 mb-4">
+          Select users to assign <span className="font-semibold">"{videoTitle}"</span> to.
+        </div>
+        {/* Search */}
         <input
-          className="w-full border rounded px-3 py-2 mb-3"
-          style={{ borderColor: 'var(--border-default)' }}
+          type="text"
           placeholder="Search users..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          className="w-full px-3 py-2 border border-[#e6e6e6] rounded-md mb-3"
         />
-        <div className="max-h-64 overflow-y-auto border rounded mb-3" style={{ borderColor: 'var(--border-default)' }}>
-          <div className="flex items-center px-3 py-2 border-b" style={{ borderBottom: '1px solid var(--border-default)' }}>
-            <input
-              type="checkbox"
-              checked={allSelected}
-              onChange={handleSelectAll}
-              className="mr-2"
-            />
-            <span className="text-sm font-medium">Select All ({filteredUsers.length})</span>
-          </div>
-          {isLoading ? (
-            <div className="p-4 text-center text-gray-500">Loading...</div>
+        {/* User List */}
+        <div className="flex-1 overflow-y-auto mb-4 border border-[#e6e6e6] ">
+          {loading ? (
+            <p className="p-4">Loading users...</p>
+          ) : error ? (
+            <p className="p-4 text-red-500">Error loading users: {error.message}</p>
           ) : (
-            filteredUsers.map(user => (
-              <label
-                key={user.id}
-                className="flex items-center px-3 py-2 cursor-pointer hover:bg-gray-50"
-              >
+            <>
+              <div className="flex items-center px-3 py-2 border border-[#e6e6e6] bg-white sticky top-0 z-10">
                 <input
                   type="checkbox"
-                  checked={!!selected[user.id]}
-                  onChange={() => handleToggleUser(user.id)}
+                  checked={allSelected}
+                  onChange={handleSelectAll}
                   className="mr-2"
                 />
-                <span className="flex-1">
-                  <span className="font-medium">{user.full_name || user.email}</span>
-                  <span className="block text-xs text-gray-500">{user.email}</span>
-                </span>
-                <span className={`inline-block text-xs font-semibold rounded-full px-2 py-0.5 ml-2
-                  ${user.role === "admin"
-                    ? "bg-gray-200 text-gray-800 border border-gray-300"
-                    : "bg-gray-100 text-gray-700 border border-gray-200"
-                  }`}>
-                  {user.role}
-                </span>
-              </label>
-            ))
+                <span className="text-sm font-medium select-none">Select All ({filteredUsers.length})</span>
+              </div>
+              {filteredUsers.length === 0 ? (
+                <div className="p-4 text-gray-500 text-sm">No users found.</div>
+              ) : (
+                filteredUsers.map((user: User) => (
+                  <div
+                    key={user.id}
+                    className="flex items-center h-14 px-3 cursor-pointer hover:bg-gray-50"
+                    onClick={() => handleUserSelect(user.id)}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedUsers.includes(user.id)}
+                      onChange={() => handleUserSelect(user.id)}
+                      className="mr-2"
+                      onClick={e => e.stopPropagation()}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm truncate">{user.email}</div>
+                      <div className="text-xs text-gray-500 truncate">{user.full_name}</div>
+                    </div>
+                    <span className={`ml-2 px-2 py-0.5 rounded text-xs font-semibold ${user.role === 'admin' ? 'bg-gray-200 text-gray-700' : 'bg-blue-100 text-blue-700'}`}>{user.role}</span>
+                  </div>
+                ))
+              )}
+            </>
           )}
         </div>
-        <div className="flex justify-between items-center mt-2">
-          <span className="text-xs text-gray-500">{selectedCount} users selected</span>
+        {/* Footer */}
+        <div className="flex items-center justify-between mt-2">
+          <span className="text-xs text-gray-500">{selectedUsers.length} users selected</span>
           <div className="flex gap-2">
             <button
-              type="button"
-              className="px-4 py-2 rounded border"
-              style={{ borderColor: 'var(--border-default)' }}
               onClick={onClose}
-              disabled={assigning}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
-              type="button"
-              className="px-4 py-2 rounded bg-black text-white"
               onClick={handleAssign}
-              disabled={assigning}
+              disabled={selectedUsers.length === 0}
+              className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Assign Video
             </button>
@@ -182,4 +146,10 @@ export function AssignVideoModal({ open, onClose, videoId, videoTitle }: AssignV
       </div>
     </div>
   );
+
+  // Use portal to render modal at the root
+  if (typeof window !== 'undefined') {
+    return createPortal(modalContent, document.body);
+  }
+  return null;
 }

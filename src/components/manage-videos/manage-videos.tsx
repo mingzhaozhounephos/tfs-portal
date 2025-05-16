@@ -129,7 +129,7 @@ export function ManageVideos() {
   );
 
   return (
-    <div className="flex-1 p-8 bg-[#f6fbf9] min-h-screen">
+    <div className="flex-1 p-8 bg-[#F7F9FA] min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Manage Training Videos</h1>
         <button

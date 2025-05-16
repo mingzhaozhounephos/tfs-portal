@@ -123,7 +123,7 @@ export default function MyTrainingVideosPage() {
   }, [videos, filter, search]);
 
   return (
-    <div className="flex bg-[#f6fbf9] min-h-screen h-screen">
+    <div className="flex bg-[#F7F9FA] min-h-screen h-screen">
       <SideMenu role="driver" active="my-training-videos" onNavigate={() => {}} />
       <main className="flex-1 p-8 h-screen overflow-y-auto">
         <h1 className="text-3xl font-bold mb-6">My Training Videos</h1>

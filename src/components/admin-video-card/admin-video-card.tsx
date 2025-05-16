@@ -216,7 +216,7 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
     Assign to Users
   </button>
   <AssignVideoModal
-    open={assignModalOpen}
+    isOpen={assignModalOpen}
     onClose={() => setAssignModalOpen(false)}
     videoId={video.id}
     videoTitle={video.title}

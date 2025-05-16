@@ -100,7 +100,7 @@ export function DriverDashboard() {
   const userEmail = user?.email || '';
 
   return (
-    <div className="flex bg-[#f6fbf9] min-h-screen h-screen">
+    <div className="flex bg-[#F7F9FA] min-h-screen h-screen">
       <SideMenu role="driver" active="dashboard" onNavigate={() => {}} />
       <main className="flex-1 p-8 h-screen overflow-y-auto">
         <div className="flex justify-between items-center mb-6">

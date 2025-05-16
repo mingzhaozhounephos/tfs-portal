@@ -53,8 +53,9 @@ export function UserFormModal({ open, onClose, onSuccess }: UserFormModalProps) 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative z-10">
         <button
           className="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl"
           onClick={onClose}
@@ -70,7 +71,7 @@ export function UserFormModal({ open, onClose, onSuccess }: UserFormModalProps) 
           <div>
             <label className="block text-sm mb-1">Full Name</label>
             <input
-              className="w-full border rounded px-3 py-2"
+              className="w-full border border-[#e6e6e6] rounded px-3 py-2"
               value={name}
               onChange={e => setName(e.target.value)}
               required
@@ -80,7 +81,7 @@ export function UserFormModal({ open, onClose, onSuccess }: UserFormModalProps) 
           <div>
             <label className="block text-sm mb-1">Email</label>
             <input
-              className="w-full border rounded px-3 py-2"
+              className="w-full border border-[#e6e6e6] rounded px-3 py-2"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
@@ -91,7 +92,7 @@ export function UserFormModal({ open, onClose, onSuccess }: UserFormModalProps) 
           <div>
             <label className="block text-sm mb-1">Role</label>
             <select
-              className="w-full border rounded px-3 py-2"
+              className="w-full border border-[#e6e6e6]  rounded px-3 py-2"
               value={role}
               onChange={e => setRole(e.target.value)}
               required
@@ -104,7 +105,7 @@ export function UserFormModal({ open, onClose, onSuccess }: UserFormModalProps) 
           <div className="flex justify-end gap-2 mt-4">
             <button
               type="button"
-              className="px-4 py-2 rounded border"
+              className="px-4 py-2 rounded border border-[#e6e6e6]"
               onClick={onClose}
               disabled={isLoading}
             >
@@ -112,7 +113,7 @@ export function UserFormModal({ open, onClose, onSuccess }: UserFormModalProps) 
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded bg-black text-white"
+              className="px-4 py-2 rounded bg-black text-white border border-[#e6e6e6]"
               disabled={isLoading}
             >
               Add User
