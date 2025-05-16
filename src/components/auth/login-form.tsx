@@ -20,9 +20,8 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
       const { data } = await supabase.auth.getSession();
       if (data.session) {
         router.replace("/dashboard");
-      } else {
-        router.replace("/login");
       }
+      // Do nothing if not logged in; let the user log in
     }
     checkSession();
   }, [router]);
