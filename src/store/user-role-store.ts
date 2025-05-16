@@ -6,6 +6,7 @@ interface UserRoleStore {
   loading: boolean;
   error: Error | null;
   initialized: boolean;
+  cleanup?: () => void;
   initialize: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -15,6 +16,7 @@ export const useUserRoleStore = create<UserRoleStore>((set, get) => ({
   loading: false,
   error: null,
   initialized: false,
+  cleanup: undefined,
 
   initialize: async () => {
     // If already initialized, don't fetch again
@@ -22,53 +24,64 @@ export const useUserRoleStore = create<UserRoleStore>((set, get) => ({
 
     set({ loading: true });
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+
       if (!session) {
-        set({ role: null, loading: false });
+        set({ 
+          role: null,
+          loading: false,
+          initialized: true 
+        });
         return;
       }
 
-      const { data, error } = await supabase
-        .from("users")
-        .select("role")
-        .eq("email", session.user.email)
+      const { data: userRole, error: roleError } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', session.user.id)
         .single();
 
-      if (error) throw error;
+      if (roleError) throw roleError;
 
       set({ 
-        role: data.role,
-        initialized: true,
-        loading: false 
+        role: userRole?.role || null,
+        loading: false,
+        initialized: true 
       });
 
-      // Subscribe to real-time changes
-      const channel = supabase
-        .channel('user-role-changes')
-        .on(
-          'postgres_changes',
-          { 
-            event: '*', 
-            schema: 'public', 
-            table: 'users',
-            filter: `email=eq.${session.user.email}`
-          },
-          async (payload) => {
-            if (payload.new) {
-              set({ role: payload.new.role });
-            }
-          }
-        )
-        .subscribe();
+      // Subscribe to auth changes
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_OUT') {
+          set({ role: null });
+          return;
+        }
 
-      // Cleanup subscription on store reset
-      return () => {
-        supabase.removeChannel(channel);
+        if (session) {
+          const { data: userRole, error: roleError } = await supabase
+            .from('users')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+
+          if (!roleError) {
+            set({ role: userRole?.role || null });
+          }
+        }
+      });
+
+      // Store cleanup function
+      const cleanup = () => {
+        subscription.unsubscribe();
       };
+
+      // Add cleanup to store
+      set({ cleanup });
     } catch (err) {
       set({ 
         error: err as Error,
-        loading: false 
+        loading: false,
+        initialized: true 
       });
     }
   },
@@ -76,22 +89,27 @@ export const useUserRoleStore = create<UserRoleStore>((set, get) => ({
   refresh: async () => {
     set({ loading: true });
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+
       if (!session) {
-        set({ role: null, loading: false });
+        set({ 
+          role: null,
+          loading: false 
+        });
         return;
       }
 
-      const { data, error } = await supabase
-        .from("users")
-        .select("role")
-        .eq("email", session.user.email)
+      const { data: userRole, error: roleError } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', session.user.id)
         .single();
 
-      if (error) throw error;
+      if (roleError) throw roleError;
 
       set({ 
-        role: data.role,
+        role: userRole?.role || null,
         loading: false 
       });
     } catch (err) {
