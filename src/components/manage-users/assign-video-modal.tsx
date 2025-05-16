@@ -70,7 +70,7 @@ export function AssignVideoModal({ isOpen, onClose, videoId, videoTitle }: Assig
         </div>
         {/* Subtitle with video title */}
         <div className="text-sm text-gray-600 mb-4">
-          Select users to assign <span className="font-semibold">"{videoTitle}"</span> to.
+          Select users to assign <span className="font-semibold">&quot;{videoTitle}&quot;</span> to.
         </div>
         {/* Search */}
         <input
