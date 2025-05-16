@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { Bell, Users, Activity, Play } from "lucide-react";
 import { useAuth } from '@/hooks/use-auth';
 import { UserCard } from "../manage-users/user-card";
+import { VideoFormModal } from "@/components/manage-videos/video-form-modal";
 
 const videoData = [
   {
@@ -84,6 +85,8 @@ export function AdminDashboard() {
   const [adminName, setAdminName] = useState<string>("Administrator");
   const [adminEmail, setAdminEmail] = useState<string>("");
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
+  const [editingVideo, setEditingVideo] = useState<any>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   function isThisWeek(dateString: string) {
     const date = new Date(dateString);
@@ -340,6 +343,7 @@ export function AdminDashboard() {
                     key={i}
                     video={video}
                     showEdit={true}
+                    onEdit={() => { setEditingVideo(video); setModalOpen(true); }}
                     onAssignToUsers={() => {/* handle assign to users */}}
                   />
                 ))}
@@ -351,6 +355,14 @@ export function AdminDashboard() {
                 ))}
               </div>
             )}
+            {/* Video Edit Modal */}
+            <VideoFormModal
+              open={modalOpen}
+              onClose={() => setModalOpen(false)}
+              onSuccess={() => {/* Optionally refresh videos here */}}
+              video={editingVideo}
+              adminUserId={user?.id || ""}
+            />
           </>
         )}
       </main>
