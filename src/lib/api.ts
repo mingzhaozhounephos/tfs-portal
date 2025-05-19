@@ -91,10 +91,28 @@ export const api = {
       return data as UserVideo[];
     },
 
-    async assign(videoId: string, userIds: string[]) {
-      const assignments = userIds.map(userId => ({
+    async assign(userId: string, videoIds: string[]) {
+      // First, get existing assignments for this user
+      const { data: existingAssignments, error: fetchError } = await supabase
+        .from('users_videos')
+        .select('video')
+        .eq('user', userId);
+      
+      if (fetchError) throw fetchError;
+
+      // Filter out videos that are already assigned
+      const existingVideoIds = new Set(existingAssignments.map(a => a.video));
+      const newVideoIds = videoIds.filter(id => !existingVideoIds.has(id));
+
+      if (newVideoIds.length === 0) {
+        return existingAssignments as UserVideo[];
+      }
+
+      // Create new assignments only for videos that aren't already assigned
+      const assignments = newVideoIds.map(videoId => ({
         user: userId,
-        video: videoId
+        video: videoId,
+        is_completed: false
       }));
 
       const { data, error } = await supabase
@@ -103,7 +121,9 @@ export const api = {
         .select();
       
       if (error) throw error;
-      return data as UserVideo[];
+
+      // Return both existing and new assignments
+      return [...existingAssignments, ...data] as UserVideo[];
     },
 
     async getUserStats(userId: string): Promise<UserStats> {

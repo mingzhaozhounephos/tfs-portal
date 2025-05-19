@@ -1,0 +1,162 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useVideos } from '@/hooks/use-videos';
+import { Video, User } from '@/types';
+
+interface AssignVideosModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  user: User;
+  assignedVideoIds: string[];
+  onSave: (selectedVideoIds: string[]) => Promise<void>;
+}
+
+export function AssignVideosModal({ isOpen, onClose, user, assignedVideoIds, onSave }: AssignVideosModalProps) {
+  const { videos, loading } = useVideos();
+  const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState<string[]>(assignedVideoIds);
+  const [mounted, setMounted] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => { setMounted(true); return () => setMounted(false); }, []);
+  useEffect(() => { setSelected(assignedVideoIds); }, [assignedVideoIds, isOpen]);
+
+  if (!isOpen || !mounted) return null;
+
+  // Filter and group videos
+  const filteredVideos = videos.filter(v =>
+    v.title.toLowerCase().includes(search.toLowerCase()) ||
+    v.description.toLowerCase().includes(search.toLowerCase())
+  );
+  const categories = Array.from(new Set(filteredVideos.map(v => v.category)));
+  const videosByCategory = categories.map(cat => ({
+    category: cat,
+    videos: filteredVideos.filter(v => v.category === cat)
+  }));
+
+  // Select logic
+  const allSelected = filteredVideos.length > 0 && filteredVideos.every(v => selected.includes(v.id));
+  const handleSelectAll = () => {
+    if (allSelected) setSelected(selected.filter(id => !filteredVideos.some(v => v.id === id)));
+    else setSelected([...selected, ...filteredVideos.filter(v => !selected.includes(v.id)).map(v => v.id)]);
+  };
+  const handleGroupSelect = (cat: string) => {
+    const groupIds = videosByCategory.find(g => g.category === cat)?.videos.map(v => v.id) || [];
+    const allGroupSelected = groupIds.length > 0 && groupIds.every(id => selected.includes(id));
+    if (allGroupSelected) setSelected(selected.filter(id => !groupIds.includes(id)));
+    else setSelected([...selected, ...groupIds.filter(id => !selected.includes(id))]);
+  };
+  const handleVideoSelect = (id: string) => {
+    setSelected(sel => sel.includes(id) ? sel.filter(x => x !== id) : [...sel, id]);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    await onSave(selected);
+    setSaving(false);
+    onClose();
+  };
+
+  // Modal content
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-xl border border-gray-200 p-6 w-full max-w-xl mx-auto shadow-lg z-10 flex flex-col max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-xl font-bold">Assign Videos to {user.full_name}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-black text-xl px-2" aria-label="Close">&times;</button>
+        </div>
+        <div className="text-sm text-gray-600 mb-4">Select videos to assign to this user.</div>
+        {/* Search */}
+        <input
+          type="text"
+          placeholder="Search videos..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full px-3 py-2 border border-[#e6e6e6] rounded-md mb-3"
+        />
+        {/* Select All */}
+        <div className="flex items-center mb-2">
+          <input
+            type="checkbox"
+            checked={allSelected}
+            onChange={handleSelectAll}
+            className="mr-2"
+          />
+          <span className="text-sm font-medium select-none">Select All ({filteredVideos.length})</span>
+        </div>
+        {/* Grouped videos */}
+        <div className="flex-1 overflow-y-auto mb-4">
+          {loading ? (
+            <div className="p-4 text-center text-gray-500">Loading videos...</div>
+          ) : videosByCategory.length === 0 ? (
+            <div className="p-4 text-center text-gray-400">No videos found.</div>
+          ) : (
+            videosByCategory.map(group => {
+              const groupIds = group.videos.map(v => v.id);
+              const allGroupSelected = groupIds.length > 0 && groupIds.every(id => selected.includes(id));
+              return (
+                <div key={group.category} className="mb-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <input
+                      type="checkbox"
+                      checked={allGroupSelected}
+                      onChange={() => handleGroupSelect(group.category)}
+                      className="mr-2"
+                    />
+                    <span className={`inline-block rounded-full px-3 py-0.5 text-xs font-bold bg-gray-100 text-gray-700 border border-gray-300 w-fit`}>{group.category}</span>
+                    <span className="text-xs text-gray-500 ml-2">{group.videos.length} videos</span>
+                  </div>
+                  <div className="divide-y divide-gray-100 bg-gray-50 rounded-lg border border-gray-100">
+                    {group.videos.map(video => (
+                      <div key={video.id} className="flex items-center px-3 py-2">
+                        <input
+                          type="checkbox"
+                          checked={selected.includes(video.id)}
+                          onChange={() => handleVideoSelect(video.id)}
+                          className="mr-2"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm truncate">{video.title}</div>
+                          <div className="text-xs text-gray-500 truncate">{video.description}</div>
+                        </div>
+                        {assignedVideoIds.includes(video.id) && (
+                          <span className="ml-2 px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-700">Assigned</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+        {/* Footer */}
+        <div className="flex items-center justify-between mt-2">
+          <span className="text-xs text-gray-500">{selected.length} videos selected</span>
+          <div className="flex gap-2">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              disabled={saving}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={selected.length === 0 || saving}
+              className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Save Assignments
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return createPortal(modalContent, document.body);
+} 
