@@ -2,6 +2,7 @@ import { Users, Calendar, Video, CheckCircle, Mail } from "lucide-react";
 import { User } from "@/types";
 import { useUserVideos } from "@/hooks/use-user-videos";
 import { format } from 'date-fns';
+import { useRouter } from 'next/navigation';
 
 interface UserCardProps {
   user: User;
@@ -10,6 +11,7 @@ interface UserCardProps {
 
 export function UserCard({ user, onAssignVideo }: UserCardProps) {
   const { stats, loading } = useUserVideos(user.id);
+  const router = useRouter();
 
   return (
     <div className="bg-white rounded-xl shadow p-6 flex flex-col gap-2 border" style={{ borderColor: 'var(--border-default)' }}>
@@ -48,11 +50,11 @@ export function UserCard({ user, onAssignVideo }: UserCardProps) {
         </div>
       </div>
       <button
-        onClick={() => onAssignVideo(user.id)}
+        onClick={() => router.push(`/users/${user.id}`)}
         className="w-full border rounded py-1 text-sm font-medium"
         style={{ borderColor: 'var(--border-default)' }}
       >
-        Assign Video
+        View Details
       </button>
     </div>
   );

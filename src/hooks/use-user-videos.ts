@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect } from 'react';
 import { useUserVideosStore } from '@/store/user-videos-store';
 import { UserVideo, UserStats } from '@/types';

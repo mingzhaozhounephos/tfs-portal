@@ -31,11 +31,11 @@ export const useUserVideosStore = create<UserVideosStore>((set, get) => ({
     }));
 
     try {
-      // Fetch initial data
+      // Fetch initial data with join
       const [videosResponse, statsResponse] = await Promise.all([
         supabase
           .from('users_videos')
-          .select('*')
+          .select('*, video:videos(*)')
           .eq('user', userId),
         supabase
           .from('users_videos')
@@ -46,7 +46,7 @@ export const useUserVideosStore = create<UserVideosStore>((set, get) => ({
       if (videosResponse.error) throw videosResponse.error;
       if (statsResponse.error) throw statsResponse.error;
 
-      const videos = videosResponse.data as UserVideo[];
+      const videos = videosResponse.data as any[]; // will type below
       const numAssigned = statsResponse.data.length;
       const completed = statsResponse.data.filter(uv => uv.is_completed).length;
       const completion = numAssigned === 0 ? 0 : Math.round((completed / numAssigned) * 100);
@@ -74,7 +74,7 @@ export const useUserVideosStore = create<UserVideosStore>((set, get) => ({
             const [videosResponse, statsResponse] = await Promise.all([
               supabase
                 .from('users_videos')
-                .select('*')
+                .select('*, video:videos(*)')
                 .eq('user', userId),
               supabase
                 .from('users_videos')
@@ -83,7 +83,7 @@ export const useUserVideosStore = create<UserVideosStore>((set, get) => ({
             ]);
 
             if (!videosResponse.error && !statsResponse.error) {
-              const videos = videosResponse.data as UserVideo[];
+              const videos = videosResponse.data as any[];
               const numAssigned = statsResponse.data.length;
               const completed = statsResponse.data.filter(uv => uv.is_completed).length;
               const completion = numAssigned === 0 ? 0 : Math.round((completed / numAssigned) * 100);
@@ -118,7 +118,7 @@ export const useUserVideosStore = create<UserVideosStore>((set, get) => ({
       const [videosResponse, statsResponse] = await Promise.all([
         supabase
           .from('users_videos')
-          .select('*')
+          .select('*, video:videos(*)')
           .eq('user', userId),
         supabase
           .from('users_videos')
@@ -129,7 +129,7 @@ export const useUserVideosStore = create<UserVideosStore>((set, get) => ({
       if (videosResponse.error) throw videosResponse.error;
       if (statsResponse.error) throw statsResponse.error;
 
-      const videos = videosResponse.data as UserVideo[];
+      const videos = videosResponse.data as any[];
       const numAssigned = statsResponse.data.length;
       const completed = statsResponse.data.filter(uv => uv.is_completed).length;
       const completion = numAssigned === 0 ? 0 : Math.round((completed / numAssigned) * 100);

@@ -14,12 +14,14 @@ export interface Video {
   image: string;
   created_at?: string;
   admin_user_id?: string;
+  renewal_required?: boolean;
+  duration?: string;
 }
 
 export interface UserVideo {
   id: string;
   user: string;
-  video: string;
+  video: string | Video;
   is_completed: boolean;
   last_watched?: string;
 }

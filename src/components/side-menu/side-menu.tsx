@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -14,7 +16,7 @@ const icons = {
 interface SideMenuProps {
   role: "admin" | "driver";
   active: string;
-  onNavigate: (route: string) => void;
+  onNavigate?: (route: string) => void;
 }
 
 const adminItems = [
@@ -87,7 +89,7 @@ export function SideMenu({ role, active, onNavigate }: SideMenuProps) {
               onClick={() => {
                 setOpen(false);
                 router.push(`/${item.route}`);
-                onNavigate(item.route);
+                if (onNavigate) onNavigate(item.route);
               }}
             >
               {item.icon}
