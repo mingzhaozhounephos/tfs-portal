@@ -22,5 +22,3 @@ export default function AuthPage() {
     <LoginForm onSwitchToSignUp={handleSwitchToSignUp} />
   );
 } 
-
-// testing
