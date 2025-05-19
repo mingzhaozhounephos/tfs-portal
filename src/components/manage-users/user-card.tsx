@@ -49,6 +49,7 @@ export function UserCard({ user, onAssignVideo }: UserCardProps) {
           </span>
         </div>
       </div>
+      
       <button
         onClick={() => router.push(`/users/${user.id}`)}
         className="w-full border rounded py-1 text-sm font-medium"
