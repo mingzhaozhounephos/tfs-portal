@@ -16,6 +16,7 @@ export interface Video {
   admin_user_id?: string;
   renewal_required?: boolean;
   duration?: string;
+  youtube_url?: string;
 }
 
 export interface UserVideo {
