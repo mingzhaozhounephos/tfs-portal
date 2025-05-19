@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useUserVideos } from "@/hooks/use-user-videos";
 
 interface AssignedVideosToggleProps {
   userId: string;
-  onFilterChange?: (filter: string) => void;
+  onFilterChange: (filter: string) => void;
+  filter: string;
 }
 
 const FILTERS = [
@@ -18,9 +19,8 @@ const FILTERS = [
   { label: "Office", value: "office" },
 ];
 
-export function AssignedVideosToggle({ userId, onFilterChange }: AssignedVideosToggleProps) {
+export function AssignedVideosToggle({ userId, onFilterChange, filter }: AssignedVideosToggleProps) {
   const { videos, loading } = useUserVideos(userId);
-  const [filter, setFilter] = useState("all");
 
   // Compute counts for each filter
   const counts = useMemo(() => {
@@ -41,11 +41,6 @@ export function AssignedVideosToggle({ userId, onFilterChange }: AssignedVideosT
     };
   }, [videos]);
 
-  function handleFilterChange(val: string) {
-    setFilter(val);
-    onFilterChange?.(val);
-  }
-
   return (
     <div className="flex flex-wrap gap-2 mb-6">
       {FILTERS.map(f => (
@@ -53,7 +48,7 @@ export function AssignedVideosToggle({ userId, onFilterChange }: AssignedVideosT
           key={f.value}
           className={`relative px-4 py-2 rounded-full border text-sm font-medium transition
             ${filter === f.value ? "bg-black text-white border-black" : "bg-white text-black border-gray-200 hover:bg-gray-100"}`}
-          onClick={() => handleFilterChange(f.value)}
+          onClick={() => onFilterChange(f.value)}
         >
           {f.label}
           {f.value === "all" && (

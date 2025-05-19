@@ -13,12 +13,16 @@ export function AssignedVideosList({ userId, filter = "all" }: AssignedVideosLis
   const { videos, loading } = useUserVideos(userId);
 
   const filteredVideos = useMemo(() => {
-    if (filter === "pending") return videos.filter(v => !v.is_completed);
-    if (filter === "completed") return videos.filter(v => v.is_completed);
-    if (filter === "renewal") return videos.filter(v => typeof v.video === 'object' && v.video.renewal_required);
-    if (["van", "truck", "office"].includes(filter)) return videos.filter(v => typeof v.video === 'object' && v.video.category === filter);
-    return videos;
-  }, [videos, filter]);
+    // First filter by user ID
+    const userVideos = videos.filter(v => v.user === userId);
+    
+    // Then apply additional filters
+    if (filter === "pending") return userVideos.filter(v => !v.is_completed);
+    if (filter === "completed") return userVideos.filter(v => v.is_completed);
+    if (filter === "renewal") return userVideos.filter(v => typeof v.video === 'object' && v.video.renewal_required);
+    if (["van", "truck", "office"].includes(filter)) return userVideos.filter(v => typeof v.video === 'object' && v.video.category === filter);
+    return userVideos; // 'all' case
+  }, [videos, filter, userId]);
 
   if (loading) return <div className="p-8 text-center text-gray-500">Loading videos...</div>;
   if (!filteredVideos.length) return <div className="p-8 text-center text-gray-400">No videos found.</div>;

@@ -6,6 +6,8 @@ import { AssignedVideosToggle } from '@/components/manage-users/assigned-videos-
 import { AssignedVideosList } from '@/components/manage-users/assigned-videos-list';
 import { AssignVideoButton } from '@/components/manage-users/assign-video-button';
 import Link from 'next/link';
+import { User } from '@/types';
+import { UserDetailsClient } from '@/components/manage-users/user-details-client';
 
 interface UserDetailsPageProps {
   params: { id: string };
@@ -15,7 +17,6 @@ export default async function UserDetailsPage({ params }: UserDetailsPageProps) 
   const user = await api.users.getById(params.id);
   if (!user) return notFound();
 
-  // The SideMenu expects a role prop; fallback to 'driver' if missing
   return (
     <div className="flex bg-[#F7F9FA] min-h-screen h-screen">
       <SideMenu role={user.role || 'driver'} active="manage-users" />
@@ -30,8 +31,7 @@ export default async function UserDetailsPage({ params }: UserDetailsPageProps) 
           <h2 className="text-xl font-bold">Assigned Videos</h2>
           <AssignVideoButton user={user} />
         </div>
-        <AssignedVideosToggle userId={user.id} />
-        <AssignedVideosList userId={user.id} />
+        <UserDetailsClient user={user} />
       </main>
     </div>
   );

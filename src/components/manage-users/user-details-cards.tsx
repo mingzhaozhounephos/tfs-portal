@@ -10,7 +10,10 @@ interface UserDetailsCardsProps {
 }
 
 export function UserDetailsCards({ user }: UserDetailsCardsProps) {
-  const { stats, loading } = useUserVideos(user.id);
+  const { stats, loading, videos } = useUserVideos(user.id);
+
+  // Calculate completed videos count
+  const completedVideos = videos.filter(v => v.is_completed).length;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-9 gap-4 mb-8 grid-flow-col md:auto-cols-fr">
@@ -37,10 +40,10 @@ export function UserDetailsCards({ user }: UserDetailsCardsProps) {
         <div className="text-gray-500 text-sm mb-1">Training Progress</div>
         <div className="flex items-center justify-between mb-2">
           <span className="text-black font-normal text-sm">{loading ? '-' : `${stats.completion}% Complete`}</span>
-          <span className="text-gray-500 font-normal text-sm">{loading ? '-' : `0/${stats.numAssigned} videos`}</span>
+          <span className="text-gray-500 font-normal text-sm">{loading ? '-' : `${completedVideos}/${stats.numAssigned} videos`}</span>
         </div>
         <div className="w-full h-2 bg-gray-100 rounded-full">
-          <div className="h-2 rounded-full bg-gray-300" style={{ width: loading ? '0%' : `${stats.completion}%` }} />
+          <div className="h-2 rounded-full bg-green-200" style={{ width: loading ? '0%' : `${stats.completion}%` }} />
         </div>
       </div>
       {/* Assigned Videos Card */}
@@ -60,7 +63,7 @@ export function UserDetailsCards({ user }: UserDetailsCardsProps) {
         </div>
         <div className="text-3xl font-bold mb-2">{loading ? '-' : `${stats.completion}%`}</div>
         <div className="w-full bg-gray-100 rounded h-2 mt-2">
-          <div className="bg-black h-2 rounded" style={{ width: loading ? '0%' : `${stats.completion}%` }} />
+          <div className="bg-green-200 h-2 rounded" style={{ width: loading ? '0%' : `${stats.completion}%` }} />
         </div>
       </div>
       {/* Renewal Required Card */}
