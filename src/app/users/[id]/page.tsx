@@ -28,7 +28,13 @@ export default async function UserDetailsPage({ params }: UserDetailsPageProps) 
         <div className="flex justify-between items-center mt-8 mb-4">
           <h2 className="text-xl font-bold">Assigned Videos</h2>
           {/* Assign Video button can open a modal or trigger logic as needed */}
-          <button className="bg-black text-white rounded px-4 py-2 text-sm font-medium">Assign Video</button>
+          <button
+          className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-gray-900"
+          
+          >
+            <svg width="18" height="18" fill="none"><circle cx="9" cy="9" r="8" stroke="currentColor" strokeWidth="2"/><path d="M9 5v8M5 9h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            Assign Video
+          </button>
         </div>
         <AssignedVideosToggle userId={user.id} />
         <AssignedVideosList userId={user.id} />
