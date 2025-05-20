@@ -25,6 +25,8 @@ export interface UserVideo {
   video: string | Video;
   is_completed: boolean;
   last_watched?: string;
+  modified_date?: string;
+  last_action?: string;
 }
 
 export interface UserStats {

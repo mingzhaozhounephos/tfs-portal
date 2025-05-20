@@ -119,7 +119,7 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
     if (user && video.id) {
       await supabase
         .from('users_videos')
-        .update({ last_watched: new Date().toISOString() })
+        .update({ last_watched: new Date().toISOString(), modified_date: new Date().toISOString(), last_action: 'watched' })
         .eq('user', user.id)
         .eq('video', video.id);
     }
