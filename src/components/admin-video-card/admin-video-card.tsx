@@ -4,6 +4,7 @@ import { AssignVideoModal } from "@/components/manage-users/assign-video-modal";
 import { supabase } from "@/lib/supabase";
 import Image from 'next/image';
 import { useAuth } from '@/hooks/use-auth';
+import { formatDate } from '@/lib/format-date';
 
 interface AdminVideoCardProps {
   video: {
@@ -21,15 +22,6 @@ interface AdminVideoCardProps {
   onEdit?: () => void;
   showEdit?: boolean;
   onAssignToUsers?: () => void;
-}
-
-function formatDate(date: string | Date) {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
 }
 
 function getYouTubeId(url?: string) {

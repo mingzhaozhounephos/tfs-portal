@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { formatDate } from '@/lib/format-date';
 import { SideMenu } from '@/components/side-menu/side-menu';
 import { TrainingVideosGrid } from '@/components/training-videos/training-videos-grid';
 import { supabase } from '@/lib/supabase';
@@ -21,12 +22,6 @@ interface Video {
   is_completed?: boolean;
   modified_date?: string;
   last_action?: string;
-}
-
-function formatDate(dateString?: string) {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 function getYouTubeId(url?: string) {
@@ -246,10 +241,15 @@ export function DriverDashboard() {
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center text-xs text-gray-500 gap-4 mb-2">
-                      <span>{video.created_at ? formatDate(video.created_at) : ''}</span>
-                      <span>&#9679;</span>
-                      <span>{video.duration}</span>
+                    <div className="flex items-center text-xs text-gray-500 gap-6 mb-2">
+                      <div className="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-calendar w-3 h-3 mr-1"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
+                        <span>{video.created_at ? formatDate(video.created_at) : ''}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock w-3 h-3 mr-1"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span>{video.duration}</span>
+                      </div>
                     </div>
                     <button
                       className="mt-auto bg-black text-white rounded-lg py-2 font-medium hover:bg-gray-900 transition"
