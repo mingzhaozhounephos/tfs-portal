@@ -11,27 +11,28 @@ import Link from 'next/link';
 import { User } from '@/types';
 import { UserDetailsClient } from '@/components/manage-users/user-details-client';
 import { useUserRole } from '@/hooks/use-user-role';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 
 interface UserDetailsPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function UserDetailsPage({ params }: UserDetailsPageProps) {
   const [user, setUser] = useState<User | null>(null);
   const { role } = useUserRole();
+  const { id } = use(params);
 
   useEffect(() => {
     async function fetchUser() {
       try {
-        const userData = await api.users.getById(params.id);
+        const userData = await api.users.getById(id);
         setUser(userData);
       } catch (error) {
         console.error('Error fetching user:', error);
       }
     }
     fetchUser();
-  }, [params.id]);
+  }, [id]);
 
   if (!user) {
     return (
