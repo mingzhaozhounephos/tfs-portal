@@ -12,6 +12,7 @@ interface VideoFormModalProps {
     youtube_url: string;
     category: string;
     duration?: string;
+    is_annual_renewal?: boolean;
   };
   adminUserId: string;
 }
@@ -30,6 +31,7 @@ export function VideoFormModal({
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [category, setCategory] = useState(categories[0]);
   const [duration, setDuration] = useState("");
+  const [isAnnualRenewal, setIsAnnualRenewal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -39,12 +41,14 @@ export function VideoFormModal({
       setYoutubeUrl(video.youtube_url || "");
       setCategory(video.category || categories[0]);
       setDuration(video.duration || "");
+      setIsAnnualRenewal(video.is_annual_renewal || false);
     } else {
       setTitle("");
       setDescription("");
       setYoutubeUrl("");
       setCategory(categories[0]);
       setDuration("");
+      setIsAnnualRenewal(false);
     }
   }, [video, open]);
 
@@ -59,6 +63,7 @@ export function VideoFormModal({
       category,
       duration,
       admin_user_id: adminUserId,
+      is_annual_renewal: isAnnualRenewal,
     };
 
     let error;
@@ -159,6 +164,18 @@ export function VideoFormModal({
               onChange={e => setDuration(e.target.value)}
               placeholder="10:00"
             />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="isAnnualRenewal"
+              checked={isAnnualRenewal}
+              onChange={e => setIsAnnualRenewal(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300"
+            />
+            <label htmlFor="isAnnualRenewal" className="text-sm">
+              Requires annual renewal
+            </label>
           </div>
           <div className="flex justify-end gap-2 mt-4">
             <button
