@@ -1,6 +1,3 @@
-is_annual_renewal field with boolean type is added in the supabase 'users_videos' table.
-assigned_date field with timestamptz is added in the supabase 'users_videos' table.
-
 D - add the is_annual_renewal field in a video form when create the 'videos' record
 
 D - when assigning the video to users
@@ -8,7 +5,7 @@ D - when assigning the video to users
         has record: don't change
         has record but unselect: remove the 'users_videos' record.(check if that's the case)
 
-when clicks on 'watch it again(required)'
+D - when clicks on 'watch it again(required)'
     reset the assigned_date
 
 D - watching video in driver dashboard, open the modal just like the way to see video in admin dashboard.
