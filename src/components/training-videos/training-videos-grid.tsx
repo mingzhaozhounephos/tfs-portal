@@ -39,13 +39,10 @@ function getYouTubeThumbnail(videoId: string) {
 }
 
 function isAnnualRenewalDue(video: TrainingVideo): boolean {
-  console.log('video', video);
-
   if (!video.is_annual_renewal || !video.assigned_date) return false;
   const assigned = new Date(video.assigned_date);
   const now = new Date();
   // 1 year = 365 days
-  console.log('need renewal', (now.getTime() - assigned.getTime()) > 365 * 24 * 60 * 60 * 1000);
   return (now.getTime() - assigned.getTime()) > 365 * 24 * 60 * 60 * 1000;
 }
 
@@ -55,10 +52,10 @@ export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGr
   async function handleStartTraining(video: TrainingVideo) {
     if (!user || !video.id) return;
     try {
-      // Find the users_videos record for this user and video
+      // Find the users_videos record for this user and video, join videos table
       const { data: userVideo, error } = await supabase
         .from('users_videos')
-        .select('*')
+        .select('*, video:videos(*)')
         .eq('user', user.id)
         .eq('video', video.id)
         .single();
@@ -66,18 +63,35 @@ export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGr
         // Optionally handle error (e.g., not assigned)
         return;
       }
-      // Update the record
-      await supabase
-        .from('users_videos')
-        .update({
-          last_watched: new Date().toISOString(),
-          modified_date: new Date().toISOString(),
-          last_action: userVideo.is_completed ? 'completed' : 'watched',
-        })
-        .eq('id', userVideo.id);
+      const now = new Date().toISOString();
+      // If annual renewal is due, reset assigned_date and completion
+      const isAnnualRenewal = userVideo.video?.is_annual_renewal && userVideo.assigned_date &&
+        (new Date().getTime() - new Date(userVideo.assigned_date).getTime() > 365 * 24 * 60 * 60 * 1000);
+      if (isAnnualRenewal) {
+        await supabase
+          .from('users_videos')
+          .update({
+            last_watched: now,
+            modified_date: now,
+            assigned_date: now,
+            last_action: 'watched',
+            is_completed: false,
+          })
+          .eq('id', userVideo.id);
+      } else {
+        await supabase
+          .from('users_videos')
+          .update({
+            last_watched: now,
+            modified_date: now,
+            last_action: userVideo.is_completed ? 'completed' : 'watched',
+          })
+          .eq('id', userVideo.id);
+      }
     } catch (err) {
       // Optionally handle error
     }
+
     if (onStartTraining) onStartTraining(video);
   }
 
