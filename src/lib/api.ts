@@ -126,7 +126,9 @@ export const api = {
           user: userId,
           video: videoId,
           is_completed: false,
-          assigned_date: currentDate
+          assigned_date: currentDate,
+          last_watched: currentDate,
+          last_action: 'watched',
         }));
 
         const { error: insertError } = await supabase

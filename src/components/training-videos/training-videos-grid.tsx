@@ -1,6 +1,8 @@
 import React from 'react';
 import Image from 'next/image';
 import { formatDate } from '@/lib/format-date';
+import { useAuth } from '@/hooks/use-auth';
+import { supabase } from '@/lib/supabase';
 
 interface TrainingVideo {
   id: string;
@@ -37,6 +39,37 @@ function getYouTubeThumbnail(videoId: string) {
 }
 
 export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGridProps) {
+  const { user } = useAuth();
+
+  async function handleStartTraining(video: TrainingVideo) {
+    if (!user || !video.id) return;
+    try {
+      // Find the users_videos record for this user and video
+      const { data: userVideo, error } = await supabase
+        .from('users_videos')
+        .select('*')
+        .eq('user', user.id)
+        .eq('video', video.id)
+        .single();
+      if (error) {
+        // Optionally handle error (e.g., not assigned)
+        return;
+      }
+      // Update the record
+      await supabase
+        .from('users_videos')
+        .update({
+          last_watched: new Date().toISOString(),
+          modified_date: new Date().toISOString(),
+          last_action: 'watched',
+        })
+        .eq('id', userVideo.id);
+    } catch (err) {
+      // Optionally handle error
+    }
+    if (onStartTraining) onStartTraining(video);
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {videos.map((video, idx) => {
@@ -75,7 +108,10 @@ export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGr
             >
               {video.description}
             </div>
-            <div className="relative aspect-video w-full overflow-hidden rounded-lg group cursor-pointer mb-2" onClick={() => youtubeId && onStartTraining?.(video)}>
+            <div
+              className="relative aspect-video w-full overflow-hidden rounded-lg group cursor-pointer mb-2"
+              onClick={() => handleStartTraining(video)}
+            >
               <Image
                 src={thumbnailUrl}
                 alt={video.title}
@@ -114,7 +150,7 @@ export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGr
             </div>
             <button
               className="mt-auto bg-black text-white rounded-lg py-2 font-medium hover:bg-gray-900 transition"
-              onClick={() => onStartTraining?.(video)}
+              onClick={() => handleStartTraining(video)}
             >
               Start Training
             </button>
