@@ -128,7 +128,6 @@ export const api = {
           is_completed: false,
           assigned_date: currentDate,
           last_watched: currentDate,
-          last_action: 'watched',
         }));
 
         const { error: insertError } = await supabase

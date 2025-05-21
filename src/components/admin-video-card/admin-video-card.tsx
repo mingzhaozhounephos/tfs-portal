@@ -101,7 +101,7 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
           .update({
             last_watched: new Date().toISOString(),
             modified_date: new Date().toISOString(),
-            last_action: 'watched',
+            last_action: existingRecord.is_completed ? 'completed' : 'watched',
             assigned_date: existingRecord.assigned_date
           })
           .eq('user', user.id)

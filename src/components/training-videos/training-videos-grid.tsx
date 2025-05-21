@@ -61,7 +61,7 @@ export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGr
         .update({
           last_watched: new Date().toISOString(),
           modified_date: new Date().toISOString(),
-          last_action: 'watched',
+          last_action: userVideo.is_completed ? 'completed' : 'watched',
         })
         .eq('id', userVideo.id);
     } catch (err) {

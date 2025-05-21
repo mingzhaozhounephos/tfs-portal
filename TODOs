@@ -13,6 +13,6 @@ when clicks on 'watch it again(required)'
 
 D - watching video in driver dashboard, open the modal just like the way to see video in admin dashboard.
 
-when watching video, when watch nearly the end of the video, set the is_completed to true.
+D - when watching video, when watch nearly the end of the video, set the is_completed to true.
 
 refactor the code according to Tyler's suggestion.
