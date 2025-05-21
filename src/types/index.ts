@@ -27,6 +27,8 @@ export interface UserVideo {
   last_watched?: string;
   modified_date?: string;
   last_action?: string;
+  is_annual_renewal: boolean;
+  assigned_date: string;
 }
 
 export interface UserStats {

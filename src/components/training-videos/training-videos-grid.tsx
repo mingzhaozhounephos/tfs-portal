@@ -18,6 +18,7 @@ interface TrainingVideo {
   is_completed?: boolean;
   modified_date?: string;
   last_action?: string;
+  is_annual_renewal?: boolean;
 }
 
 interface TrainingVideosGridProps {
