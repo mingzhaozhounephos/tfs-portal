@@ -223,6 +223,7 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
         onClose={() => setShowModal(false)}
         title={video.title}
         youtubeId={youtubeId}
+        videoId={video.id}
       />
     </div>
   );

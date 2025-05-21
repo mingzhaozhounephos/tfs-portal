@@ -211,6 +211,7 @@ export function DriverDashboard() {
           onClose={() => setShowModal(false)}
           title={modalVideo?.title || ''}
           youtubeId={getYouTubeId(modalVideo?.youtube_url)}
+          videoId={modalVideo?.id || ''}
         />
       </main>
     </div>

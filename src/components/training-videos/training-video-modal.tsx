@@ -1,13 +1,82 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/hooks/use-auth';
+
+// Extend the Window interface for YT and onYouTubeIframeAPIReady
+declare global {
+  interface Window {
+    YT: any;
+    onYouTubeIframeAPIReady: (() => void) | undefined;
+  }
+}
 
 interface TrainingVideoModalProps {
   open: boolean;
   onClose: () => void;
   title: string;
   youtubeId: string;
+  videoId: string; // Supabase record id
 }
 
-export function TrainingVideoModal({ open, onClose, title, youtubeId }: TrainingVideoModalProps) {
+export function TrainingVideoModal({ open, onClose, title, youtubeId, videoId }: TrainingVideoModalProps) {
+  const playerRef = useRef<any>(null);
+  const { user } = useAuth();
+
+  // Load the YouTube IFrame API and setup the player
+  useEffect(() => {
+    if (!open || !youtubeId) return;
+
+    // Load the YouTube IFrame API if not already loaded
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.body.appendChild(tag);
+    }
+
+    // This will be called by the YouTube API when it's ready
+    window.onYouTubeIframeAPIReady = () => {
+      playerRef.current = new window.YT.Player('player', {
+        height: '390',
+        width: '640',
+        videoId: youtubeId,
+        events: {
+          onStateChange: async (event: any) => {
+            if (event.data === window.YT.PlayerState.ENDED) {
+              // Mark as completed in users_videos
+              if (!user) return;
+              const { data: userVideo, error } = await supabase
+                .from('users_videos')
+                .select('id')
+                .eq('user', user.id)
+                .eq('video', videoId)
+                .single();
+              if (!error && userVideo) {
+                await supabase
+                  .from('users_videos')
+                  .update({ is_completed: true, last_action: 'completed' })
+                  .eq('id', userVideo.id);
+              }
+            }
+          },
+        },
+      });
+    };
+
+    // If the API is already loaded, initialize immediately
+    if (window.YT && window.YT.Player) {
+      window.onYouTubeIframeAPIReady();
+    }
+
+    // Cleanup on close/unmount
+    return () => {
+      if (playerRef.current && playerRef.current.destroy) {
+        playerRef.current.destroy();
+      }
+      window.onYouTubeIframeAPIReady = undefined;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, youtubeId, videoId, user]);
+
   if (!open || !youtubeId) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
@@ -21,16 +90,7 @@ export function TrainingVideoModal({ open, onClose, title, youtubeId }: Training
         </button>
         <div className="font-bold text-lg mb-2">{title}</div>
         <div className="aspect-video w-full">
-          <iframe
-            width="100%"
-            height="100%"
-            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`}
-            title={title}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="rounded-lg w-full h-full"
-          />
+          <div id="player" />
         </div>
       </div>
     </div>
