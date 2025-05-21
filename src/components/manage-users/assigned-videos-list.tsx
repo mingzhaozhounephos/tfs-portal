@@ -89,8 +89,6 @@ export function AssignedVideosList({ userId, filter = "all" }: AssignedVideosLis
               image: video.image || "",
               created_at: video.created_at || new Date(),
               duration: video.duration || '-',
-              num_users_assigned: 0,
-              num_users_completed: 0,
               youtube_url: video.youtube_url
             }}
             showEdit={false}

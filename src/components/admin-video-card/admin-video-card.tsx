@@ -15,8 +15,6 @@ interface AdminVideoCardProps {
     image: string;
     created_at: string | Date;
     duration: string;
-    num_users_assigned: number;
-    num_users_completed: number;
     youtube_url?: string;
   };
   onEdit?: () => void;

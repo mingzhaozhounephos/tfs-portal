@@ -9,66 +9,6 @@ import { useAuth } from '@/hooks/use-auth';
 import { UserCard } from "../manage-users/user-card";
 import { VideoFormModal } from "@/components/manage-videos/video-form-modal";
 
-const videoData = [
-  {
-    title: "Workplace Harassment Prevention",
-    tag: "office",
-    description: "Understand what constitutes workplace harassment and how to prevent it. This video covers company policies, reporting procedures, and creating a respectful...",
-    image: "/rick-astley.jpg",
-    date: "Dec 8, 2023",
-    duration: "28:15",
-    assigned: 35,
-    completed: "95%",
-  },
-  {
-    title: "Data Security Best Practices",
-    tag: "office",
-    description: "Protect sensitive company and customer data with these security best practices. Learn about password management, phishing prevention, and secure data...",
-    image: "/rick-astley.jpg",
-    date: "Nov 12, 2023",
-    duration: "22:30",
-    assigned: 30,
-    completed: "85%",
-  },
-  {
-    title: "Office Safety Procedures",
-    tag: "office",
-    description: "Learn essential safety procedures for the office environment. This video covers ergonomics, fire safety, and emergency protocols to ensure a safe workplace.",
-    image: "/rick-astley.jpg",
-    date: "Oct 5, 2023",
-    duration: "16:45",
-    assigned: 25,
-    completed: "90%",
-  },
-];
-
-const userData = [
-  {
-    name: "Lisa Thompson",
-    email: "lisa.thompson@example.com",
-    role: "driver",
-    joined: "Joined May 2023",
-    assigned: 3,
-    completed: "33%",
-  },
-  {
-    name: "Robert Wilson",
-    email: "robert.wilson@example.com",
-    role: "driver",
-    joined: "Joined Apr 2023",
-    assigned: 4,
-    completed: "25%",
-  },
-  {
-    name: "Michael Chen",
-    email: "driver@driver",
-    role: "driver",
-    joined: "Joined Mar 2023",
-    assigned: 5,
-    completed: "80%",
-  },
-];
-
 export function AdminDashboard() {
   const [tab, setTab] = useState<"videos" | "users">("videos");
   const [active, setActive] = useState("dashboard");
