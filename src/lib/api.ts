@@ -95,35 +95,55 @@ export const api = {
       // First, get existing assignments for this user
       const { data: existingAssignments, error: fetchError } = await supabase
         .from('users_videos')
-        .select('video')
+        .select('*')
         .eq('user', userId);
       
       if (fetchError) throw fetchError;
 
-      // Filter out videos that are already assigned
+      // Get the current date in ISO format
+      const currentDate = new Date().toISOString();
+
+      // Find videos to remove (exist in database but not in new selection)
       const existingVideoIds = new Set(existingAssignments.map(a => a.video));
+      const videosToRemove = existingAssignments.filter(a => !videoIds.includes(a.video));
+
+      // Find videos to add (exist in new selection but not in database)
       const newVideoIds = videoIds.filter(id => !existingVideoIds.has(id));
 
-      if (newVideoIds.length === 0) {
-        return existingAssignments as UserVideo[];
+      // Remove unselected videos
+      if (videosToRemove.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('users_videos')
+          .delete()
+          .in('id', videosToRemove.map(v => v.id));
+        
+        if (deleteError) throw deleteError;
       }
 
-      // Create new assignments only for videos that aren't already assigned
-      const assignments = newVideoIds.map(videoId => ({
-        user: userId,
-        video: videoId,
-        is_completed: false
-      }));
+      // Add new videos with assigned_date
+      if (newVideoIds.length > 0) {
+        const assignments = newVideoIds.map(videoId => ({
+          user: userId,
+          video: videoId,
+          is_completed: false,
+          assigned_date: currentDate
+        }));
 
-      const { data, error } = await supabase
+        const { error: insertError } = await supabase
+          .from('users_videos')
+          .insert(assignments);
+        
+        if (insertError) throw insertError;
+      }
+
+      // Return updated assignments
+      const { data: updatedAssignments, error: finalError } = await supabase
         .from('users_videos')
-        .insert(assignments)
-        .select();
+        .select('*')
+        .eq('user', userId);
       
-      if (error) throw error;
-
-      // Return both existing and new assignments
-      return [...existingAssignments, ...data] as UserVideo[];
+      if (finalError) throw finalError;
+      return updatedAssignments as UserVideo[];
     },
 
     async getUserStats(userId: string): Promise<UserStats> {

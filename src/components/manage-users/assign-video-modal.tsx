@@ -3,18 +3,22 @@ import { useUsers } from '@/hooks/use-users';
 import { useUserVideosStore } from '@/store/user-videos-store';
 import { User } from '@/types';
 import { createPortal } from 'react-dom';
+import { supabase } from '@/lib/supabase';
 
 interface AssignVideoModalProps {
   isOpen: boolean;
   onClose: () => void;
   videoId: string;
   videoTitle: string;
+  assignedCount: number;
+  onAfterAssign?: () => void;
 }
 
-export function AssignVideoModal({ isOpen, onClose, videoId, videoTitle }: AssignVideoModalProps) {
+export function AssignVideoModal({ isOpen, onClose, videoId, videoTitle, assignedCount, onAfterAssign }: AssignVideoModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [loadingAssigned, setLoadingAssigned] = useState(false);
   const { users, loading, error, searchUsers } = useUsers();
   const { assignVideos } = useUserVideosStore();
 
@@ -22,6 +26,23 @@ export function AssignVideoModal({ isOpen, onClose, videoId, videoTitle }: Assig
     setMounted(true);
     return () => setMounted(false);
   }, []);
+
+  // Fetch assigned users when modal opens or videoId changes
+  useEffect(() => {
+    if (!isOpen || !videoId) return;
+    setLoadingAssigned(true);
+    // Fetch assigned users for this video
+    supabase
+      .from('users_videos')
+      .select('user')
+      .eq('video', videoId)
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setSelectedUsers(data.map((row: { user: string }) => row.user));
+        }
+        setLoadingAssigned(false);
+      });
+  }, [isOpen, videoId]);
 
   if (!isOpen) return null;
 
@@ -42,7 +63,7 @@ export function AssignVideoModal({ isOpen, onClose, videoId, videoTitle }: Assig
         ...selectedUsers,
         ...filteredUsers.filter(u => !selectedUsers.includes(u.id)).map(u => u.id)
       ]);
-  }
+    }
   };
 
   const handleUserSelect = (userId: string) => {
@@ -53,13 +74,17 @@ export function AssignVideoModal({ isOpen, onClose, videoId, videoTitle }: Assig
     );
   };
 
+  // Enable button if there are selected users or if there are currently assigned users (to allow unassigning all)
+  const canAssign = selectedUsers.length > 0 || assignedCount > 0;
+
   const handleAssign = async () => {
     try {
       await assignVideos(videoId, selectedUsers);
       onClose();
+      onAfterAssign?.();
     } catch (err) {
       console.error('Failed to assign videos:', err);
-  }
+    }
   };
 
   // Modal content
@@ -142,7 +167,7 @@ export function AssignVideoModal({ isOpen, onClose, videoId, videoTitle }: Assig
             </button>
             <button
               onClick={handleAssign}
-              disabled={selectedUsers.length === 0}
+              disabled={!canAssign}
               className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Assign Video

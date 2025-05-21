@@ -148,18 +148,51 @@ export const useUserVideosStore = create<UserVideosStore>((set, get) => ({
   },
 
   assignVideos: async (videoId: string, userIds: string[]) => {
-    const assignments = userIds.map(userId => ({
-      user: userId,
-      video: videoId
-    }));
-
-    const { error } = await supabase
+    // 1. Fetch all existing assignments for this video
+    const { data: existingAssignments, error: fetchError } = await supabase
       .from('users_videos')
-      .insert(assignments);
+      .select('*')
+      .eq('video', videoId);
 
-    if (error) throw error;
+    if (fetchError) throw fetchError;
 
-    // Refresh data for all affected users
-    await Promise.all(userIds.map(userId => get().refresh(userId)));
+    const now = new Date().toISOString();
+
+    // 2. Find users to remove (were assigned, now unselected)
+    const existingUserIds = new Set(existingAssignments.map(a => a.user));
+    const usersToRemove = existingAssignments.filter(a => !userIds.includes(a.user));
+
+    // 3. Find users to add (newly selected)
+    const usersToAdd = userIds.filter(id => !existingUserIds.has(id));
+
+    // 4. Remove unselected users
+    if (usersToRemove.length > 0) {
+      const { error: deleteError } = await supabase
+        .from('users_videos')
+        .delete()
+        .in('id', usersToRemove.map(v => v.id));
+      if (deleteError) throw deleteError;
+    }
+
+    // 5. Add new users with assigned_date
+    if (usersToAdd.length > 0) {
+      const assignments = usersToAdd.map(userId => ({
+        user: userId,
+        video: videoId,
+        is_completed: false,
+        assigned_date: now,
+      }));
+      const { error: insertError } = await supabase
+        .from('users_videos')
+        .insert(assignments);
+      if (insertError) throw insertError;
+    }
+
+    // 6. For users that remain assigned, update if needed (preserve assigned_date)
+    const usersToUpdate = existingAssignments.filter(a => userIds.includes(a.user));
+    for (const assignment of usersToUpdate) {
+      // You can update other fields here if needed, but keep assigned_date unchanged
+      // Example: await supabase.from('users_videos').update({ ... }).eq('id', assignment.id);
+    }
   }
 })); 

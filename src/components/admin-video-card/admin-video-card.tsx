@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Calendar, Clock, Users, CheckCircle, PlayCircle } from "lucide-react";
 import { AssignVideoModal } from "@/components/manage-users/assign-video-modal";
 import { supabase } from "@/lib/supabase";
@@ -45,65 +45,35 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
   const youtubeId = getYouTubeId(video.youtube_url);
   const thumbnailUrl = youtubeId ? getYouTubeThumbnail(youtubeId) : video.image || "";
 
-  useEffect(() => {
-    async function fetchVideoStats() {
-      try {
-        // Get total assigned users
-        const { data: assignedData, error: assignedError } = await supabase
-          .from('users_videos')
-          .select('*', { count: 'exact' })
-          .eq('video', video.id);
-
-        if (assignedError) throw assignedError;
-
-        // Get completed users
-        const { data: completedData, error: completedError } = await supabase
-          .from('users_videos')
-          .select('*', { count: 'exact' })
-          .eq('video', video.id)
-          .eq('is_completed', true);
-
-        if (completedError) throw completedError;
-
-        const assignedCount = assignedData?.length || 0;
-        const completedCount = completedData?.length || 0;
-
-        setStats({
-          assigned: assignedCount,
-          completed: assignedCount ? Math.round((completedCount / assignedCount) * 100) : 0
-        });
-      } catch (error) {
-        console.error('Error fetching video stats:', error);
-      }
-    }
-
-    // Initial fetch
-    fetchVideoStats();
-
-    // Subscribe to changes
-    const channel = supabase.channel(`video-${video.id}-changes`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'users_videos',
-          filter: `video=eq.${video.id}`
-        },
-        (payload) => {
-          console.log('Change detected:', payload);
-          fetchVideoStats();
-        }
-      )
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
+  // Add a refreshStats function
+  const refreshStats = useCallback(async () => {
+    try {
+      const { data: assignedData, error: assignedError } = await supabase
+        .from('users_videos')
+        .select('*', { count: 'exact' })
+        .eq('video', video.id);
+      if (assignedError) throw assignedError;
+      const { data: completedData, error: completedError } = await supabase
+        .from('users_videos')
+        .select('*', { count: 'exact' })
+        .eq('video', video.id)
+        .eq('is_completed', true);
+      if (completedError) throw completedError;
+      const assignedCount = assignedData?.length || 0;
+      const completedCount = completedData?.length || 0;
+      setStats({
+        assigned: assignedCount,
+        completed: assignedCount ? Math.round((completedCount / assignedCount) * 100) : 0
       });
-
-    // Cleanup subscription on unmount
-    return () => {
-      channel.unsubscribe();
-    };
+    } catch (error) {
+      console.error('Error refreshing video stats:', error);
+    }
   }, [video.id]);
+
+  useEffect(() => {
+    refreshStats();
+    // ...existing subscription code...
+  }, [video.id, refreshStats]);
 
   async function handleOpenModal() {
     if (!user || !video.id) return;
@@ -129,7 +99,9 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
           .update({ 
             last_watched: new Date().toISOString(), 
             modified_date: new Date().toISOString(), 
-            last_action: 'watched' 
+            last_action: 'watched',
+            // Preserve the existing assigned_date
+            assigned_date: existingRecord.assigned_date
           })
           .eq('user', user.id)
           .eq('video', video.id);
@@ -230,18 +202,20 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
         </span>
       </div>
       <button
-    className="mt-2 w-full border rounded py-1 text-sm font-medium"
-    style={{ borderColor: 'var(--border-default)' }}
-    onClick={() => setAssignModalOpen(true)}
-  >
-    Assign to Users
-  </button>
-  <AssignVideoModal
-    isOpen={assignModalOpen}
-    onClose={() => setAssignModalOpen(false)}
-    videoId={video.id}
-    videoTitle={video.title}
-  />
+        className="mt-2 w-full border rounded py-1 text-sm font-medium"
+        style={{ borderColor: 'var(--border-default)' }}
+        onClick={() => setAssignModalOpen(true)}
+      >
+        Assign to Users
+      </button>
+      <AssignVideoModal
+        isOpen={assignModalOpen}
+        onClose={() => setAssignModalOpen(false)}
+        videoId={video.id}
+        videoTitle={video.title}
+        assignedCount={stats.assigned}
+        onAfterAssign={refreshStats}
+      />
 
       {/* YouTube Modal */}
       {showModal && youtubeId && (

@@ -20,8 +20,15 @@ export function AssignVideosModal({ isOpen, onClose, user, assignedVideoIds, onS
   const [mounted, setMounted] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { setMounted(true); return () => setMounted(false); }, []);
-  useEffect(() => { setSelected(assignedVideoIds); }, [assignedVideoIds, isOpen]);
+  // Reset selected videos when modal opens/closes or assignedVideoIds changes
+  useEffect(() => { 
+    setMounted(true); 
+    return () => setMounted(false); 
+  }, []);
+
+  useEffect(() => { 
+    setSelected(assignedVideoIds); 
+  }, [assignedVideoIds, isOpen]);
 
   if (!isOpen || !mounted) return null;
 
@@ -98,6 +105,7 @@ export function AssignVideosModal({ isOpen, onClose, user, assignedVideoIds, onS
             videosByCategory.map(group => {
               const groupIds = group.videos.map(v => v.id);
               const allGroupSelected = groupIds.length > 0 && groupIds.every(id => selected.includes(id));
+              const groupAssignedCount = group.videos.filter(v => assignedVideoIds.includes(v.id)).length;
               return (
                 <div key={group.category} className="mb-4">
                   <div className="flex items-center gap-2 mb-1">
@@ -108,26 +116,34 @@ export function AssignVideosModal({ isOpen, onClose, user, assignedVideoIds, onS
                       className="mr-2"
                     />
                     <span className={`inline-block rounded-full px-3 py-0.5 text-xs font-bold bg-gray-100 text-gray-700 border border-gray-300 w-fit`}>{group.category}</span>
-                    <span className="text-xs text-gray-500 ml-2">{group.videos.length} videos</span>
+                    <span className="text-xs text-gray-500 ml-2">
+                      {group.videos.length} videos
+                      {groupAssignedCount > 0 && (
+                        <span className="ml-1 text-green-600">({groupAssignedCount} assigned)</span>
+                      )}
+                    </span>
                   </div>
                   <div className="divide-y divide-gray-100 bg-gray-50 rounded-lg border border-gray-100">
-                    {group.videos.map(video => (
-                      <div key={video.id} className="flex items-center px-3 py-2">
-                        <input
-                          type="checkbox"
-                          checked={selected.includes(video.id)}
-                          onChange={() => handleVideoSelect(video.id)}
-                          className="mr-2"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm truncate">{video.title}</div>
-                          <div className="text-xs text-gray-500 truncate">{video.description}</div>
+                    {group.videos.map(video => {
+                      const isAssigned = assignedVideoIds.includes(video.id);
+                      return (
+                        <div key={video.id} className={`flex items-center px-3 py-2 ${isAssigned ? 'bg-green-50' : ''}`}>
+                          <input
+                            type="checkbox"
+                            checked={selected.includes(video.id)}
+                            onChange={() => handleVideoSelect(video.id)}
+                            className="mr-2"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm truncate">{video.title}</div>
+                            <div className="text-xs text-gray-500 truncate">{video.description}</div>
+                          </div>
+                          {isAssigned && (
+                            <span className="ml-2 px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-700">Assigned</span>
+                          )}
                         </div>
-                        {assignedVideoIds.includes(video.id) && (
-                          <span className="ml-2 px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-700">Assigned</span>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               );
@@ -136,7 +152,15 @@ export function AssignVideosModal({ isOpen, onClose, user, assignedVideoIds, onS
         </div>
         {/* Footer */}
         <div className="flex items-center justify-between mt-2">
-          <span className="text-xs text-gray-500">{selected.length} videos selected</span>
+          <span className="text-xs text-gray-500">
+            {selected.length} videos selected
+            {selected.length > assignedVideoIds.length && (
+              <span className="ml-1 text-green-600">(+{selected.length - assignedVideoIds.length} new)</span>
+            )}
+            {selected.length < assignedVideoIds.length && (
+              <span className="ml-1 text-red-600">(-{assignedVideoIds.length - selected.length} removed)</span>
+            )}
+          </span>
           <div className="flex gap-2">
             <button
               onClick={onClose}
