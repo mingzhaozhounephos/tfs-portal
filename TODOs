@@ -11,7 +11,7 @@ D - when assigning the video to users
 when clicks on 'watch it again(required)'
     reset the assigned_date
 
-watching video in driver dashboard, open the modal just like the way to see video in admin dashboard.
+D - watching video in driver dashboard, open the modal just like the way to see video in admin dashboard.
 
 when watching video, when watch nearly the end of the video, set the is_completed to true.
 
