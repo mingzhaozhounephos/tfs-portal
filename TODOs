@@ -1,6 +1,6 @@
 is_annual_renewal field with boolean type is added in the supabase 'users_videos' table.
 assigned_date field with timestamptz is added in the supabase 'users_videos' table.
-add the is_annual_renewal field in a video form when create the 'users_videos' record for users_videos
+add the is_annual_renewal field in a video form when create the 'videos' record
 when saving assigning the video to users
     no record: set the assigned_date to now()
     has record: don't change
