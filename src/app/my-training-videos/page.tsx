@@ -33,6 +33,13 @@ const FILTERS = [
   { label: "Office", value: "office" },
 ];
 
+function isAnnualRenewalDue(video) {
+  if (!video.is_annual_renewal || !video.assigned_date) return false;
+  const assigned = new Date(video.assigned_date);
+  const now = new Date();
+  return (now.getTime() - assigned.getTime()) > 365 * 24 * 60 * 60 * 1000;
+}
+
 export default function MyTrainingVideosPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
@@ -112,11 +119,28 @@ export default function MyTrainingVideosPage() {
     return result;
   }, [videos, filter, search]);
 
+  // Count videos needing annual renewal
+  const annualRenewalCount = useMemo(() =>
+    videos.filter(v => v.is_annual_renewal && v.assigned_date && isAnnualRenewalDue(v)).length
+  , [videos]);
+
   return (
     <div className="flex bg-[#F7F9FA] min-h-screen h-screen">
       <SideMenu role="driver" active="my-training-videos" onNavigate={() => {}} />
       <main className="flex-1 p-8 h-screen overflow-y-auto">
-        <h1 className="text-3xl font-bold mb-6">My Training Videos</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold">My Training Videos</h1>
+          {annualRenewalCount > 0 && (
+            <span className="inline-flex items-center gap-2 px-4 py-1 pt-[7px] rounded-full text-sm font-semibold bg-red-500 text-white">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 20 20">
+                <polygon points="10,2 19,18 1,18" fill="#fff" stroke="#fff" strokeWidth="1"/>
+                <polygon points="10,3.5 17.5,17 2.5,17" fill="#dc2626"/>
+                <text x="10" y="15" textAnchor="middle" fontSize="10" fill="#fff" alignmentBaseline="middle" dominantBaseline="middle">!</text>
+              </svg>
+              {annualRenewalCount} video{annualRenewalCount > 1 ? 's' : ''} need annual renewal
+            </span>
+          )}
+        </div>
         <div className="mb-4">
           <input
             type="text"
