@@ -45,7 +45,7 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
   });
   const { user } = useAuth();
   const youtubeId = getYouTubeId(video.youtube_url);
-  const thumbnailUrl = youtubeId ? getYouTubeThumbnail(youtubeId) : video.image || "/rick-astley.jpg";
+  const thumbnailUrl = youtubeId ? getYouTubeThumbnail(youtubeId) : video.image || "";
 
   useEffect(() => {
     async function fetchVideoStats() {

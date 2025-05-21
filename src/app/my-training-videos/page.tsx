@@ -3,94 +3,26 @@
 import { useEffect, useState, useMemo } from "react";
 import { SideMenu } from "@/components/side-menu/side-menu";
 import { TrainingVideosGrid } from "@/components/training-videos/training-videos-grid";
-// import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/hooks/use-auth';
 
-const mockVideos = [
-  {
-    id: "1",
-    title: "Safe Driving Techniques",
-    category: "van",
-    description: "Learn essential safe driving techniques for all road conditions. This comprehensive guide covers defensive driving, proper signaling, and maintaining safe distances.",
-    image: "/rick-astley.jpg",
-    created_at: "2023-04-12",
-    duration: "15:30",
-    assigned_date: "2023-04-12",
-    last_watched: "2023-04-15",
-    youtube_url: "https://youtu.be/dQw4w9WgXcQ",
-    renewal_required: true,
-    renewal_due: true,
-  },
-  {
-    id: "2",
-    title: "Vehicle Maintenance Basics",
-    category: "truck",
-    description: "Understanding basic vehicle maintenance can prevent breakdowns and accidents. This video provides fluid checks, tire pressure, and other essential maintenance tasks.",
-    image: "/rick-astley.jpg",
-    created_at: "2023-05-05",
-    duration: "12:45",
-    assigned_date: "2023-05-05",
-    last_watched: undefined,
-    youtube_url: "https://youtu.be/dQw4w9WgXcQ",
-    renewal_required: false,
-    renewal_due: false,
-  },
-  {
-    id: "3",
-    title: "Handling Adverse Weather Conditions",
-    category: "van",
-    description: "Learn how to safely navigate through rain, snow, fog, and other challenging weather conditions. This video provides practical tips for maintaining control of your vehicle.",
-    image: "/rick-astley.jpg",
-    created_at: "2023-06-20",
-    duration: "18:20",
-    assigned_date: "2023-01-10",
-    last_watched: undefined,
-    youtube_url: "https://youtu.be/dQw4w9WgXcQ",
-    renewal_required: true,
-    renewal_due: true,
-  },
-  {
-    id: "4",
-    title: "Defensive Driving Strategies",
-    category: "truck",
-    description: "Defensive driving can help you avoid accidents caused by other drivers' mistakes. Learn how to anticipate hazards and respond appropriately to keep yourself and others safe.",
-    image: "/rick-astley.jpg",
-    created_at: "2023-07-08",
-    duration: "20:15",
-    assigned_date: "2023-07-08",
-    last_watched: undefined,
-    youtube_url: "https://youtu.be/dQw4w9WgXcQ",
-    renewal_required: false,
-    renewal_due: false,
-  },
-  {
-    id: "5",
-    title: "Commercial Vehicle Regulations",
-    category: "truck",
-    description: "Stay compliant with the latest commercial vehicle regulations. This video covers hours of service, load securement, and other important regulatory requirements.",
-    image: "/rick-astley.jpg",
-    created_at: "2023-08-15",
-    duration: "25:10",
-    assigned_date: "2023-06-20",
-    last_watched: "2023-06-20",
-    youtube_url: "https://youtu.be/dQw4w9WgXcQ",
-    renewal_required: true,
-    renewal_due: true,
-  },
-  {
-    id: "6",
-    title: "Eco-Friendly Driving Practices",
-    category: "van",
-    description: "Reduce fuel consumption and emissions with these eco-friendly driving techniques. Learn how small changes in your driving habits can make a big difference for the environment.",
-    image: "/rick-astley.jpg",
-    created_at: "2023-09-03",
-    duration: "14:30",
-    assigned_date: "2023-09-03",
-    last_watched: undefined,
-    youtube_url: "https://youtu.be/dQw4w9WgXcQ",
-    renewal_required: false,
-    renewal_due: false,
-  },
-];
+interface Video {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  image: string;
+  created_at: string;
+  duration: string;
+  youtube_url: string;
+  assigned_date?: string;
+  last_watched?: string;
+  renewal_required?: boolean;
+  renewal_due?: string;
+  is_completed?: boolean;
+  modified_date?: string;
+  last_action?: string;
+}
 
 const FILTERS = [
   { label: "All Videos", value: "all" },
@@ -103,7 +35,64 @@ const FILTERS = [
 export default function MyTrainingVideosPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
-  const [videos, setVideos] = useState(mockVideos);
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchVideos = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('users_videos')
+          .select('*, video:videos(*)')
+          .eq('user', user.id);
+
+        if (error) throw error;
+
+        const transformedVideos = data.map(item => ({
+          ...item.video,
+          assigned_date: item.assigned_date,
+          last_watched: item.last_watched,
+          renewal_required: item.renewal_required,
+          renewal_due: item.renewal_due,
+          is_completed: item.is_completed,
+          modified_date: item.modified_date,
+          last_action: item.last_action,
+        }));
+
+        setVideos(transformedVideos);
+      } catch (error) {
+        console.error('Error fetching videos:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVideos();
+
+    // Subscribe to changes
+    const subscription = supabase
+      .channel('users_videos_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'users_videos',
+          filter: `user=eq.${user.id}`
+        },
+        async () => {
+          await fetchVideos();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [user]);
 
   // Filtered videos
   const filteredVideos = useMemo(() => {
@@ -133,7 +122,7 @@ export default function MyTrainingVideosPage() {
             placeholder="Search videos..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full max-w-lg border border-gray-300 rounded-lg px-4 py-2 text-sm"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
           />
         </div>
         <div className="flex flex-wrap gap-2 mb-6">
@@ -151,7 +140,11 @@ export default function MyTrainingVideosPage() {
             </button>
           ))}
         </div>
-        <TrainingVideosGrid videos={filteredVideos} />
+        {loading ? (
+          <div className="text-center py-4">Loading videos...</div>
+        ) : (
+          <TrainingVideosGrid videos={filteredVideos} />
+        )}
       </main>
     </div>
   );

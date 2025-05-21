@@ -3,69 +3,6 @@ import { VideoFormModal } from "./video-form-modal";
 import { supabase } from "@/lib/supabase";
 import { AdminVideoCard } from "@/components/admin-video-card/admin-video-card";
 
-// const videoData = [
-//   {
-//     title: "Safe Driving Techniques",
-//     tag: "van",
-//     description: "Learn essential safe driving techniques for all road conditions. This comprehensive guide...",
-//     image: "/rick-astley.jpg",
-//     date: "Apr 12, 2023",
-//     duration: "15:30",
-//     assigned: 15,
-//     completed: "80%",
-//   },
-//   {
-//     title: "Vehicle Maintenance Basics",
-//     tag: "truck",
-//     description: "Understanding basic vehicle maintenance can prevent breakdowns and accidents. This video...",
-//     image: "/rick-astley.jpg",
-//     date: "May 5, 2023",
-//     duration: "12:45",
-//     assigned: 12,
-//     completed: "65%",
-//   },
-//   {
-//     title: "Handling Adverse Weather Conditions",
-//     tag: "van",
-//     description: "Learn how to safely navigate through rain, snow, fog, and other challenging weather…",
-//     image: "/rick-astley.jpg",
-//     date: "Jun 20, 2023",
-//     duration: "18:20",
-//     assigned: 18,
-//     completed: "70%",
-//   },
-//   {
-//     title: "Defensive Driving Strategies",
-//     tag: "truck",
-//     description: "Defensive driving can help you avoid accidents caused by other drivers' mistakes. Learn how…",
-//     image: "/rick-astley.jpg",
-//     date: "Jul 8, 2023",
-//     duration: "20:15",
-//     assigned: 20,
-//     completed: "85%",
-//   },
-//   {
-//     title: "Commercial Vehicle Regulations",
-//     tag: "truck",
-//     description: "Stay compliant with the latest commercial vehicle regulations. This video covers hours of…",
-//     image: "/rick-astley.jpg",
-//     date: "Aug 15, 2023",
-//     duration: "25:10",
-//     assigned: 10,
-//     completed: "50%",
-//   },
-//   {
-//     title: "Eco-Friendly Driving Practices",
-//     tag: "van",
-//     description: "Reduce fuel consumption and emissions with these eco-friendly driving techniques. Learn…",
-//     image: "/rick-astley.jpg",
-//     date: "Sep 3, 2023",
-//     duration: "14:30",
-//     assigned: 8,
-//     completed: "40%",
-//   },
-// ];
-
 const tags = ["All Videos", "Van", "Truck", "Office"];
 
 export function ManageVideos() {

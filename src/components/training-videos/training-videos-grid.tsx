@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import { formatDate } from '@/lib/format-date';
 
 interface TrainingVideo {
   id: string;
@@ -12,20 +13,16 @@ interface TrainingVideo {
   assigned_date?: string | Date;
   last_watched?: string | Date;
   youtube_url?: string;
+  renewal_required?: boolean;
+  renewal_due?: string;
+  is_completed?: boolean;
+  modified_date?: string;
+  last_action?: string;
 }
 
 interface TrainingVideosGridProps {
   videos: TrainingVideo[];
   onStartTraining?: (video: TrainingVideo) => void;
-}
-
-function formatDate(date: string | Date) {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
 }
 
 function getYouTubeId(url?: string) {
@@ -34,29 +31,32 @@ function getYouTubeId(url?: string) {
   return match ? match[1] : '';
 }
 
+function getYouTubeThumbnail(videoId: string) {
+  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+}
+
 export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGridProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {videos.map(video => {
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {videos.map((video, idx) => {
         const youtubeId = getYouTubeId(video.youtube_url);
+        const thumbnailUrl = youtubeId ? getYouTubeThumbnail(youtubeId) : video.image || '/placeholder.webp';
+        
         return (
-          <div
-            key={video.id}
-            className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 border"
-          >
-            <div className="font-bold text-base mb-1">{video.title}</div>
+          <div key={video.id || idx} className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative">
+            <div className="font-bold text-lg mb-1">{video.title}</div>
             <div className="flex items-center gap-2 mb-1">
               <span
-                className={`inline-block text-xs font-semibold rounded-full px-3 py-0.5
-                  ${
-                    video.category?.toLowerCase() === 'office'
-                      ? 'bg-purple-100 text-purple-700 border border-purple-200'
-                      : video.category?.toLowerCase() === 'truck'
-                      ? 'bg-green-100 text-green-700 border border-green-200'
-                      : video.category?.toLowerCase() === 'van'
-                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                      : 'bg-gray-100 text-gray-700 border border-gray-200'
-                  }`}
+                className={
+                  `inline-block text-xs font-semibold rounded-full px-3 py-0.5 ` +
+                  (video.category?.toLowerCase() === 'office'
+                    ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                    : video.category?.toLowerCase() === 'truck'
+                    ? 'bg-green-100 text-green-700 border border-green-200'
+                    : video.category?.toLowerCase() === 'van'
+                    ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                    : 'bg-gray-100 text-gray-700 border border-gray-200')
+                }
                 style={{ minWidth: 'fit-content' }}
               >
                 {video.category}
@@ -74,32 +74,45 @@ export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGr
             >
               {video.description}
             </div>
-            <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+            <div className="relative aspect-video w-full overflow-hidden rounded-lg group cursor-pointer mb-2" onClick={() => youtubeId && onStartTraining?.(video)}>
               <Image
-                src={video.image}
+                src={thumbnailUrl}
                 alt={video.title}
                 fill
-                className="object-cover"
+                className="object-cover rounded-lg"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
+              {youtubeId && (
+                <span className="absolute inset-0 flex items-center justify-center">
+                  <span className="rounded-full bg-white/60 flex items-center justify-center">
+                    <svg className="w-16 h-16 text-black/70" fill="none" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
+                      <polygon points="10,8 16,12 10,16" fill="currentColor"/>
+                    </svg>
+                  </span>
+                </span>
+              )}
             </div>
-            <div className="flex justify-between text-xs text-gray-500">
-              <span className="flex items-center gap-1">
-                <svg width="16" height="16" fill="none"><rect x="2" y="2" width="12" height="12" rx="3" stroke="currentColor" strokeWidth="2"/></svg>
-                {formatDate(video.created_at)}
-              </span>
-              <span className="flex items-center gap-1">
-                <svg width="16" height="16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="2"/><path d="M8 4v4l3 2" stroke="currentColor" strokeWidth="2"/></svg>
-                {video.duration}
-              </span>
-            </div>
-            {video.last_watched && (
-              <div className="text-xs text-gray-500 mt-1">
-                Last watched: {formatDate(video.last_watched)}
+            <div className="flex items-center text-xs text-gray-500 gap-6 mb-2">
+              <div className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-calendar w-3 h-3 mr-1">
+                  <path d="M8 2v4"></path>
+                  <path d="M16 2v4"></path>
+                  <rect width="18" height="18" x="3" y="4" rx="2"></rect>
+                  <path d="M3 10h18"></path>
+                </svg>
+                <span>{video.created_at ? formatDate(video.created_at) : ''}</span>
               </div>
-            )}
+              <div className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock w-3 h-3 mr-1">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>{video.duration}</span>
+              </div>
+            </div>
             <button
-              className="mt-2 w-full bg-black text-white rounded py-2 text-sm font-medium"
+              className="mt-auto bg-black text-white rounded-lg py-2 font-medium hover:bg-gray-900 transition"
               onClick={() => onStartTraining?.(video)}
             >
               Start Training

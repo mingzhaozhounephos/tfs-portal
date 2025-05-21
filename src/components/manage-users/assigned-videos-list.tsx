@@ -86,7 +86,7 @@ export function AssignedVideosList({ userId, filter = "all" }: AssignedVideosLis
               title: video.title || '-',
               category: video.category || '-',
               description: video.description || '-',
-              image: video.image || "/rick-astley.jpg",
+              image: video.image || "",
               created_at: video.created_at || new Date(),
               duration: video.duration || '-',
               num_users_assigned: 0,

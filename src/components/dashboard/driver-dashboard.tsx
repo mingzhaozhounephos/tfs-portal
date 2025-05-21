@@ -62,7 +62,6 @@ export function DriverDashboard() {
           modified_date: item.modified_date,
           last_action: item.last_action,
         }));
-        console.log('transformedVideos', transformedVideos)
 
         setVideos(transformedVideos);
       } catch (error) {
@@ -105,8 +104,6 @@ export function DriverDashboard() {
   let activityText = 'No activity yet';
   let actionText = '';
 
-  console.log(mostRecent)
-
   if (mostRecent && mostRecent.modified_date) {
     const modDate = new Date(mostRecent.modified_date);
     const now = new Date();
@@ -132,6 +129,12 @@ export function DriverDashboard() {
   const userName = user?.user_metadata?.full_name || 'Driver';
   const userEmail = user?.email || '';
 
+  const handleStartTraining = (video: Video) => {
+    if (video.youtube_url) {
+      window.open(video.youtube_url, '_blank');
+    }
+  };
+
   return (
     <div className="flex bg-[#F7F9FA] min-h-screen h-screen">
       <SideMenu role={role || 'driver'} active="dashboard" onNavigate={() => {}} />
@@ -147,13 +150,11 @@ export function DriverDashboard() {
           <div className="bg-white rounded-xl p-4 shadow flex flex-col gap-2 min-h-[100px]">
             <div className="flex items-center justify-between mb-1">
               <div className="tracking-tight text-sm font-medium">Your Progress</div>
-              {/* Icon: Lucide Activity */}
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
               </svg>
             </div>
             <div className="text-2xl font-bold">{progress}%</div>
-            {/* Progress bar */}
             <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mb-1">
               <div
                 className="h-full bg-green-200 transition-all"
@@ -163,11 +164,13 @@ export function DriverDashboard() {
             <div className="text-xs text-gray-500">{completedVideos} of {assignedVideos} videos completed</div>
           </div>
           <div className="bg-white rounded-xl p-4 shadow flex flex-col gap-2 min-h-[100px]">
-
             <div className="flex items-center justify-between mb-1">
               <div className="tracking-tight text-sm font-medium">Assigned Videos</div>
-              {/* Icon: Lucide Activity */}
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" ><rect width="20" height="14" x="2" y="5" rx="2"></rect><path d="m14 9 3 3-3 3"></path><path d="M10 12H7"></path></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="20" height="14" x="2" y="5" rx="2"></rect>
+                <path d="m14 9 3 3-3 3"></path>
+                <path d="M10 12H7"></path>
+              </svg>
             </div>
             <div className="text-2xl font-bold">{assignedVideos}</div>
             <div className="text-xs text-gray-500">{assignedVideos} videos remaining</div>
@@ -175,7 +178,10 @@ export function DriverDashboard() {
           <div className="bg-white rounded-xl p-4 shadow flex flex-col gap-2 min-h-[100px]">
             <div className="flex items-center justify-between mb-1">
               <div className="tracking-tight text-sm font-medium">Last Activity</div>
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2v20"></path>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
             </div>
             <div className="text-2xl font-bold">{activityText}</div>
             {actionText && (
@@ -188,79 +194,7 @@ export function DriverDashboard() {
           {loading ? (
             <div className="text-center py-4">Loading videos...</div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {videos.map((video, idx) => {
-                const youtubeId = getYouTubeId(video.youtube_url);
-                const thumbnailUrl = youtubeId
-                  ? getYouTubeThumbnail(youtubeId)
-                  : '/placeholder.webp';
-                return (
-                  <div key={video.id || idx} className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative">
-                    <div className="font-bold text-lg mb-1">{video.title}</div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span
-                        className={
-                          `inline-block text-xs font-semibold rounded-full px-3 py-0.5 ` +
-                          (video.category?.toLowerCase() === 'office'
-                            ? 'bg-purple-100 text-purple-700 border border-purple-200'
-                            : video.category?.toLowerCase() === 'truck'
-                            ? 'bg-green-100 text-green-700 border border-green-200'
-                            : video.category?.toLowerCase() === 'van'
-                            ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                            : 'bg-gray-100 text-gray-700 border border-gray-200')
-                        }
-                        style={{ minWidth: 'fit-content' }}
-                      >
-                        {video.category}
-                      </span>
-                    </div>
-                    <div
-                      className="text-xs text-gray-600 mb-2 line-clamp-2"
-                      style={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      {video.description}
-                    </div>
-                    <div className="relative aspect-video w-full overflow-hidden rounded-lg group cursor-pointer mb-2" onClick={() => youtubeId && window.open(video.youtube_url, '_blank')}>
-                      <img
-                        src={thumbnailUrl}
-                        alt={video.title}
-                        className="object-cover w-full h-full rounded-lg"
-                        loading="lazy"
-                      />
-                      {youtubeId && (
-                        <span className="absolute inset-0 flex items-center justify-center">
-                          <span className="rounded-full bg-white/60 flex items-center justify-center">
-                            <svg className="w-16 h-16 text-black/70" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/><polygon points="10,8 16,12 10,16" fill="currentColor"/></svg>
-                          </span>
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center text-xs text-gray-500 gap-6 mb-2">
-                      <div className="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-calendar w-3 h-3 mr-1"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
-                        <span>{video.created_at ? formatDate(video.created_at) : ''}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock w-3 h-3 mr-1"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                        <span>{video.duration}</span>
-                      </div>
-                    </div>
-                    <button
-                      className="mt-auto bg-black text-white rounded-lg py-2 font-medium hover:bg-gray-900 transition"
-                      onClick={() => window.open(video.youtube_url, '_blank')}
-                    >
-                      Start Training
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
+            <TrainingVideosGrid videos={videos} onStartTraining={handleStartTraining} />
           )}
         </div>
       </main>
