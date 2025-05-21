@@ -5,6 +5,7 @@ import { SideMenu } from "@/components/side-menu/side-menu";
 import { TrainingVideosGrid } from "@/components/training-videos/training-videos-grid";
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/use-auth';
+import { TrainingVideoModal } from '@/components/training-videos/training-video-modal';
 
 interface Video {
   id: string;
@@ -46,6 +47,8 @@ export default function MyTrainingVideosPage() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const [showModal, setShowModal] = useState(false);
+  const [modalVideo, setModalVideo] = useState<Video | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -124,6 +127,12 @@ export default function MyTrainingVideosPage() {
     videos.filter(v => v.is_annual_renewal && v.assigned_date && isAnnualRenewalDue(v)).length
   , [videos]);
 
+  // Handler to show the video modal
+  function handleShowVideoModal(video: Video) {
+    setModalVideo(video);
+    setShowModal(true);
+  }
+
   return (
     <div className="flex bg-[#F7F9FA] min-h-screen h-screen">
       <SideMenu role="driver" active="my-training-videos" onNavigate={() => {}} />
@@ -174,8 +183,15 @@ export default function MyTrainingVideosPage() {
         {loading ? (
           <div className="text-center py-4">Loading videos...</div>
         ) : (
-          <TrainingVideosGrid videos={filteredVideos} />
+          <TrainingVideosGrid videos={filteredVideos} onStartTraining={handleShowVideoModal} />
         )}
+        <TrainingVideoModal
+          open={showModal && !!modalVideo?.youtube_url}
+          onClose={() => setShowModal(false)}
+          title={modalVideo?.title || ''}
+          youtubeId={modalVideo?.youtube_url ? modalVideo.youtube_url.split('v=')[1] : ''}
+          videoId={modalVideo?.id || ''}
+        />
       </main>
     </div>
   );
