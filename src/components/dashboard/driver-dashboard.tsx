@@ -5,6 +5,7 @@ import { TrainingVideosGrid } from '@/components/training-videos/training-videos
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/use-auth';
 import { useUserRole } from '@/hooks/use-user-role';
+import { TrainingVideoModal } from '@/components/training-videos/training-video-modal';
 
 interface Video {
   id: string;
@@ -42,6 +43,8 @@ export function DriverDashboard() {
   const { role } = useUserRole();
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [modalVideo, setModalVideo] = useState<Video | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -131,11 +134,11 @@ export function DriverDashboard() {
   const userName = user?.user_metadata?.full_name || 'Driver';
   const userEmail = user?.email || '';
 
-  const handleStartTraining = (video: Video) => {
-    if (video.youtube_url) {
-      window.open(video.youtube_url, '_blank');
-    }
-  };
+  // Show modal with YouTube video
+  function handleShowVideoModal(video: Video) {
+    setModalVideo(video);
+    setShowModal(true);
+  }
 
   return (
     <div className="flex bg-[#F7F9FA] min-h-screen h-screen">
@@ -196,9 +199,19 @@ export function DriverDashboard() {
           {loading ? (
             <div className="text-center py-4">Loading videos...</div>
           ) : (
-            <TrainingVideosGrid videos={videos} onStartTraining={handleStartTraining} />
+            <TrainingVideosGrid
+              videos={videos}
+              onStartTraining={handleShowVideoModal}
+            />
           )}
         </div>
+        {/* YouTube Modal */}
+        <TrainingVideoModal
+          open={showModal && !!modalVideo?.youtube_url}
+          onClose={() => setShowModal(false)}
+          title={modalVideo?.title || ''}
+          youtubeId={getYouTubeId(modalVideo?.youtube_url)}
+        />
       </main>
     </div>
   );

@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import Image from 'next/image';
 import { useAuth } from '@/hooks/use-auth';
 import { formatDate } from '@/lib/format-date';
+import { TrainingVideoModal } from '@/components/training-videos/training-video-modal';
 
 interface AdminVideoCardProps {
   video: {
@@ -80,15 +81,16 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
 
     try {
       // First check if the users_videos record exists
-      const { data: existingRecord, error: checkError } = await supabase
+      const { data: existingRecord, error, status } = await supabase
         .from('users_videos')
         .select('*')
         .eq('user', user.id)
         .eq('video', video.id)
         .single();
 
-      if (checkError) {
-        console.error('Error checking users_videos record:', checkError);
+      // Only log real errors, not 'no record found'
+      if (error && status !== 406) {
+        console.error('Error checking users_videos record:', error);
         return;
       }
 
@@ -96,11 +98,10 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
       if (existingRecord) {
         const { error: updateError } = await supabase
           .from('users_videos')
-          .update({ 
-            last_watched: new Date().toISOString(), 
-            modified_date: new Date().toISOString(), 
+          .update({
+            last_watched: new Date().toISOString(),
+            modified_date: new Date().toISOString(),
             last_action: 'watched',
-            // Preserve the existing assigned_date
             assigned_date: existingRecord.assigned_date
           })
           .eq('user', user.id)
@@ -216,34 +217,13 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
         assignedCount={stats.assigned}
         onAfterAssign={refreshStats}
       />
-
       {/* YouTube Modal */}
-      {showModal && youtubeId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-          <div className="bg-white rounded-xl shadow-lg p-4 max-w-2xl w-full relative">
-            <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-black text-2xl"
-              onClick={() => setShowModal(false)}
-              aria-label="Close"
-            >
-              &times;
-            </button>
-            <div className="font-bold text-lg mb-2">{video.title}</div>
-            <div className="aspect-video w-full">
-              <iframe
-                width="100%"
-                height="100%"
-                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`}
-                title={video.title}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="rounded-lg w-full h-full"
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <TrainingVideoModal
+        open={showModal && !!youtubeId}
+        onClose={() => setShowModal(false)}
+        title={video.title}
+        youtubeId={youtubeId}
+      />
     </div>
   );
 }
