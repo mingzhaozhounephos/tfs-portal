@@ -61,7 +61,6 @@ export default function MyTrainingVideosPage() {
           is_completed: item.is_completed,
           modified_date: item.modified_date,
           last_action: item.last_action,
-          is_annual_renewal: item.is_annual_renewal,
         }));
 
         setVideos(transformedVideos);

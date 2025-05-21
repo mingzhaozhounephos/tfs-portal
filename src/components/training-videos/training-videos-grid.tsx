@@ -38,6 +38,17 @@ function getYouTubeThumbnail(videoId: string) {
   return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 }
 
+function isAnnualRenewalDue(video: TrainingVideo): boolean {
+  console.log('video', video);
+
+  if (!video.is_annual_renewal || !video.assigned_date) return false;
+  const assigned = new Date(video.assigned_date);
+  const now = new Date();
+  // 1 year = 365 days
+  console.log('need renewal', (now.getTime() - assigned.getTime()) > 365 * 24 * 60 * 60 * 1000);
+  return (now.getTime() - assigned.getTime()) > 365 * 24 * 60 * 60 * 1000;
+}
+
 export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGridProps) {
   const { user } = useAuth();
 
@@ -75,7 +86,7 @@ export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGr
       {videos.map((video, idx) => {
         const youtubeId = getYouTubeId(video.youtube_url);
         const thumbnailUrl = youtubeId ? getYouTubeThumbnail(youtubeId) : video.image || '/placeholder.webp';
-        
+        const renewalDue = isAnnualRenewalDue(video);
         return (
           <div key={video.id || idx} className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative">
             <div className="font-bold text-lg mb-1">{video.title}</div>
@@ -95,6 +106,35 @@ export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGr
               >
                 {video.category}
               </span>
+              {/* Renewal Required Badge */}
+              {renewalDue && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-300">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-3 h-3 mr-0.5"
+                >
+                  <path
+                    d="M16.5 10A6.5 6.5 0 1 1 10 3.5"
+                    stroke="#A0522D"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M10 1.5v4a.5.5 0 0 0 .5.5h4"
+                    stroke="#A0522D"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                 Renewal Required
+                </span>
+              )}
             </div>
             <div
               className="text-xs text-gray-600 mb-2 line-clamp-2"
@@ -112,6 +152,13 @@ export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGr
               className="relative aspect-video w-full overflow-hidden rounded-lg group cursor-pointer mb-2"
               onClick={() => handleStartTraining(video)}
             >
+              {/* Annual Renewal Due Badge */}
+              {renewalDue && (
+                <span className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-1 rounded-full bg-red-600 text-white text-xs font-semibold shadow-lg">
+                  <svg className="w-4 h-4 mr-1 text-white" fill="none" viewBox="0 0 20 20"><polygon points="10,2 19,18 1,18" fill="#fff" stroke="#fff" strokeWidth="1"/><polygon points="10,3.5 17.5,17 2.5,17" fill="#dc2626"/><text x="10" y="15" textAnchor="middle" fontSize="10" fill="#fff">!</text></svg>
+                  Annual Renewal Due
+                </span>
+              )}
               <Image
                 src={thumbnailUrl}
                 alt={video.title}
@@ -152,7 +199,7 @@ export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGr
               className="mt-auto bg-black text-white rounded-lg py-2 font-medium hover:bg-gray-900 transition"
               onClick={() => handleStartTraining(video)}
             >
-              Start Training
+              {renewalDue ? 'Watch Again (Required)' : 'Start Training'}
             </button>
           </div>
         );

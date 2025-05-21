@@ -56,6 +56,7 @@ export function DriverDashboard() {
           .select('*, modified_date, last_action, video:videos(*)')
           .eq('user', user.id);
         if (error) throw error;
+        console.log('data', data);
         const transformedVideos = data.map(item => ({
           ...item.video,
           assigned_date: item.assigned_date,
@@ -65,8 +66,9 @@ export function DriverDashboard() {
           is_completed: item.is_completed,
           modified_date: item.modified_date,
           last_action: item.last_action,
-          is_annual_renewal: item.is_annual_renewal,
         }));
+
+        console.log('transformedVideos', transformedVideos);
 
         setVideos(transformedVideos);
       } catch (error) {
