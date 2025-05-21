@@ -152,17 +152,23 @@ export default function MyTrainingVideosPage() {
         </div>
         <div className="flex flex-wrap gap-2 mb-6">
           {FILTERS.map(f => (
-            <button
-              key={f.value}
-              className={`px-4 py-2 rounded-full border text-sm font-medium transition
-                ${filter === f.value ? "bg-black text-white border-black" : "bg-white text-black border-gray-200 hover:bg-gray-100"}`}
-              onClick={() => setFilter(f.value)}
-            >
-              {f.label}
-              {f.value === "all" && (
-                <span className="ml-2 text-xs font-semibold">({videos.length})</span>
+            <div key={f.value} className="relative inline-block">
+              <button
+                className={`px-4 py-2 rounded-full border text-sm font-medium transition
+                  ${filter === f.value ? "bg-black text-white border-black" : "bg-white text-black border-gray-200 hover:bg-gray-100"}`}
+                onClick={() => setFilter(f.value)}
+              >
+                {f.label}
+                {f.value === "all" && (
+                  <span className="ml-2 text-xs font-semibold">({videos.length})</span>
+                )}
+              </button>
+              {f.label === 'Renewal Required' && annualRenewalCount > 0 && (
+                <span className="absolute -top-2 -right-2 flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold shadow border-2 border-white">
+                  {annualRenewalCount}
+                </span>
               )}
-            </button>
+            </div>
           ))}
         </div>
         {loading ? (
