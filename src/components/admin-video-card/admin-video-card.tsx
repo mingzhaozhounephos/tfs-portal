@@ -106,13 +106,44 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
   }, [video.id]);
 
   async function handleOpenModal() {
-    if (user && video.id) {
-      await supabase
+    if (!user || !video.id) return;
+
+    try {
+      // First check if the users_videos record exists
+      const { data: existingRecord, error: checkError } = await supabase
         .from('users_videos')
-        .update({ last_watched: new Date().toISOString(), modified_date: new Date().toISOString(), last_action: 'watched' })
+        .select('*')
         .eq('user', user.id)
-        .eq('video', video.id);
+        .eq('video', video.id)
+        .single();
+
+      if (checkError) {
+        console.error('Error checking users_videos record:', checkError);
+        return;
+      }
+
+      // Only update if the record exists
+      if (existingRecord) {
+        const { error: updateError } = await supabase
+          .from('users_videos')
+          .update({ 
+            last_watched: new Date().toISOString(), 
+            modified_date: new Date().toISOString(), 
+            last_action: 'watched' 
+          })
+          .eq('user', user.id)
+          .eq('video', video.id);
+
+        if (updateError) {
+          console.error('Error updating users_videos:', updateError);
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error in handleOpenModal:', error);
+      return;
     }
+
     setShowModal(true);
   }
 
