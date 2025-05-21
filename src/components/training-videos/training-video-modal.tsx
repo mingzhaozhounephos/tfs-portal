@@ -39,6 +39,7 @@ export function TrainingVideoModal({ open, onClose, title, youtubeId, videoId }:
         height: '390',
         width: '640',
         videoId: youtubeId,
+        playerVars: { autoplay: 1 },
         events: {
           onStateChange: async (event: any) => {
             if (event.data === window.YT.PlayerState.ENDED) {
