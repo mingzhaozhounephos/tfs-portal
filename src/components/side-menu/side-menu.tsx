@@ -67,9 +67,13 @@ export function SideMenu({ role, active, onNavigate }: SideMenuProps) {
         style={{ minHeight: "100vh", borderRight: '1px solid var(--border-default)' }}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderBottom: '1px solid var(--border-default)' }}>
-          <div>
-            <span className="font-bold text-lg">Driver Training</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-8 h-8 rounded-md bg-[#EA384C] text-white font-bold">TFS</div>
+            
+            <div>
+            <span className="font-bold text-lg">Driver Hub</span>
             <div className="text-xs text-gray-500">{role === "admin" ? "Admin Dashboard" : "Driver Dashboard"}</div>
+            </div>
           </div>
           <button className="md:hidden" onClick={() => setOpen(false)} aria-label="Close menu">
             <span className="sr-only">Close menu</span>
@@ -83,8 +87,8 @@ export function SideMenu({ role, active, onNavigate }: SideMenuProps) {
               className={clsx(
                 "flex items-center w-full px-4 py-2 rounded-lg text-left gap-2 font-medium",
                 active === item.route
-                  ? "bg-black text-white"
-                  : "hover:bg-gray-100 text-black"
+                  ? "bg-[#EA384C] text-white"
+                  : "hover:bg-[#ea384c1a] text-black"
               )}
               onClick={() => {
                 setOpen(false);
@@ -99,7 +103,7 @@ export function SideMenu({ role, active, onNavigate }: SideMenuProps) {
         </nav>
         <div className="p-4 border-t mt-auto" style={{ borderTop: '1px solid var(--border-default)' }}>
           <button
-            className="flex items-center gap-2 w-full px-4 py-2 rounded-lg border text-black hover:bg-gray-100"
+            className="flex items-center gap-2 w-full px-4 py-2 rounded-lg border hover:border-[#ea384c1a] text-black hover:text-[#EA384C] hover:bg-[#ea384c1a]  "
             style={{ borderColor: 'var(--border-default)' }}
             onClick={handleLogout}
           >
