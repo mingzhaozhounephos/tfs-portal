@@ -137,7 +137,11 @@ export default function MyTrainingVideosPage() {
     <div className="flex bg-[#F7F9FA] min-h-screen h-screen">
       <SideMenu role="driver" active="my-training-videos" onNavigate={() => {}} />
       <main className="flex-1 p-8 h-screen overflow-y-auto">
+        <div className="flex flex-col gap-2 items-start mb-2">
+          <img src="/images/Logo.jpg" alt="TFS Express Logistics" className="h-8 w-auto mb-2" />
+        </div>
         <div className="flex items-center justify-between mb-6">
+          {/* <img src="/images/Logo.jpg" alt="TFS Express Logistics" className="h-8 w-auto mb-2" /> */}
           <h1 className="text-3xl font-bold">My Training Videos</h1>
           {annualRenewalCount > 0 && (
             <span className="inline-flex items-center gap-2 px-4 py-1 pt-[7px] rounded-full text-sm font-semibold bg-red-500 text-white">

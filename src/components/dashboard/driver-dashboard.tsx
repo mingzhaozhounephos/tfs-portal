@@ -142,10 +142,17 @@ export function DriverDashboard() {
     <div className="flex bg-[#F7F9FA] min-h-screen h-screen">
       <SideMenu role={role || 'driver'} active="dashboard" onNavigate={() => {}} />
       <main className="flex-1 p-8 h-screen overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <div className="text-sm text-gray-600">
-            Welcome, {userName} ({userEmail})
+        <div className="flex flex-col gap-2 items-center mb-6 w-full">
+          <div className="flex items-start justify-between w-full">
+            <img src="/images/Logo.jpg" alt="TFS Express Logistics" className="h-8 w-auto mb-2" />
+          </div>
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold">Dashboard</h1>
+            </div>
+            <div className="text-sm text-gray-600 ml-4 whitespace-nowrap">
+              Welcome, {userName} ({userEmail})
+            </div>
           </div>
         </div>
         {/* Widgets */}

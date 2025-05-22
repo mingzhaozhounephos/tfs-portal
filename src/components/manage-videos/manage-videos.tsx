@@ -67,6 +67,9 @@ export function ManageVideos() {
 
   return (
     <div className="flex-1 p-8 bg-[#F7F9FA] min-h-screen">
+      <div className="flex flex-col gap-2 items-start mb-2">
+        <img src="/images/Logo.jpg" alt="TFS Express Logistics" className="h-8 w-auto mb-2" />
+      </div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Manage Training Videos</h1>
         <button
