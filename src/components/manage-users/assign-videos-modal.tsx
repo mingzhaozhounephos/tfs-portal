@@ -78,13 +78,20 @@ export function AssignVideosModal({ isOpen, onClose, user, assignedVideoIds, onS
         </div>
         <div className="text-sm text-gray-600 mb-4">Select videos to assign to this user.</div>
         {/* Search */}
-        <input
-          type="text"
-          placeholder="Search videos..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full px-3 py-2 border border-[#e6e6e6] rounded-md mb-3"
-        />
+        <div className="w-full mb-4">
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#EA384C] pointer-events-none">
+              <svg className="lucide lucide-search w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </span>
+            <input
+              type="text"
+              placeholder="Search videos..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-10 border border-[#EA384C] rounded-lg px-4 py-2 text-sm bg-[#fafbfc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F28896] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm w-64 bg-gray-50 focus:bg-white focus:border-[#EA384C] transition"
+            />
+          </div>
+        </div>
         {/* Select All */}
         <div className="flex items-center mb-2">
           <input
