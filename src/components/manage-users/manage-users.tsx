@@ -72,6 +72,7 @@ export function ManageUsers() {
         onClose={() => setAssignModalOpen(false)}
         videoId={selectedVideoId || ""}
         videoTitle={selectedVideoTitle}
+        assignedCount={0}
       />
     </div>
   );
