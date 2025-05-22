@@ -63,7 +63,7 @@ export function AssignVideoModal({ isOpen, onClose, videoId, videoTitle, assigne
         ...selectedUsers,
         ...filteredUsers.filter(u => !selectedUsers.includes(u.id)).map(u => u.id)
       ]);
-    }
+  }
   };
 
   const handleUserSelect = (userId: string) => {
@@ -84,7 +84,7 @@ export function AssignVideoModal({ isOpen, onClose, videoId, videoTitle, assigne
       onAfterAssign?.();
     } catch (err) {
       console.error('Failed to assign videos:', err);
-    }
+  }
   };
 
   // Modal content
