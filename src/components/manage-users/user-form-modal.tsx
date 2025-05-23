@@ -71,7 +71,7 @@ export function UserFormModal({ open, onClose, onSuccess }: UserFormModalProps) 
           <div>
             <label className="block text-sm mb-1">Full Name</label>
             <input
-              className="w-full border border-[#e6e6e6] rounded px-3 py-2"
+              className="w-full border border-[#e6e6e6] rounded px-3 py-2 focus:outline-none focus-visible:outline-none focus:outline-auto focus-visible:outline-auto focus:outline-[#EA384C] focus-visible:outline-[#EA384C]"
               value={name}
               onChange={e => setName(e.target.value)}
               required
@@ -81,7 +81,7 @@ export function UserFormModal({ open, onClose, onSuccess }: UserFormModalProps) 
           <div>
             <label className="block text-sm mb-1">Email</label>
             <input
-              className="w-full border border-[#e6e6e6] rounded px-3 py-2"
+              className="w-full border border-[#e6e6e6] rounded px-3 py-2 focus:outline-none focus-visible:outline-none focus:outline-auto focus-visible:outline-auto focus:outline-[#EA384C] focus-visible:outline-[#EA384C]"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
@@ -92,7 +92,7 @@ export function UserFormModal({ open, onClose, onSuccess }: UserFormModalProps) 
           <div>
             <label className="block text-sm mb-1">Role</label>
             <select
-              className="w-full border border-[#e6e6e6]  rounded px-3 py-2"
+              className="w-full border border-[#e6e6e6]  rounded px-3 py-2 focus:outline-none focus-visible:outline-none focus:outline-auto focus-visible:outline-auto focus:outline-[#EA384C] focus-visible:outline-[#EA384C]"
               value={role}
               onChange={e => setRole(e.target.value)}
               required
@@ -113,7 +113,7 @@ export function UserFormModal({ open, onClose, onSuccess }: UserFormModalProps) 
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded bg-black text-white border border-[#e6e6e6]"
+              className="px-4 py-2 rounded bg-[#EA384C] text-white border hover:bg-[#EC4659]"
               disabled={isLoading}
             >
               Add User
