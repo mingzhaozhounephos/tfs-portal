@@ -43,7 +43,7 @@ export function UserDetailsCards({ user }: UserDetailsCardsProps) {
           <span className="text-gray-500 font-normal text-sm">{loading ? '-' : `${completedVideos}/${stats.numAssigned} videos`}</span>
         </div>
         <div className="w-full h-2 bg-gray-100 rounded-full">
-          <div className="h-2 rounded-full bg-green-200" style={{ width: loading ? '0%' : `${stats.completion}%` }} />
+          <div className="h-2 rounded-full bg-[#EA384C]" style={{ width: loading ? '0%' : `${stats.completion}%` }} />
         </div>
       </div>
       {/* Assigned Videos Card */}
@@ -63,7 +63,7 @@ export function UserDetailsCards({ user }: UserDetailsCardsProps) {
         </div>
         <div className="text-3xl font-bold mb-2">{loading ? '-' : `${stats.completion}%`}</div>
         <div className="w-full bg-gray-100 rounded h-2 mt-2">
-          <div className="bg-green-200 h-2 rounded" style={{ width: loading ? '0%' : `${stats.completion}%` }} />
+          <div className="bg-[#EA384C] h-2 rounded" style={{ width: loading ? '0%' : `${stats.completion}%` }} />
         </div>
       </div>
       {/* Renewal Required Card */}
