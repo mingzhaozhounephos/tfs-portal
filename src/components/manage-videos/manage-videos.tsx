@@ -66,14 +66,14 @@ export function ManageVideos() {
   );
 
   return (
-    <div className="flex-1 p-8 bg-[#F7F9FA] min-h-screen">
+    <div className="flex-1 p-8 min-h-screen">
       <div className="flex flex-col gap-2 items-start mb-2">
         <img src="/images/Logo.jpg" alt="TFS Express Logistics" className="h-8 w-auto mb-2" />
       </div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Manage Training Videos</h1>
         <button
-          className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-gray-900"
+          className="flex items-center gap-2 bg-[#EA384C] text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-[#EC4659]"
           onClick={() => { setEditingVideo(null); setModalOpen(true); }}
         >
           <svg width="18" height="18" fill="none"><circle cx="9" cy="9" r="8" stroke="currentColor" strokeWidth="2"/><path d="M9 5v8M5 9h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
@@ -94,16 +94,23 @@ export function ManageVideos() {
           />
         </div>
       </div>
-      <div className="flex gap-2 mb-6">
+      {/* Tab Navigation */}
+      <div
+        className="flex w-fit rounded-lg p-1 mb-6 shadow-sm"
+        style={{ backgroundColor: '#F1F5F9' }}
+      >
         {tags.map(tag => (
           <button
             key={tag}
-            className={`px-4 py-2 rounded-full border text-sm font-medium ${
-              selectedTag === tag
-                ? "bg-black text-white border-black"
-                : "bg-white text-black border-gray-300"
-            }`}
+            className={`px-4 py-1 rounded-lg transition font-medium
+              ${selectedTag === tag
+                ? "bg-white text-black font-bold shadow"
+                : "bg-transparent text-gray-500 hover:text-black"}
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300
+            `}
             onClick={() => setSelectedTag(tag)}
+            type="button"
+            aria-pressed={selectedTag === tag}
           >
             {tag}
           </button>

@@ -168,21 +168,31 @@ export default function MyTrainingVideosPage() {
             />
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 mb-6">
+        {/* Tab Navigation */}
+        <div
+          className="flex w-fit rounded-lg p-1 mb-6 shadow-sm"
+          style={{ backgroundColor: '#F1F5F9' }}
+        >
           {FILTERS.map(f => (
             <div key={f.value} className="relative inline-block">
               <button
-                className={`px-4 py-2 rounded-full border text-sm font-medium transition
-                  ${filter === f.value ? "bg-black text-white border-black" : "bg-white text-black border-gray-200 hover:bg-gray-100"}`}
+                className={`px-4 py-1 rounded-lg transition font-medium
+                  ${filter === f.value
+                    ? "bg-white text-black font-bold shadow"
+                    : "bg-transparent text-gray-500 hover:text-black"}
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300
+                `}
                 onClick={() => setFilter(f.value)}
+                type="button"
+                aria-pressed={filter === f.value}
               >
                 {f.label}
                 {f.value === "all" && (
-                  <span className="ml-2 text-xs font-semibold">({videos.length})</span>
+                  <span className="ml-2">({videos.length})</span>
                 )}
               </button>
               {f.label === 'Renewal Required' && annualRenewalCount > 0 && (
-                <span className="absolute -top-2 -right-2 flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold shadow border-2 border-white">
+                <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-xs font-bold shadow border-2 border-white">
                   {annualRenewalCount}
                 </span>
               )}

@@ -266,18 +266,33 @@ export function AdminDashboard() {
               <Widget title="Videos Watched" value={String(videosWatched)} sub={`+${videosWatchedThisWeek} videos watched this week`} icon={<Play className="w-5 h-5 text-gray-400" />} />
             </div>
             {/* Toggle */}
-            <div className="flex gap-2 mb-4">
+            <div
+              className="flex w-fit rounded-lg p-1 mb-4 shadow-sm"
+              style={{ backgroundColor: '#F1F5F9' }}
+            >
               <button
-                className={`px-4 py-2 rounded ${tab === "videos" ? "bg-black text-white" : "bg-white border"}`}
-                style={tab === "videos" ? {} : { borderColor: 'var(--border-default)' }}
+                className={`px-4 py-1 rounded-lg transition font-medium
+                  ${tab === "videos"
+                    ? "bg-white text-black font-bold shadow"
+                    : "bg-transparent text-gray-500 hover:text-black"}
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300
+                `}
                 onClick={() => setTab("videos")}
+                type="button"
+                aria-pressed={tab === "videos"}
               >
                 Recent Videos
               </button>
               <button
-                className={`px-4 py-2 rounded ${tab === "users" ? "bg-black text-white" : "bg-white border"}`}
-                style={tab === "users" ? {} : { borderColor: 'var(--border-default)' }}
+                className={`px-4 py-1 rounded-lg transition font-medium
+                  ${tab === "users"
+                    ? "bg-white text-black font-bold shadow"
+                    : "bg-transparent text-gray-500 hover:text-black"}
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300
+                `}
                 onClick={() => setTab("users")}
+                type="button"
+                aria-pressed={tab === "users"}
               >
                 Recent Users
               </button>
