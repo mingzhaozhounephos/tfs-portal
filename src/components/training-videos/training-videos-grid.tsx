@@ -102,7 +102,7 @@ export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGr
         const thumbnailUrl = youtubeId ? getYouTubeThumbnail(youtubeId) : video.image || '/placeholder.webp';
         const renewalDue = isAnnualRenewalDue(video);
         return (
-          <div key={video.id || idx} className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative">
+          <div key={video.id || idx} className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative border border-transparent hover:border-[#EA384C] hover:shadow-lg transition-all duration-200">
             <div className="font-bold text-lg mb-1">{video.title}</div>
             <div className="flex items-center gap-2 mb-1">
               <span

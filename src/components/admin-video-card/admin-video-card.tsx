@@ -121,7 +121,7 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
   }
 
   return (
-    <div className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative">
+    <div className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative border border-transparent hover:border-[#EA384C] hover:shadow-lg transition-all duration-200">
       {/* Pencil icon for edit */}
       {showEdit && (
         <button
