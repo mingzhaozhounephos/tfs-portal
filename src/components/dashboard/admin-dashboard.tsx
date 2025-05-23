@@ -260,10 +260,10 @@ export function AdminDashboard() {
             </div>
             {/* Widgets */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <Widget title="Total Videos" value={String(totalVideos)} sub={`+${videosThisWeek} videos added this week`} icon={<Bell className="w-5 h-5 text-gray-400" />} />
-              <Widget title="Total Users" value={String(totalUsers)} sub={`+${usersThisMonth} users added this month`} icon={<Users className="w-5 h-5 text-gray-400" />} />
-              <Widget title="Completion Rate" value={completionRate} sub="" icon={<Activity className="w-5 h-5 text-gray-400" />} progress={parseInt(completionRate)} />
-              <Widget title="Videos Watched" value={String(videosWatched)} sub={`+${videosWatchedThisWeek} videos watched this week`} icon={<Play className="w-5 h-5 text-gray-400" />} />
+              <Widget title="Total Videos" value={String(totalVideos)} sub={`+${videosThisWeek} videos added this week`} icon={<div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]"><Bell className="w-5 h-5 text-[#EA384C]" /></div>} />
+              <Widget title="Total Users" value={String(totalUsers)} sub={`+${usersThisMonth} users added this month`} icon={<div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]"><Users className="w-5 h-5 text-[#EA384C]" /></div>} />
+              <Widget title="Completion Rate" value={completionRate} sub="" icon={<div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]"><Activity className="w-5 h-5 text-[#EA384C]" /></div>} progress={parseInt(completionRate)} />
+              <Widget title="Videos Watched" value={String(videosWatched)} sub={`+${videosWatchedThisWeek} videos watched this week`} icon={<div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]"><Play className="w-5 h-5 text-[#EA384C]" /></div>} />
             </div>
             {/* Toggle */}
             <div
@@ -352,7 +352,7 @@ function Widget({ title, value, sub, icon, progress }: WidgetProps) {
       {typeof progress === 'number' && (
         <div className="mt-2 w-full h-2 bg-gray-100 rounded-full overflow-hidden">
           <div
-            className="h-2 bg-green-200 rounded-full transition-all"
+            className="h-2 bg-[#EA384C] rounded-full transition-all"
             style={{ width: `${progress}%` }}
           />
         </div>

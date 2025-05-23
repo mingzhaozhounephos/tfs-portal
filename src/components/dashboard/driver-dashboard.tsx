@@ -160,14 +160,16 @@ export function DriverDashboard() {
           <div className="bg-white rounded-xl p-4 shadow flex flex-col gap-2 min-h-[100px]">
             <div className="flex items-center justify-between mb-1">
               <div className="tracking-tight text-sm font-medium">Your Progress</div>
-              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-              </svg>
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
+                <svg className="w-5 h-5 text-[#EA384C]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg>
+              </div>
             </div>
             <div className="text-2xl font-bold">{progress}%</div>
             <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mb-1">
               <div
-                className="h-full bg-green-200 transition-all"
+                className="h-full bg-[#EA384C] transition-all"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -176,11 +178,13 @@ export function DriverDashboard() {
           <div className="bg-white rounded-xl p-4 shadow flex flex-col gap-2 min-h-[100px]">
             <div className="flex items-center justify-between mb-1">
               <div className="tracking-tight text-sm font-medium">Assigned Videos</div>
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="20" height="14" x="2" y="5" rx="2"></rect>
-                <path d="m14 9 3 3-3 3"></path>
-                <path d="M10 12H7"></path>
-              </svg>
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-[#EA384C]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="20" height="14" x="2" y="5" rx="2"></rect>
+                  <path d="m14 9 3 3-3 3"></path>
+                  <path d="M10 12H7"></path>
+                </svg>
+              </div>
             </div>
             <div className="text-2xl font-bold">{assignedVideos}</div>
             <div className="text-xs text-gray-500">{assignedVideos} videos remaining</div>
@@ -188,10 +192,12 @@ export function DriverDashboard() {
           <div className="bg-white rounded-xl p-4 shadow flex flex-col gap-2 min-h-[100px]">
             <div className="flex items-center justify-between mb-1">
               <div className="tracking-tight text-sm font-medium">Last Activity</div>
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2v20"></path>
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-              </svg>
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-[#EA384C]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2v20"></path>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+              </div>
             </div>
             <div className="text-2xl font-bold">{activityText}</div>
             {actionText && (
