@@ -31,7 +31,7 @@ export function ManageUsers() {
         <h1 className="text-3xl font-bold">Manage Users</h1>
         <button
           onClick={() => setModalOpen(true)}
-          className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-gray-900"
+          className="flex items-center gap-2 bg-[#EA384C] text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-[#EC4659]"
         >
           <PlusCircle size={20} />
           Add User
