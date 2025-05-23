@@ -125,12 +125,14 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
       {/* Pencil icon for edit */}
       {showEdit && (
         <button
-          className="absolute top-3 right-3 text-gray-400 hover:text-black"
+          className="absolute top-3 right-3 flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED] hover:bg-[#FFD6DB] transition"
           onClick={onEdit}
           aria-label="Edit video"
         >
-          <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
-            <path d="M14.7 3.29a1 1 0 0 1 1.41 1.42l-9.08 9.08a1 1 0 0 0-.26.46l-1 3a1 1 0 0 0 1.26 1.26l3-1a1 1 0 0 0 .46-.26l9.08-9.08a1 1 0 0 0-1.42-1.42l-9.08 9.08a1 1 0 0 1-.46.26l-3 1a1 1 0 0 1-1.26-1.26l1-3a1 1 0 0 1 .26-.46l9.08-9.08z" fill="currentColor"/>
+          {/* Use Lucide's Pencil icon for a modern edit icon */}
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#EA384C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil w-5 h-5">
+            <path d="M18 2a2.828 2.828 0 1 1 4 4L7 21l-4 1 1-4Z" />
+            <path d="M16 5 19 8" />
           </svg>
         </button>
       )}
