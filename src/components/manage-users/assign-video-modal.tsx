@@ -175,7 +175,7 @@ export function AssignVideoModal({ isOpen, onClose, videoId, videoTitle, assigne
             <button
               onClick={handleAssign}
               disabled={!canAssign}
-              className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-sm font-medium text-white bg-[#EA384C] rounded-md hover:bg-[#EC4659] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Assign Video
             </button>
