@@ -43,7 +43,7 @@ export default function UserDetailsPage({ params }: UserDetailsPageProps) {
   }
 
   return (
-    <div className="flex bg-[#F7F9FA] min-h-screen h-screen">
+    <div className="flex bg-white min-h-screen h-screen">
       <SideMenu role={role || 'driver'} active="manage-users" />
       <main className="flex-1 p-8 h-screen overflow-y-auto">
         <div className="mb-6">

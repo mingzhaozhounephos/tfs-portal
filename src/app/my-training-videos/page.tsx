@@ -134,7 +134,7 @@ export default function MyTrainingVideosPage() {
   }
 
   return (
-    <div className="flex bg-[#F7F9FA] min-h-screen h-screen">
+    <div className="flex bg-white min-h-screen h-screen">
       <SideMenu role="driver" active="my-training-videos" onNavigate={() => {}} />
       <main className="flex-1 p-8 h-screen overflow-y-auto">
         <div className="flex flex-col gap-2 items-start mb-2">

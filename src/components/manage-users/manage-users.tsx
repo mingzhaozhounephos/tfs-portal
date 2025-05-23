@@ -23,7 +23,7 @@ export function ManageUsers() {
   };
 
   return (
-    <div className="flex-1 p-8 bg-[#F7F9FA] min-h-screen">
+    <div className="flex-1 p-8 bg-white min-h-screen">
       <div className="flex flex-col gap-2 items-start mb-2">
         <img src="/images/Logo.jpg" alt="TFS Express Logistics" className="h-8 w-auto mb-2" />
       </div>

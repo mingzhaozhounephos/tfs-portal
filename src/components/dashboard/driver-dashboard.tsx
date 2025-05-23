@@ -139,7 +139,7 @@ export function DriverDashboard() {
   }
 
   return (
-    <div className="flex bg-[#F7F9FA] min-h-screen h-screen">
+    <div className="flex bg-white min-h-screen h-screen">
       <SideMenu role={role || 'driver'} active="dashboard" onNavigate={() => {}} />
       <main className="flex-1 p-8 h-screen overflow-y-auto">
         <div className="flex flex-col gap-2 items-center mb-6 w-full">

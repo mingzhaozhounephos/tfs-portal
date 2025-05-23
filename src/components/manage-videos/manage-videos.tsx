@@ -66,7 +66,7 @@ export function ManageVideos() {
   );
 
   return (
-    <div className="flex-1 p-8 min-h-screen">
+    <div className="flex-1 bg-white p-8 min-h-screen">
       <div className="flex flex-col gap-2 items-start mb-2">
         <img src="/images/Logo.jpg" alt="TFS Express Logistics" className="h-8 w-auto mb-2" />
       </div>
