@@ -102,7 +102,7 @@ export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGr
         const thumbnailUrl = youtubeId ? getYouTubeThumbnail(youtubeId) : video.image || '/placeholder.webp';
         const renewalDue = isAnnualRenewalDue(video);
         return (
-          <div key={video.id || idx} className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative border border-transparent hover:border-[#EA384C] hover:shadow-lg transition-all duration-200">
+          <div key={video.id || idx} className="group bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative border border-transparent hover:border-[#EA384C] hover:shadow-lg transition-all duration-200">
             <div className="font-bold text-lg mb-1">{video.title}</div>
             <div className="flex items-center gap-2 mb-1">
               <span
@@ -163,7 +163,7 @@ export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGr
               {video.description}
             </div>
             <div
-              className="relative aspect-video w-full overflow-hidden rounded-lg group cursor-pointer mb-2"
+              className="relative aspect-video w-full overflow-hidden rounded-lg cursor-pointer mb-2"
               onClick={() => handleStartTraining(video)}
             >
               {/* Annual Renewal Due Badge */}
@@ -181,14 +181,17 @@ export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGr
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
               {youtubeId && (
-                <span className="absolute inset-0 flex items-center justify-center">
-                  <span className="rounded-full bg-white/60 flex items-center justify-center">
-                    <svg className="w-16 h-16 text-black/70" fill="none" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
-                      <polygon points="10,8 16,12 10,16" fill="currentColor"/>
-                    </svg>
+                <>
+                  <span className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200 z-10" />
+                  <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 z-20">
+                    <span className="rounded-full bg-white/60 flex items-center justify-center">
+                      <svg className="w-16 h-16 text-[#EA384C]" fill="none" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        <polygon points="10,8 16,12 10,16" fill="currentColor"/>
+                      </svg>
+                    </span>
                   </span>
-                </span>
+                </>
               )}
             </div>
             <div className="flex items-center text-xs text-gray-500 gap-6 mb-2">
@@ -222,7 +225,7 @@ export function TrainingVideosGrid({ videos, onStartTraining }: TrainingVideosGr
               </div>
             )}
             <button
-              className="mt-auto bg-black text-white rounded-lg py-2 font-medium hover:bg-gray-900 transition"
+              className="mt-auto bg-[#EA384C] text-white rounded-lg py-2 font-medium hover:bg-[#EC4659] transition"
               onClick={() => handleStartTraining(video)}
             >
               {renewalDue ? 'Watch Again (Required)' : 'Start Training'}

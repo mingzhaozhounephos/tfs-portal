@@ -121,7 +121,7 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
   }
 
   return (
-    <div className="bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative border border-transparent hover:border-[#EA384C] hover:shadow-lg transition-all duration-200">
+    <div className="group bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative border border-transparent hover:border-[#EA384C] hover:shadow-lg transition-all duration-200">
       {/* Pencil icon for edit */}
       {showEdit && (
         <button
@@ -166,7 +166,7 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
       >
         {video.description}
       </div>
-      <div className="relative aspect-video w-full overflow-hidden rounded-lg group cursor-pointer" onClick={() => youtubeId && handleOpenModal()}>
+      <div className="relative aspect-video w-full overflow-hidden rounded-lg cursor-pointer" onClick={() => youtubeId && handleOpenModal()}>
         <Image
           src={thumbnailUrl}
           alt={video.title}
@@ -175,11 +175,14 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
         {youtubeId && (
-          <span className="absolute inset-0 flex items-center justify-center">
-            <span className="rounded-full bg-white/60 flex items-center justify-center">
-              <PlayCircle className="w-16 h-16 text-black/70" fill="none" />
+          <>
+            <span className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200 z-10" />
+            <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 z-20">
+              <span className="rounded-full bg-white/60 flex items-center justify-center">
+                <PlayCircle className="w-16 h-16 text-[#EA384C]" fill="none" />
+              </span>
             </span>
-          </span>
+          </>
         )}
       </div>
       <div className="flex justify-between text-xs text-gray-500">
@@ -202,9 +205,9 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
           {stats.completed}% completed
         </span>
       </div>
+
       <button
-        className="mt-2 w-full border rounded py-1 text-sm font-medium"
-        style={{ borderColor: 'var(--border-default)' }}
+        className="mt-auto bg-[#EA384C] text-white rounded-lg py-2 font-medium hover:bg-[#EC4659] transition"
         onClick={() => setAssignModalOpen(true)}
       >
         Assign to Users
