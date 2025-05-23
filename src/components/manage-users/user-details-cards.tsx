@@ -50,7 +50,9 @@ export function UserDetailsCards({ user }: UserDetailsCardsProps) {
       <div className="bg-white rounded-xl shadow p-6 flex flex-col justify-center border min-h-[180px] col-span-1 md:col-span-2" style={{ borderColor: 'var(--border-default)' }}>
         <div className="flex items-center justify-between mb-2">
           <div className="text-xl font-semibold">Assigned Videos</div>
-          <Video size={22} className="text-gray-400" />
+          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
+            <Video size={22} className="text-[#EA384C]" />
+          </div>
         </div>
         <div className="text-3xl font-bold mb-1">{loading ? '-' : stats.numAssigned}</div>
         <div className="text-gray-500 text-base">{loading ? '' : `${stats.numAssigned - Math.round(stats.completion * stats.numAssigned / 100)} pending completion`}</div>
@@ -59,7 +61,9 @@ export function UserDetailsCards({ user }: UserDetailsCardsProps) {
       <div className="bg-white rounded-xl shadow p-6 flex flex-col justify-center border min-h-[180px] col-span-1 md:col-span-2" style={{ borderColor: 'var(--border-default)' }}>
         <div className="flex items-center justify-between mb-2">
           <div className="text-xl font-semibold">Completion Rate</div>
-          <CheckCircle size={22} className="text-gray-400" />
+          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
+            <CheckCircle size={22} className="text-[#EA384C]" />
+          </div>
         </div>
         <div className="text-3xl font-bold mb-2">{loading ? '-' : `${stats.completion}%`}</div>
         <div className="w-full bg-gray-100 rounded h-2 mt-2">
@@ -70,7 +74,9 @@ export function UserDetailsCards({ user }: UserDetailsCardsProps) {
       <div className="bg-white rounded-xl shadow p-6 flex flex-col justify-center border min-h-[180px] col-span-1 md:col-span-2" style={{ borderColor: 'var(--border-default)' }}>
         <div className="flex items-center justify-between mb-2">
           <div className="text-xl font-semibold">Renewal Required</div>
-          <RefreshCw size={22} className="text-gray-400" />
+          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
+            <RefreshCw size={22} className="text-[#EA384C]" />
+          </div>
         </div>
         <div className="text-3xl font-bold mb-1">5</div>
         <div className="text-gray-500 text-base">Videos needing annual renewal</div>
