@@ -243,11 +243,14 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-xs flex flex-col items-center">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md flex flex-col items-center">
             <div className="mb-4 text-center">
               <Trash2 className="w-10 h-10 text-[#EA384C] mx-auto mb-2" />
               <div className="text-lg font-semibold mb-2">Delete Video</div>
               <div className="text-gray-600">Are you sure that you want to delete <span className="font-bold">{video.title}</span>?</div>
+              {stats.assigned > 0 && (
+                <div className="text-red-600 mt-2">This video is assigned to {stats.assigned} user{stats.assigned > 1 ? 's' : ''}.</div>
+              )}
             </div>
             <div className="flex gap-2 w-full justify-center mt-2">
               <button
