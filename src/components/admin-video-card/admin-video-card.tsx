@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Calendar, Clock, Users, CheckCircle, PlayCircle } from "lucide-react";
+import { Calendar, Clock, Users, CheckCircle, PlayCircle, Trash2 } from "lucide-react";
 import { AssignVideoModal } from "@/components/manage-users/assign-video-modal";
 import { supabase } from "@/lib/supabase";
 import Image from 'next/image';
@@ -38,6 +38,8 @@ function getYouTubeThumbnail(videoId: string) {
 export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUsers }: AdminVideoCardProps) {
   const [showModal, setShowModal] = useState(false);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [stats, setStats] = useState({
     assigned: 0,
     completed: 0
@@ -124,17 +126,25 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
     <div className="group bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative border border-transparent hover:border-[#EA384C] hover:shadow-lg transition-all duration-200">
       {/* Pencil icon for edit */}
       {showEdit && (
-        <button
-          className="absolute top-3 right-3 flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED] hover:bg-[#FFD6DB] transition"
-          onClick={onEdit}
-          aria-label="Edit video"
-        >
-          {/* Use Lucide's Pencil icon for a modern edit icon */}
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#EA384C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil w-5 h-5">
-            <path d="M18 2a2.828 2.828 0 1 1 4 4L7 21l-4 1 1-4Z" />
-            <path d="M16 5 19 8" />
-          </svg>
-        </button>
+        <div className="absolute top-3 right-3 flex gap-2">
+          <button
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED] hover:bg-[#FFD6DB] transition"
+            onClick={onEdit}
+            aria-label="Edit video"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#EA384C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil w-5 h-5">
+              <path d="M18 2a2.828 2.828 0 1 1 4 4L7 21l-4 1 1-4Z" />
+              <path d="M16 5 19 8" />
+            </svg>
+          </button>
+          <button
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED] hover:bg-[#FFD6DB] transition"
+            onClick={() => setShowDeleteModal(true)}
+            aria-label="Delete video"
+          >
+            <Trash2 className="w-5 h-5 text-[#EA384C]" />
+          </button>
+        </div>
       )}
       <div className="font-bold">{video.title}</div>
       <div className="flex items-center gap-2 mb-1">
@@ -230,6 +240,44 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
         youtubeId={youtubeId}
         videoId={video.id}
       />
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-xs flex flex-col items-center">
+            <div className="mb-4 text-center">
+              <Trash2 className="w-10 h-10 text-[#EA384C] mx-auto mb-2" />
+              <div className="text-lg font-semibold mb-2">Delete Video</div>
+              <div className="text-gray-600">Are you sure that you want to delete <span className="font-bold">{video.title}</span>?</div>
+            </div>
+            <div className="flex gap-2 w-full justify-center mt-2">
+              <button
+                className="px-4 py-2 rounded bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 rounded bg-[#EA384C] text-white font-medium hover:bg-[#EC4659] transition"
+                onClick={async () => {
+                  setIsDeleting(true);
+                  // Delete users_videos first
+                  await supabase.from('users_videos').delete().eq('video', video.id);
+                  // Delete the video
+                  await supabase.from('videos').delete().eq('id', video.id);
+                  setIsDeleting(false);
+                  setShowDeleteModal(false);
+                  // Optionally, trigger a refresh or callback here
+                  window.location.reload();
+                }}
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Deleting...' : 'Yes, Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
