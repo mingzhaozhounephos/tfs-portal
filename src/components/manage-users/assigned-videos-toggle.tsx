@@ -42,28 +42,40 @@ export function AssignedVideosToggle({ userId, onFilterChange, filter }: Assigne
   }, [videos]);
 
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
+    <div
+      className="flex w-fit rounded-lg p-1 mb-6 shadow-sm"
+      style={{ backgroundColor: '#F1F5F9' }}
+    >
       {FILTERS.map(f => (
-        <button
-          key={f.value}
-          className={`relative px-4 py-2 rounded-full border text-sm font-medium transition
-            ${filter === f.value ? "bg-black text-white border-black" : "bg-white text-black border-gray-200 hover:bg-gray-100"}`}
-          onClick={() => onFilterChange(f.value)}
-        >
-          {f.label}
-          {f.value === "all" && (
-            <span className="ml-2 text-xs font-semibold">({counts.all})</span>
+        <div key={f.value} className="relative inline-block">
+          <button
+            className={`px-4 py-1 rounded-lg transition font-medium
+              ${filter === f.value
+                ? "bg-white text-black font-bold shadow"
+                : "bg-transparent text-gray-500 hover:text-black"}
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300
+            `}
+            onClick={() => onFilterChange(f.value)}
+            type="button"
+            aria-pressed={filter === f.value}
+          >
+            {f.label}
+            {f.value === "all" && (
+              <span className="ml-2">({counts.all})</span>
+            )}
+            {f.value === "pending" && (
+              <span className="ml-2">({counts.pending})</span>
+            )}
+            {f.value === "completed" && (
+              <span className="ml-2">({counts.completed})</span>
+            )}
+          </button>
+          {f.value === 'renewal' && counts.renewal > 0 && (
+            <span className="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-xs font-bold shadow border-2 border-white">
+              {counts.renewal}
+            </span>
           )}
-          {f.value === "pending" && (
-            <span className="ml-2 text-xs font-semibold">({counts.pending})</span>
-          )}
-          {f.value === "completed" && (
-            <span className="ml-2 text-xs font-semibold">({counts.completed})</span>
-          )}
-          {f.value === "renewal" && counts.renewal > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">{counts.renewal}</span>
-          )}
-        </button>
+        </div>
       ))}
     </div>
   );
