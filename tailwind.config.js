@@ -1,4 +1,19 @@
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: 'class',
-  // ... rest of your config ...
-} 
+  content: [
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: '#EA384C',
+        'primary-light': '#FFD6DB',
+        'primary-lighter': '#FEEBED',
+      },
+    },
+  },
+  plugins: [],
+}; 
