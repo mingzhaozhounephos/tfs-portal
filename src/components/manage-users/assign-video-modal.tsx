@@ -50,7 +50,7 @@ export function AssignVideoModal({ isOpen, onClose, videoId, videoTitle, assigne
   const filteredUsers = searchQuery ? users.filter(
     (user: User) =>
       user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase())
   ) : users;
 
   // Select All logic

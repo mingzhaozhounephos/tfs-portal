@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useUserVideosStore } from '@/store/user-videos-store';
-import { UserVideo, UserStats } from '@/types';
+import { UserVideoWithVideo, UserStats } from '@/types';
 
 export function useUserVideos(userId: string) {
   const {

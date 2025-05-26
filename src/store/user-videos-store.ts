@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
-import { UserVideo, UserStats } from '@/types';
+import { UserVideoWithVideo, UserStats } from '@/types';
 
 interface UserVideosStore {
-  userVideos: Record<string, UserVideo[]>;
+  userVideos: Record<string, UserVideoWithVideo[]>;
   stats: Record<string, UserStats>;
   loading: Record<string, boolean>;
   error: Record<string, Error | null>;
@@ -46,7 +46,7 @@ export const useUserVideosStore = create<UserVideosStore>((set, get) => ({
       if (videosResponse.error) throw videosResponse.error;
       if (statsResponse.error) throw statsResponse.error;
 
-      const videos = videosResponse.data as any[]; // will type below
+      const videos = videosResponse.data as UserVideoWithVideo[];
       const numAssigned = statsResponse.data.length;
       const completed = statsResponse.data.filter(uv => uv.is_completed).length;
       const completion = numAssigned === 0 ? 0 : Math.round((completed / numAssigned) * 100);
@@ -83,7 +83,7 @@ export const useUserVideosStore = create<UserVideosStore>((set, get) => ({
             ]);
 
             if (!videosResponse.error && !statsResponse.error) {
-              const videos = videosResponse.data as any[];
+              const videos = videosResponse.data as UserVideoWithVideo[];
               const numAssigned = statsResponse.data.length;
               const completed = statsResponse.data.filter(uv => uv.is_completed).length;
               const completion = numAssigned === 0 ? 0 : Math.round((completed / numAssigned) * 100);
@@ -129,7 +129,7 @@ export const useUserVideosStore = create<UserVideosStore>((set, get) => ({
       if (videosResponse.error) throw videosResponse.error;
       if (statsResponse.error) throw statsResponse.error;
 
-      const videos = videosResponse.data as any[];
+      const videos = videosResponse.data as UserVideoWithVideo[];
       const numAssigned = statsResponse.data.length;
       const completed = statsResponse.data.filter(uv => uv.is_completed).length;
       const completion = numAssigned === 0 ? 0 : Math.round((completed / numAssigned) * 100);

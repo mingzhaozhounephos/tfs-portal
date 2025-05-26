@@ -1,36 +1,16 @@
-export interface User {
-  id: string;
-  email: string;
-  full_name?: string;
-  role: 'admin' | 'driver';
-  created_at?: string;
+import { Database } from './supabase';
+
+// Base types from Supabase
+export type User = Database['public']['Tables']['users']['Row'];
+export type Video = Database['public']['Tables']['videos']['Row'];
+export type UserVideo = Database['public']['Tables']['users_videos']['Row'];
+
+// Extended types for joined data
+export interface UserVideoWithVideo extends Omit<UserVideo, 'video'> {
+  video: Video;
 }
 
-export interface Video {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  image: string;
-  created_at?: string;
-  admin_user_id?: string;
-  renewal_required?: boolean;
-  duration?: string;
-  youtube_url?: string;
-}
-
-export interface UserVideo {
-  id: string;
-  user: string;
-  video: string | Video;
-  is_completed: boolean;
-  last_watched?: string;
-  modified_date?: string;
-  last_action?: string;
-  is_annual_renewal: boolean;
-  assigned_date: string;
-}
-
+// Stats interface remains unchanged as it's not directly related to database schema
 export interface UserStats {
   numAssigned: number;
   completion: number;

@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { useUserVideos } from "@/hooks/use-user-videos";
 import { AdminVideoCard } from "@/components/admin-video-card/admin-video-card";
+import { UserVideoWithVideo } from "@/types";
 
 interface AssignedVideosListProps {
   userId: string;
@@ -19,8 +20,8 @@ export function AssignedVideosList({ userId, filter = "all" }: AssignedVideosLis
     // Then apply additional filters
     if (filter === "pending") return userVideos.filter(v => !v.is_completed);
     if (filter === "completed") return userVideos.filter(v => v.is_completed);
-    if (filter === "renewal") return userVideos.filter(v => typeof v.video === 'object' && v.video.renewal_required);
-    if (["van", "truck", "office"].includes(filter)) return userVideos.filter(v => typeof v.video === 'object' && v.video.category === filter);
+    if (filter === "renewal") return userVideos.filter(v => v.video.is_annual_renewal);
+    if (["van", "truck", "office"].includes(filter)) return userVideos.filter(v => v.video.category === filter);
     return userVideos; // 'all' case
   }, [videos, filter, userId]);
 
@@ -74,27 +75,22 @@ export function AssignedVideosList({ userId, filter = "all" }: AssignedVideosLis
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {filteredVideos.map((userVideo, i) => {
-        const video = typeof userVideo.video === 'object' ? userVideo.video : undefined;
-        if (!video) return null;
-        
-        return (
-          <AdminVideoCard
-            key={userVideo.id || i}
-            video={{
-              id: video.id,
-              title: video.title || '-',
-              category: video.category || '-',
-              description: video.description || '-',
-              image: video.image || "",
-              created_at: video.created_at || new Date(),
-              duration: video.duration || '-',
-              youtube_url: video.youtube_url
-            }}
-            showEdit={false}
-          />
-        );
-      })}
+      {filteredVideos.map((userVideo) => (
+        <AdminVideoCard
+          key={userVideo.id}
+          video={{
+            id: userVideo.video.id,
+            title: userVideo.video.title || '-',
+            category: userVideo.video.category || '-',
+            description: userVideo.video.description || '-',
+            image: "", // Note: image field is not in the database schema
+            created_at: userVideo.video.created_at || new Date().toISOString(),
+            duration: userVideo.video.duration || '-',
+            youtube_url: userVideo.video.youtube_url || undefined
+          }}
+          showEdit={false}
+        />
+      ))}
     </div>
   );
 } 

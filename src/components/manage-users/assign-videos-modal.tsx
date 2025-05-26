@@ -34,10 +34,10 @@ export function AssignVideosModal({ isOpen, onClose, user, assignedVideoIds, onS
 
   // Filter and group videos
   const filteredVideos = videos.filter(v =>
-    v.title.toLowerCase().includes(search.toLowerCase()) ||
-    v.description.toLowerCase().includes(search.toLowerCase())
+    (v.title?.toLowerCase() || '').includes(search.toLowerCase()) ||
+    (v.description?.toLowerCase() || '').includes(search.toLowerCase())
   );
-  const categories = Array.from(new Set(filteredVideos.map(v => v.category)));
+  const categories = Array.from(new Set(filteredVideos.map(v => v.category || '')));
   const videosByCategory = categories.map(cat => ({
     category: cat,
     videos: filteredVideos.filter(v => v.category === cat)
