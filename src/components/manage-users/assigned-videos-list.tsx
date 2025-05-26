@@ -76,9 +76,9 @@ export function AssignedVideosList({ userId, filter = "all" }: AssignedVideosLis
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {filteredVideos.map((userVideo) => (
-        <AdminVideoCard
+          <AdminVideoCard
           key={userVideo.id}
-          video={{
+            video={{
             id: userVideo.video.id,
             title: userVideo.video.title || '-',
             category: userVideo.video.category || '-',
@@ -87,9 +87,9 @@ export function AssignedVideosList({ userId, filter = "all" }: AssignedVideosLis
             created_at: userVideo.video.created_at || new Date().toISOString(),
             duration: userVideo.video.duration || '-',
             youtube_url: userVideo.video.youtube_url || undefined
-          }}
-          showEdit={false}
-        />
+            }}
+            showEdit={false}
+          />
       ))}
     </div>
   );
