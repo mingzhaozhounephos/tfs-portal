@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 import { User } from '@/types';
+import { toast } from 'sonner';
 
 interface UsersStore {
   users: User[];
@@ -46,7 +47,7 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
         .on(
           'postgres_changes',
           { event: '*', schema: 'public', table: 'users' },
-          async () => {
+          async (payload) => {
             // Refresh data when changes occur
             const { data, error } = await supabase
               .from('users')
@@ -55,6 +56,14 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
 
             if (!error && data) {
               set({ users: data as User[] });
+            }
+
+            // Show notification only for INSERT events
+            if (payload.eventType === 'INSERT') {
+              toast.success('User Added', {
+                description: 'The new user has been added successfully.',
+                duration: 3000,
+              });
             }
           }
         )
@@ -97,7 +106,7 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
     return users.filter(
       user =>
         user.full_name?.toLowerCase().includes(query.toLowerCase()) ||
-        user.email.toLowerCase().includes(query.toLowerCase())
+        (user.email?.toLowerCase() || '').includes(query.toLowerCase())
     );
   }
 })); 
