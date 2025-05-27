@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export default function AuthCallback() {
   const router = useRouter();
@@ -12,8 +12,8 @@ export default function AuthCallback() {
       const hash = window.location.hash.substring(1);
       const params = new URLSearchParams(hash);
 
-      const access_token = params.get('access_token');
-      const refresh_token = params.get('refresh_token');
+      const access_token = params.get("access_token");
+      const refresh_token = params.get("refresh_token");
 
       if (access_token && refresh_token) {
         const { data, error } = await supabase.auth.setSession({
@@ -31,42 +31,42 @@ export default function AuthCallback() {
           if (userId && userEmail) {
             // Check if user record exists
             const { data: existing } = await supabase
-              .from('users')
-              .select('id')
-              .eq('id', userId)
+              .from("users")
+              .select("id")
+              .eq("id", userId)
               .maybeSingle();
 
             if (!existing) {
               // No record: insert new user with id from auth session, full_name, and role
-              await supabase
-                .from('users')
-                .insert([{
+              await supabase.from("users").insert([
+                {
                   id: userId,
                   email: userEmail,
                   full_name: fullName,
                   role: role,
-                }]);
+                },
+              ]);
             } else {
               await supabase
-                .from('users')
+                .from("users")
                 .update({
                   is_active: true,
                 })
-                .eq('id', userId);
+                .eq("id", userId);
             }
 
             // If user is coming from invitation, redirect to password reset
             if (userMeta.from_invitation) {
-              router.replace('/auth/reset-password');
+              router.replace("/auth/reset-password");
               return;
             }
           }
-          router.replace('/dashboard');
+          router.replace("/dashboard");
         } else {
-          router.replace('/login');
+          router.replace("/login");
         }
       } else {
-        router.replace('/login');
+        router.replace("/login");
       }
     }
 

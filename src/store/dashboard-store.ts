@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { supabase } from '@/lib/supabase';
-import { DashboardStats } from '@/types';
+import { create } from "zustand";
+import { supabase } from "@/lib/supabase";
+import { DashboardStats } from "@/types";
 
 interface DashboardStore {
   stats: DashboardStats | null;
@@ -33,30 +33,37 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         usersThisMonthResponse,
         completionRateResponse,
         videosWatchedResponse,
-        videosWatchedThisWeekResponse
+        videosWatchedThisWeekResponse,
       ] = await Promise.all([
-        supabase.from('videos').select('id', { count: 'exact' }),
+        supabase.from("videos").select("id", { count: "exact" }),
         supabase
-          .from('videos')
-          .select('id', { count: 'exact' })
-          .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
-        supabase.from('users').select('id', { count: 'exact' }),
+          .from("videos")
+          .select("id", { count: "exact" })
+          .gte(
+            "created_at",
+            new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          ),
+        supabase.from("users").select("id", { count: "exact" }),
         supabase
-          .from('users')
-          .select('id', { count: 'exact' })
-          .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+          .from("users")
+          .select("id", { count: "exact" })
+          .gte(
+            "created_at",
+            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+          ),
+        supabase.from("users_videos").select("is_completed"),
         supabase
-          .from('users_videos')
-          .select('is_completed'),
+          .from("users_videos")
+          .select("id", { count: "exact" })
+          .eq("is_completed", true),
         supabase
-          .from('users_videos')
-          .select('id', { count: 'exact' })
-          .eq('is_completed', true),
-        supabase
-          .from('users_videos')
-          .select('id', { count: 'exact' })
-          .eq('is_completed', true)
-          .gte('last_watched', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+          .from("users_videos")
+          .select("id", { count: "exact" })
+          .eq("is_completed", true)
+          .gte(
+            "last_watched",
+            new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          ),
       ]);
 
       if (totalVideosResponse.error) throw totalVideosResponse.error;
@@ -65,19 +72,25 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       if (usersThisMonthResponse.error) throw usersThisMonthResponse.error;
       if (completionRateResponse.error) throw completionRateResponse.error;
       if (videosWatchedResponse.error) throw videosWatchedResponse.error;
-      if (videosWatchedThisWeekResponse.error) throw videosWatchedThisWeekResponse.error;
+      if (videosWatchedThisWeekResponse.error)
+        throw videosWatchedThisWeekResponse.error;
 
       const totalVideos = totalVideosResponse.count || 0;
       const videosThisWeek = videosThisWeekResponse.count || 0;
       const totalUsers = totalUsersResponse.count || 0;
       const usersThisMonth = usersThisMonthResponse.count || 0;
-      const totalCompleted = completionRateResponse.data.filter(uv => uv.is_completed).length;
+      const totalCompleted = completionRateResponse.data.filter(
+        (uv) => uv.is_completed,
+      ).length;
       const totalAssigned = completionRateResponse.data.length;
-      const completionRate = totalAssigned === 0 ? '0%' : `${Math.round((totalCompleted / totalAssigned) * 100)}%`;
+      const completionRate =
+        totalAssigned === 0
+          ? "0%"
+          : `${Math.round((totalCompleted / totalAssigned) * 100)}%`;
       const videosWatched = videosWatchedResponse.count || 0;
       const videosWatchedThisWeek = videosWatchedThisWeekResponse.count || 0;
 
-      set({ 
+      set({
         stats: {
           totalVideos,
           videosThisWeek,
@@ -85,21 +98,21 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
           usersThisMonth,
           completionRate,
           videosWatched,
-          videosWatchedThisWeek
+          videosWatchedThisWeek,
         },
         initialized: true,
-        loading: false 
+        loading: false,
       });
 
       // Subscribe to real-time changes
       const channel = supabase
-        .channel('dashboard-changes')
+        .channel("dashboard-changes")
         .on(
-          'postgres_changes',
-          { 
-            event: '*', 
-            schema: 'public', 
-            table: 'users_videos' 
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "users_videos",
           },
           async () => {
             // Refresh data when changes occur
@@ -110,47 +123,65 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
               usersThisMonthResponse,
               completionRateResponse,
               videosWatchedResponse,
-              videosWatchedThisWeekResponse
+              videosWatchedThisWeekResponse,
             ] = await Promise.all([
-              supabase.from('videos').select('id', { count: 'exact' }),
+              supabase.from("videos").select("id", { count: "exact" }),
               supabase
-                .from('videos')
-                .select('id', { count: 'exact' })
-                .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
-              supabase.from('users').select('id', { count: 'exact' }),
+                .from("videos")
+                .select("id", { count: "exact" })
+                .gte(
+                  "created_at",
+                  new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+                ),
+              supabase.from("users").select("id", { count: "exact" }),
               supabase
-                .from('users')
-                .select('id', { count: 'exact' })
-                .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+                .from("users")
+                .select("id", { count: "exact" })
+                .gte(
+                  "created_at",
+                  new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+                ),
+              supabase.from("users_videos").select("is_completed"),
               supabase
-                .from('users_videos')
-                .select('is_completed'),
+                .from("users_videos")
+                .select("id", { count: "exact" })
+                .eq("is_completed", true),
               supabase
-                .from('users_videos')
-                .select('id', { count: 'exact' })
-                .eq('is_completed', true),
-              supabase
-                .from('users_videos')
-                .select('id', { count: 'exact' })
-                .eq('is_completed', true)
-                .gte('last_watched', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+                .from("users_videos")
+                .select("id", { count: "exact" })
+                .eq("is_completed", true)
+                .gte(
+                  "last_watched",
+                  new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+                ),
             ]);
 
-            if (!totalVideosResponse.error && !videosThisWeekResponse.error && 
-                !totalUsersResponse.error && !usersThisMonthResponse.error && 
-                !completionRateResponse.error && !videosWatchedResponse.error && 
-                !videosWatchedThisWeekResponse.error) {
+            if (
+              !totalVideosResponse.error &&
+              !videosThisWeekResponse.error &&
+              !totalUsersResponse.error &&
+              !usersThisMonthResponse.error &&
+              !completionRateResponse.error &&
+              !videosWatchedResponse.error &&
+              !videosWatchedThisWeekResponse.error
+            ) {
               const totalVideos = totalVideosResponse.count || 0;
               const videosThisWeek = videosThisWeekResponse.count || 0;
               const totalUsers = totalUsersResponse.count || 0;
               const usersThisMonth = usersThisMonthResponse.count || 0;
-              const totalCompleted = completionRateResponse.data.filter(uv => uv.is_completed).length;
+              const totalCompleted = completionRateResponse.data.filter(
+                (uv) => uv.is_completed,
+              ).length;
               const totalAssigned = completionRateResponse.data.length;
-              const completionRate = totalAssigned === 0 ? '0%' : `${Math.round((totalCompleted / totalAssigned) * 100)}%`;
+              const completionRate =
+                totalAssigned === 0
+                  ? "0%"
+                  : `${Math.round((totalCompleted / totalAssigned) * 100)}%`;
               const videosWatched = videosWatchedResponse.count || 0;
-              const videosWatchedThisWeek = videosWatchedThisWeekResponse.count || 0;
+              const videosWatchedThisWeek =
+                videosWatchedThisWeekResponse.count || 0;
 
-              set({ 
+              set({
                 stats: {
                   totalVideos,
                   videosThisWeek,
@@ -158,11 +189,11 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
                   usersThisMonth,
                   completionRate,
                   videosWatched,
-                  videosWatchedThisWeek
-                }
+                  videosWatchedThisWeek,
+                },
               });
             }
-          }
+          },
         )
         .subscribe();
 
@@ -174,9 +205,9 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       // Add cleanup to store
       set({ cleanup });
     } catch (err) {
-      set({ 
+      set({
         error: err as Error,
-        loading: false 
+        loading: false,
       });
     }
   },
@@ -191,30 +222,37 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         usersThisMonthResponse,
         completionRateResponse,
         videosWatchedResponse,
-        videosWatchedThisWeekResponse
+        videosWatchedThisWeekResponse,
       ] = await Promise.all([
-        supabase.from('videos').select('id', { count: 'exact' }),
+        supabase.from("videos").select("id", { count: "exact" }),
         supabase
-          .from('videos')
-          .select('id', { count: 'exact' })
-          .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
-        supabase.from('users').select('id', { count: 'exact' }),
+          .from("videos")
+          .select("id", { count: "exact" })
+          .gte(
+            "created_at",
+            new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          ),
+        supabase.from("users").select("id", { count: "exact" }),
         supabase
-          .from('users')
-          .select('id', { count: 'exact' })
-          .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+          .from("users")
+          .select("id", { count: "exact" })
+          .gte(
+            "created_at",
+            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+          ),
+        supabase.from("users_videos").select("is_completed"),
         supabase
-          .from('users_videos')
-          .select('is_completed'),
+          .from("users_videos")
+          .select("id", { count: "exact" })
+          .eq("is_completed", true),
         supabase
-          .from('users_videos')
-          .select('id', { count: 'exact' })
-          .eq('is_completed', true),
-        supabase
-          .from('users_videos')
-          .select('id', { count: 'exact' })
-          .eq('is_completed', true)
-          .gte('last_watched', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+          .from("users_videos")
+          .select("id", { count: "exact" })
+          .eq("is_completed", true)
+          .gte(
+            "last_watched",
+            new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          ),
       ]);
 
       if (totalVideosResponse.error) throw totalVideosResponse.error;
@@ -223,19 +261,25 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       if (usersThisMonthResponse.error) throw usersThisMonthResponse.error;
       if (completionRateResponse.error) throw completionRateResponse.error;
       if (videosWatchedResponse.error) throw videosWatchedResponse.error;
-      if (videosWatchedThisWeekResponse.error) throw videosWatchedThisWeekResponse.error;
+      if (videosWatchedThisWeekResponse.error)
+        throw videosWatchedThisWeekResponse.error;
 
       const totalVideos = totalVideosResponse.count || 0;
       const videosThisWeek = videosThisWeekResponse.count || 0;
       const totalUsers = totalUsersResponse.count || 0;
       const usersThisMonth = usersThisMonthResponse.count || 0;
-      const totalCompleted = completionRateResponse.data.filter(uv => uv.is_completed).length;
+      const totalCompleted = completionRateResponse.data.filter(
+        (uv) => uv.is_completed,
+      ).length;
       const totalAssigned = completionRateResponse.data.length;
-      const completionRate = totalAssigned === 0 ? '0%' : `${Math.round((totalCompleted / totalAssigned) * 100)}%`;
+      const completionRate =
+        totalAssigned === 0
+          ? "0%"
+          : `${Math.round((totalCompleted / totalAssigned) * 100)}%`;
       const videosWatched = videosWatchedResponse.count || 0;
       const videosWatchedThisWeek = videosWatchedThisWeekResponse.count || 0;
 
-      set({ 
+      set({
         stats: {
           totalVideos,
           videosThisWeek,
@@ -243,15 +287,15 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
           usersThisMonth,
           completionRate,
           videosWatched,
-          videosWatchedThisWeek
+          videosWatchedThisWeek,
         },
-        loading: false 
+        loading: false,
       });
     } catch (err) {
-      set({ 
+      set({
         error: err as Error,
-        loading: false 
+        loading: false,
       });
     }
-  }
-})); 
+  },
+}));

@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useUserRoleStore } from '@/store/user-role-store';
+import { useEffect } from "react";
+import { useUserRoleStore } from "@/store/user-role-store";
 
 export function useUserRole() {
   const { role, loading, error, initialize, refresh } = useUserRoleStore();
@@ -12,6 +12,6 @@ export function useUserRole() {
     role,
     loading,
     error,
-    refresh
+    refresh,
   };
-} 
+}

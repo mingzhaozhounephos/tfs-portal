@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -36,7 +36,9 @@ export default function DashboardPage() {
           TFS: Driver Training &amp; HR Portal
         </h1>
         <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-        <span className="text-gray-500 text-base sm:text-lg font-medium tracking-wide">Redirecting...</span>
+        <span className="text-gray-500 text-base sm:text-lg font-medium tracking-wide">
+          Redirecting...
+        </span>
       </div>
     );
   }

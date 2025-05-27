@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useDashboardStore } from '@/store/dashboard-store';
+import { useEffect } from "react";
+import { useDashboardStore } from "@/store/dashboard-store";
 
 export function useDashboard() {
   const { stats, loading, error, initialize, refresh } = useDashboardStore();
@@ -12,6 +12,6 @@ export function useDashboard() {
     stats,
     loading,
     error,
-    refresh
+    refresh,
   };
-} 
+}

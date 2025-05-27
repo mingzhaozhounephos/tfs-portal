@@ -1,9 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { SignUpForm } from '../../components/auth/signup-form';
-import { LoginForm } from '../../components/auth/login-form';
-
+import { useState } from "react";
+import { SignUpForm } from "../../components/auth/signup-form";
+import { LoginForm } from "../../components/auth/login-form";
 
 export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -21,4 +20,4 @@ export default function AuthPage() {
   ) : (
     <LoginForm onSwitchToSignUp={handleSwitchToSignUp} />
   );
-} 
+}

@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { notFound } from 'next/navigation';
-import { SideMenu } from '@/components/side-menu/side-menu';
-import { api } from '@/lib/api';
-import { UserDetailsCards } from '@/components/manage-users/user-details-cards';
-import { AssignedVideosToggle } from '@/components/manage-users/assigned-videos-toggle';
-import { AssignedVideosList } from '@/components/manage-users/assigned-videos-list';
-import { AssignVideoButton } from '@/components/manage-users/assign-video-button';
-import Link from 'next/link';
-import { User } from '@/types';
-import { UserDetailsClient } from '@/components/manage-users/user-details-client';
-import { useUserRole } from '@/hooks/use-user-role';
-import { useEffect, useState, use } from 'react';
+import { notFound } from "next/navigation";
+import { SideMenu } from "@/components/side-menu/side-menu";
+import { api } from "@/lib/api";
+import { UserDetailsCards } from "@/components/manage-users/user-details-cards";
+import { AssignedVideosToggle } from "@/components/manage-users/assigned-videos-toggle";
+import { AssignedVideosList } from "@/components/manage-users/assigned-videos-list";
+import { AssignVideoButton } from "@/components/manage-users/assign-video-button";
+import Link from "next/link";
+import { User } from "@/types";
+import { UserDetailsClient } from "@/components/manage-users/user-details-client";
+import { useUserRole } from "@/hooks/use-user-role";
+import { useEffect, useState, use } from "react";
 
 interface UserDetailsPageProps {
   params: Promise<{ id: string }>;
@@ -28,7 +28,7 @@ export default function UserDetailsPage({ params }: UserDetailsPageProps) {
         const userData = await api.users.getById(id);
         setUser(userData);
       } catch (error) {
-        console.error('Error fetching user:', error);
+        console.error("Error fetching user:", error);
       }
     }
     fetchUser();
@@ -44,10 +44,14 @@ export default function UserDetailsPage({ params }: UserDetailsPageProps) {
 
   return (
     <div className="flex bg-white min-h-screen h-screen">
-      <SideMenu role={role || 'driver'} active="manage-users" />
+      <SideMenu role={role || "driver"} active="manage-users" />
       <main className="flex-1 p-8 h-screen overflow-y-auto">
         <div className="mb-6">
-          <Link href="/manage-users" className="inline-flex items-center gap-2 px-4 py-2 rounded border bg-white hover:bg-gray-50 font-medium text-sm" style={{ borderColor: 'var(--border-default)' }}>
+          <Link
+            href="/manage-users"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded border bg-white hover:bg-gray-50 font-medium text-sm"
+            style={{ borderColor: "var(--border-default)" }}
+          >
             <span>&larr;</span> Back to Users
           </Link>
         </div>
@@ -60,4 +64,4 @@ export default function UserDetailsPage({ params }: UserDetailsPageProps) {
       </main>
     </div>
   );
-} 
+}

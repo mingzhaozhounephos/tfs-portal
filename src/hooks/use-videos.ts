@@ -1,8 +1,16 @@
-import { useEffect } from 'react';
-import { useVideosStore } from '@/store/videos-store';
+import { useEffect } from "react";
+import { useVideosStore } from "@/store/videos-store";
 
 export function useVideos() {
-  const { videos, loading, error, initialize, refresh, searchVideos, getVideoById } = useVideosStore();
+  const {
+    videos,
+    loading,
+    error,
+    initialize,
+    refresh,
+    searchVideos,
+    getVideoById,
+  } = useVideosStore();
 
   useEffect(() => {
     initialize();
@@ -14,6 +22,6 @@ export function useVideos() {
     error,
     searchVideos,
     getVideoById,
-    refresh
+    refresh,
   };
-} 
+}

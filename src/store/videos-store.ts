@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { supabase } from '@/lib/supabase';
-import { Video } from '@/types';
+import { create } from "zustand";
+import { supabase } from "@/lib/supabase";
+import { Video } from "@/types";
 
 interface VideosStore {
   videos: Video[];
@@ -29,44 +29,44 @@ export const useVideosStore = create<VideosStore>((set, get) => ({
     try {
       // Fetch initial data
       const { data, error } = await supabase
-        .from('videos')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("videos")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      set({ 
+      set({
         videos: data as Video[],
         initialized: true,
-        loading: false 
+        loading: false,
       });
 
       // Subscribe to real-time changes
       const channel = supabase
-        .channel('videos-changes')
+        .channel("videos-changes")
         .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'videos' },
+          "postgres_changes",
+          { event: "*", schema: "public", table: "videos" },
           async () => {
             // Refresh data when changes occur
             const { data, error } = await supabase
-              .from('videos')
-              .select('*')
-              .order('created_at', { ascending: false });
+              .from("videos")
+              .select("*")
+              .order("created_at", { ascending: false });
 
             if (!error && data) {
               set({ videos: data as Video[] });
             }
-          }
+          },
         )
         .subscribe();
 
       // Store cleanup function in state
       set({ cleanup: () => supabase.removeChannel(channel) });
     } catch (err) {
-      set({ 
+      set({
         error: err as Error,
-        loading: false 
+        loading: false,
       });
     }
   },
@@ -75,20 +75,20 @@ export const useVideosStore = create<VideosStore>((set, get) => ({
     set({ loading: true });
     try {
       const { data, error } = await supabase
-        .from('videos')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("videos")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      set({ 
+      set({
         videos: data as Video[],
-        loading: false 
+        loading: false,
       });
     } catch (err) {
-      set({ 
+      set({
         error: err as Error,
-        loading: false 
+        loading: false,
       });
     }
   },
@@ -96,15 +96,15 @@ export const useVideosStore = create<VideosStore>((set, get) => ({
   searchVideos: (query: string) => {
     const { videos } = get();
     return videos.filter(
-      video =>
+      (video) =>
         video.title.toLowerCase().includes(query.toLowerCase()) ||
         video.description.toLowerCase().includes(query.toLowerCase()) ||
-        video.category.toLowerCase().includes(query.toLowerCase())
+        video.category.toLowerCase().includes(query.toLowerCase()),
     );
   },
 
   getVideoById: (id: string) => {
     const { videos } = get();
-    return videos.find(video => video.id === id);
-  }
-})); 
+    return videos.find((video) => video.id === id);
+  },
+}));

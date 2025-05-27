@@ -5,4 +5,4 @@ export function formatDate(date: string | Date) {
     day: "numeric",
     year: "numeric",
   });
-} 
+}

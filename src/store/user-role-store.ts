@@ -1,8 +1,8 @@
-import { create } from 'zustand';
-import { supabase } from '@/lib/supabase';
+import { create } from "zustand";
+import { supabase } from "@/lib/supabase";
 
 interface UserRoleStore {
-  role: 'admin' | 'driver' | null;
+  role: "admin" | "driver" | null;
   loading: boolean;
   error: Error | null;
   initialized: boolean;
@@ -24,44 +24,49 @@ export const useUserRoleStore = create<UserRoleStore>((set, get) => ({
 
     set({ loading: true });
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
       if (sessionError) throw sessionError;
 
       if (!session) {
-        set({ 
+        set({
           role: null,
           loading: false,
-          initialized: true 
+          initialized: true,
         });
         return;
       }
 
       const { data: userRole, error: roleError } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', session.user.id)
+        .from("users")
+        .select("role")
+        .eq("id", session.user.id)
         .single();
 
       if (roleError) throw roleError;
 
-      set({ 
+      set({
         role: userRole?.role || null,
         loading: false,
-        initialized: true 
+        initialized: true,
       });
 
       // Subscribe to auth changes
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_OUT') {
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === "SIGNED_OUT") {
           set({ role: null });
           return;
         }
 
         if (session) {
           const { data: userRole, error: roleError } = await supabase
-            .from('users')
-            .select('role')
-            .eq('id', session.user.id)
+            .from("users")
+            .select("role")
+            .eq("id", session.user.id)
             .single();
 
           if (!roleError) {
@@ -78,10 +83,10 @@ export const useUserRoleStore = create<UserRoleStore>((set, get) => ({
       // Add cleanup to store
       set({ cleanup });
     } catch (err) {
-      set({ 
+      set({
         error: err as Error,
         loading: false,
-        initialized: true 
+        initialized: true,
       });
     }
   },
@@ -89,34 +94,37 @@ export const useUserRoleStore = create<UserRoleStore>((set, get) => ({
   refresh: async () => {
     set({ loading: true });
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
       if (sessionError) throw sessionError;
 
       if (!session) {
-        set({ 
+        set({
           role: null,
-          loading: false 
+          loading: false,
         });
         return;
       }
 
       const { data: userRole, error: roleError } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', session.user.id)
+        .from("users")
+        .select("role")
+        .eq("id", session.user.id)
         .single();
 
       if (roleError) throw roleError;
 
-      set({ 
+      set({
         role: userRole?.role || null,
-        loading: false 
+        loading: false,
       });
     } catch (err) {
-      set({ 
+      set({
         error: err as Error,
-        loading: false 
+        loading: false,
       });
     }
-  }
-})); 
+  },
+}));

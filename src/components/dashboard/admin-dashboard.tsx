@@ -5,7 +5,7 @@ import { AdminVideoCard } from "@/components/admin-video-card/admin-video-card";
 import { ManageUsers } from "@/components/manage-users/manage-users";
 import { supabase } from "@/lib/supabase";
 import { Bell, Users, Activity, Play } from "lucide-react";
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from "@/hooks/use-auth";
 import { UserCard } from "../manage-users/user-card";
 import { VideoFormModal } from "@/components/manage-videos/video-form-modal";
 
@@ -42,7 +42,10 @@ export function AdminDashboard() {
   function isThisMonth(dateString: string) {
     const date = new Date(dateString);
     const now = new Date();
-    return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+    return (
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth()
+    );
   }
 
   useEffect(() => {
@@ -64,7 +67,9 @@ export function AdminDashboard() {
   useEffect(() => {
     let channel: any;
     async function fetchVideos() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session) {
         const { data, error } = await supabase
           .from("videos")
@@ -73,16 +78,23 @@ export function AdminDashboard() {
         if (!error && data) {
           setVideos(data);
           setTotalVideos(data.length);
-          setVideosThisWeek(data.filter(v => v.created_at && isThisWeek(v.created_at)).length);
+          setVideosThisWeek(
+            data.filter((v) => v.created_at && isThisWeek(v.created_at)).length,
+          );
         }
 
         // Real-time subscription
         channel = supabase
-          .channel('videos-admin-dashboard')
+          .channel("videos-admin-dashboard")
           .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'videos', filter: `admin_user_id=eq.${session.user.id}` },
-            payload => {
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "videos",
+              filter: `admin_user_id=eq.${session.user.id}`,
+            },
+            (payload) => {
               supabase
                 .from("videos")
                 .select("*")
@@ -92,10 +104,14 @@ export function AdminDashboard() {
                   if (!error && data) {
                     setVideos(data);
                     setTotalVideos(data.length);
-                    setVideosThisWeek(data.filter(v => v.created_at && isThisWeek(v.created_at)).length);
+                    setVideosThisWeek(
+                      data.filter(
+                        (v) => v.created_at && isThisWeek(v.created_at),
+                      ).length,
+                    );
                   }
                 });
-            }
+            },
           )
           .subscribe();
       }
@@ -118,16 +134,20 @@ export function AdminDashboard() {
         .order("created_at", { ascending: false });
       if (!error && data) {
         setTotalUsers(data.length);
-        setUsersThisMonth(data.filter(u => u.created_at && isThisMonth(u.created_at)).length);
-        setRecentUsers(data.filter(u => u.created_at && isThisMonth(u.created_at)));
+        setUsersThisMonth(
+          data.filter((u) => u.created_at && isThisMonth(u.created_at)).length,
+        );
+        setRecentUsers(
+          data.filter((u) => u.created_at && isThisMonth(u.created_at)),
+        );
       }
       // Real-time subscription
       channel = supabase
-        .channel('users-admin-dashboard')
+        .channel("users-admin-dashboard")
         .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'users' },
-          payload => {
+          "postgres_changes",
+          { event: "*", schema: "public", table: "users" },
+          (payload) => {
             supabase
               .from("users")
               .select("*")
@@ -135,11 +155,19 @@ export function AdminDashboard() {
               .then(({ data, error }) => {
                 if (!error && data) {
                   setTotalUsers(data.length);
-                  setUsersThisMonth(data.filter(u => u.created_at && isThisMonth(u.created_at)).length);
-                  setRecentUsers(data.filter(u => u.created_at && isThisMonth(u.created_at)));
+                  setUsersThisMonth(
+                    data.filter(
+                      (u) => u.created_at && isThisMonth(u.created_at),
+                    ).length,
+                  );
+                  setRecentUsers(
+                    data.filter(
+                      (u) => u.created_at && isThisMonth(u.created_at),
+                    ),
+                  );
                 }
               });
-          }
+          },
         )
         .subscribe();
     }
@@ -165,23 +193,26 @@ export function AdminDashboard() {
       }
       // Real-time subscription
       channel = supabase
-        .channel('users-videos-admin-dashboard')
+        .channel("users-videos-admin-dashboard")
         .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'users_videos' },
-          payload => {
+          "postgres_changes",
+          { event: "*", schema: "public", table: "users_videos" },
+          (payload) => {
             supabase
               .from("users_videos")
               .select("id, is_completed")
               .then(({ data, error }) => {
                 if (!error && data) {
                   const total = data.length;
-                  const completed = data.filter((uv: any) => uv.is_completed).length;
-                  const rate = total === 0 ? 0 : Math.round((completed / total) * 100);
+                  const completed = data.filter(
+                    (uv: any) => uv.is_completed,
+                  ).length;
+                  const rate =
+                    total === 0 ? 0 : Math.round((completed / total) * 100);
                   setCompletionRate(`${rate}%`);
                 }
               });
-          }
+          },
         )
         .subscribe();
     }
@@ -201,29 +232,35 @@ export function AdminDashboard() {
         .select("last_watched");
       if (!error && data) {
         const watched = data.filter((uv: any) => uv.last_watched).length;
-        const watchedThisWeek = data.filter((uv: any) => uv.last_watched && isThisWeek(uv.last_watched)).length;
+        const watchedThisWeek = data.filter(
+          (uv: any) => uv.last_watched && isThisWeek(uv.last_watched),
+        ).length;
         setVideosWatched(watched);
         setVideosWatchedThisWeek(watchedThisWeek);
       }
       // Real-time subscription
       channel = supabase
-        .channel('users-videos-watched-admin-dashboard')
+        .channel("users-videos-watched-admin-dashboard")
         .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'users_videos' },
-          payload => {
+          "postgres_changes",
+          { event: "*", schema: "public", table: "users_videos" },
+          (payload) => {
             supabase
               .from("users_videos")
               .select("last_watched")
               .then(({ data, error }) => {
                 if (!error && data) {
-                  const watched = data.filter((uv: any) => uv.last_watched).length;
-                  const watchedThisWeek = data.filter((uv: any) => uv.last_watched && isThisWeek(uv.last_watched)).length;
+                  const watched = data.filter(
+                    (uv: any) => uv.last_watched,
+                  ).length;
+                  const watchedThisWeek = data.filter(
+                    (uv: any) => uv.last_watched && isThisWeek(uv.last_watched),
+                  ).length;
                   setVideosWatched(watched);
                   setVideosWatchedThisWeek(watchedThisWeek);
                 }
               });
-          }
+          },
         )
         .subscribe();
     }
@@ -247,7 +284,11 @@ export function AdminDashboard() {
           <>
             <div className="flex flex-col gap-2 items-center mb-6 w-full">
               <div className="flex items-start justify-between w-full">
-                <img src="/images/Logo.jpg" alt="TFS Express Logistics" className="h-8 w-auto mb-2" />
+                <img
+                  src="/images/Logo.jpg"
+                  alt="TFS Express Logistics"
+                  className="h-8 w-auto mb-2"
+                />
               </div>
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-3">
@@ -260,21 +301,60 @@ export function AdminDashboard() {
             </div>
             {/* Widgets */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <Widget title="Total Videos" value={String(totalVideos)} sub={`+${videosThisWeek} videos added this week`} icon={<div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]"><Bell className="w-5 h-5 text-[#EA384C]" /></div>} />
-              <Widget title="Total Users" value={String(totalUsers)} sub={`+${usersThisMonth} users added this month`} icon={<div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]"><Users className="w-5 h-5 text-[#EA384C]" /></div>} />
-              <Widget title="Completion Rate" value={completionRate} sub="" icon={<div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]"><Activity className="w-5 h-5 text-[#EA384C]" /></div>} progress={parseInt(completionRate)} />
-              <Widget title="Videos Watched" value={String(videosWatched)} sub={`+${videosWatchedThisWeek} videos watched this week`} icon={<div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]"><Play className="w-5 h-5 text-[#EA384C]" /></div>} />
+              <Widget
+                title="Total Videos"
+                value={String(totalVideos)}
+                sub={`+${videosThisWeek} videos added this week`}
+                icon={
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
+                    <Bell className="w-5 h-5 text-[#EA384C]" />
+                  </div>
+                }
+              />
+              <Widget
+                title="Total Users"
+                value={String(totalUsers)}
+                sub={`+${usersThisMonth} users added this month`}
+                icon={
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
+                    <Users className="w-5 h-5 text-[#EA384C]" />
+                  </div>
+                }
+              />
+              <Widget
+                title="Completion Rate"
+                value={completionRate}
+                sub=""
+                icon={
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
+                    <Activity className="w-5 h-5 text-[#EA384C]" />
+                  </div>
+                }
+                progress={parseInt(completionRate)}
+              />
+              <Widget
+                title="Videos Watched"
+                value={String(videosWatched)}
+                sub={`+${videosWatchedThisWeek} videos watched this week`}
+                icon={
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
+                    <Play className="w-5 h-5 text-[#EA384C]" />
+                  </div>
+                }
+              />
             </div>
             {/* Toggle */}
             <div
               className="flex w-fit rounded-lg p-1 mb-4 shadow-sm"
-              style={{ backgroundColor: '#F1F5F9' }}
+              style={{ backgroundColor: "#F1F5F9" }}
             >
               <button
                 className={`px-4 py-1 rounded-lg transition font-medium
-                  ${tab === "videos"
-                    ? "bg-white text-black font-bold shadow"
-                    : "bg-transparent text-gray-500 hover:text-black"}
+                  ${
+                    tab === "videos"
+                      ? "bg-white text-black font-bold shadow"
+                      : "bg-transparent text-gray-500 hover:text-black"
+                  }
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300
                 `}
                 onClick={() => setTab("videos")}
@@ -285,9 +365,11 @@ export function AdminDashboard() {
               </button>
               <button
                 className={`px-4 py-1 rounded-lg transition font-medium
-                  ${tab === "users"
-                    ? "bg-white text-black font-bold shadow"
-                    : "bg-transparent text-gray-500 hover:text-black"}
+                  ${
+                    tab === "users"
+                      ? "bg-white text-black font-bold shadow"
+                      : "bg-transparent text-gray-500 hover:text-black"
+                  }
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300
                 `}
                 onClick={() => setTab("users")}
@@ -305,15 +387,24 @@ export function AdminDashboard() {
                     key={i}
                     video={video}
                     showEdit={true}
-                    onEdit={() => { setEditingVideo(video); setModalOpen(true); }}
-                    onAssignToUsers={() => {/* handle assign to users */}}
+                    onEdit={() => {
+                      setEditingVideo(video);
+                      setModalOpen(true);
+                    }}
+                    onAssignToUsers={() => {
+                      /* handle assign to users */
+                    }}
                   />
                 ))}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {recentUsers.map((user, i) => (
-                  <UserCard key={user.id || i} user={user} onAssignVideo={() => {}} />
+                  <UserCard
+                    key={user.id || i}
+                    user={user}
+                    onAssignVideo={() => {}}
+                  />
                 ))}
               </div>
             )}
@@ -321,7 +412,9 @@ export function AdminDashboard() {
             <VideoFormModal
               open={modalOpen}
               onClose={() => setModalOpen(false)}
-              onSuccess={() => {/* Optionally refresh videos here */}}
+              onSuccess={() => {
+                /* Optionally refresh videos here */
+              }}
               video={editingVideo}
               adminUserId={user?.id || ""}
             />
@@ -349,7 +442,7 @@ function Widget({ title, value, sub, icon, progress }: WidgetProps) {
       </div>
       <div className="text-2xl font-bold">{value}</div>
       {sub && <div className="text-xs text-gray-500">{sub}</div>}
-      {typeof progress === 'number' && (
+      {typeof progress === "number" && (
         <div className="mt-2 w-full h-2 bg-gray-100 rounded-full overflow-hidden">
           <div
             className="h-2 bg-[#EA384C] rounded-full transition-all"

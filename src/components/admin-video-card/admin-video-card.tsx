@@ -1,11 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Calendar, Clock, Users, CheckCircle, PlayCircle, Trash2 } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  Users,
+  CheckCircle,
+  PlayCircle,
+  Trash2,
+} from "lucide-react";
 import { AssignVideoModal } from "@/components/manage-users/assign-video-modal";
 import { supabase } from "@/lib/supabase";
-import Image from 'next/image';
-import { useAuth } from '@/hooks/use-auth';
-import { formatDate } from '@/lib/format-date';
-import { TrainingVideoModal } from '@/components/training-videos/training-video-modal';
+import Image from "next/image";
+import { useAuth } from "@/hooks/use-auth";
+import { formatDate } from "@/lib/format-date";
+import { TrainingVideoModal } from "@/components/training-videos/training-video-modal";
 
 interface AdminVideoCardProps {
   video: {
@@ -26,7 +33,7 @@ interface AdminVideoCardProps {
 function getYouTubeId(url?: string) {
   if (!url) return "";
   const match = url.match(
-    /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+    /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
   );
   return match ? match[1] : "";
 }
@@ -35,41 +42,50 @@ function getYouTubeThumbnail(videoId: string) {
   return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 }
 
-export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUsers }: AdminVideoCardProps) {
+export function AdminVideoCard({
+  video,
+  onEdit,
+  showEdit = false,
+  onAssignToUsers,
+}: AdminVideoCardProps) {
   const [showModal, setShowModal] = useState(false);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [stats, setStats] = useState({
     assigned: 0,
-    completed: 0
+    completed: 0,
   });
   const { user } = useAuth();
   const youtubeId = getYouTubeId(video.youtube_url);
-  const thumbnailUrl = youtubeId ? getYouTubeThumbnail(youtubeId) : video.image || "";
+  const thumbnailUrl = youtubeId
+    ? getYouTubeThumbnail(youtubeId)
+    : video.image || "";
 
   // Add a refreshStats function
   const refreshStats = useCallback(async () => {
     try {
       const { data: assignedData, error: assignedError } = await supabase
-        .from('users_videos')
-        .select('*', { count: 'exact' })
-        .eq('video', video.id);
+        .from("users_videos")
+        .select("*", { count: "exact" })
+        .eq("video", video.id);
       if (assignedError) throw assignedError;
       const { data: completedData, error: completedError } = await supabase
-        .from('users_videos')
-        .select('*', { count: 'exact' })
-        .eq('video', video.id)
-        .eq('is_completed', true);
+        .from("users_videos")
+        .select("*", { count: "exact" })
+        .eq("video", video.id)
+        .eq("is_completed", true);
       if (completedError) throw completedError;
       const assignedCount = assignedData?.length || 0;
       const completedCount = completedData?.length || 0;
       setStats({
         assigned: assignedCount,
-        completed: assignedCount ? Math.round((completedCount / assignedCount) * 100) : 0
+        completed: assignedCount
+          ? Math.round((completedCount / assignedCount) * 100)
+          : 0,
       });
     } catch (error) {
-      console.error('Error refreshing video stats:', error);
+      console.error("Error refreshing video stats:", error);
     }
   }, [video.id]);
 
@@ -83,39 +99,43 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
 
     try {
       // First check if the users_videos record exists
-      const { data: existingRecord, error, status } = await supabase
-        .from('users_videos')
-        .select('*')
-        .eq('user', user.id)
-        .eq('video', video.id)
+      const {
+        data: existingRecord,
+        error,
+        status,
+      } = await supabase
+        .from("users_videos")
+        .select("*")
+        .eq("user", user.id)
+        .eq("video", video.id)
         .single();
 
       // Only log real errors, not 'no record found'
       if (error && status !== 406) {
-        console.error('Error checking users_videos record:', error);
+        console.error("Error checking users_videos record:", error);
         return;
       }
 
       // Only update if the record exists
       if (existingRecord) {
         const { error: updateError } = await supabase
-          .from('users_videos')
+          .from("users_videos")
           .update({
             last_watched: new Date().toISOString(),
             modified_date: new Date().toISOString(),
-            last_action: existingRecord.is_completed ? 'completed' : 'watched',
-            assigned_date: existingRecord.assigned_date
+            last_action: existingRecord.is_completed ? "completed" : "watched",
+            assigned_date: existingRecord.assigned_date,
           })
-          .eq('user', user.id)
-          .eq('video', video.id);
+          .eq("user", user.id)
+          .eq("video", video.id);
 
         if (updateError) {
-          console.error('Error updating users_videos:', updateError);
+          console.error("Error updating users_videos:", updateError);
           return;
         }
       }
     } catch (error) {
-      console.error('Error in handleOpenModal:', error);
+      console.error("Error in handleOpenModal:", error);
       return;
     }
 
@@ -132,7 +152,17 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
             onClick={onEdit}
             aria-label="Edit video"
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#EA384C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil w-5 h-5">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#EA384C"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="lucide lucide-pencil w-5 h-5"
+            >
               <path d="M18 2a2.828 2.828 0 1 1 4 4L7 21l-4 1 1-4Z" />
               <path d="M16 5 19 8" />
             </svg>
@@ -149,18 +179,16 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
       <div className="font-bold">{video.title}</div>
       <div className="flex items-center gap-2 mb-1">
         <span
-          className={
-            `inline-block text-xs font-semibold rounded-full px-3 py-0.5
+          className={`inline-block text-xs font-semibold rounded-full px-3 py-0.5
             ${
               video.category?.toLowerCase() === "office"
                 ? "bg-purple-100 text-purple-700 border border-purple-200"
                 : video.category?.toLowerCase() === "truck"
-                ? "bg-green-100 text-green-700 border border-green-200"
-                : video.category?.toLowerCase() === "van"
-                ? "bg-blue-100 text-blue-700 border border-blue-200"
-                : "bg-gray-100 text-gray-700 border border-gray-200"
-            }`
-          }
+                  ? "bg-green-100 text-green-700 border border-green-200"
+                  : video.category?.toLowerCase() === "van"
+                    ? "bg-blue-100 text-blue-700 border border-blue-200"
+                    : "bg-gray-100 text-gray-700 border border-gray-200"
+            }`}
           style={{ minWidth: "fit-content" }}
         >
           {video.category}
@@ -178,7 +206,10 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
       >
         {video.description}
       </div>
-      <div className="relative aspect-video w-full overflow-hidden rounded-lg cursor-pointer" onClick={() => youtubeId && handleOpenModal()}>
+      <div
+        className="relative aspect-video w-full overflow-hidden rounded-lg cursor-pointer"
+        onClick={() => youtubeId && handleOpenModal()}
+      >
         <Image
           src={thumbnailUrl}
           alt={video.title}
@@ -247,9 +278,15 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
             <div className="mb-4 text-center">
               <Trash2 className="w-10 h-10 text-[#EA384C] mx-auto mb-2" />
               <div className="text-lg font-semibold mb-2">Delete Video</div>
-              <div className="text-gray-600">Are you sure that you want to delete <span className="font-bold">{video.title}</span>?</div>
+              <div className="text-gray-600">
+                Are you sure that you want to delete{" "}
+                <span className="font-bold">{video.title}</span>?
+              </div>
               {stats.assigned > 0 && (
-                <div className="text-red-600 mt-2">This video is assigned to {stats.assigned} user{stats.assigned > 1 ? 's' : ''}.</div>
+                <div className="text-red-600 mt-2">
+                  This video is assigned to {stats.assigned} user
+                  {stats.assigned > 1 ? "s" : ""}.
+                </div>
               )}
             </div>
             <div className="flex gap-2 w-full justify-center mt-2">
@@ -265,9 +302,12 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
                 onClick={async () => {
                   setIsDeleting(true);
                   // Delete users_videos first
-                  await supabase.from('users_videos').delete().eq('video', video.id);
+                  await supabase
+                    .from("users_videos")
+                    .delete()
+                    .eq("video", video.id);
                   // Delete the video
-                  await supabase.from('videos').delete().eq('id', video.id);
+                  await supabase.from("videos").delete().eq("id", video.id);
                   setIsDeleting(false);
                   setShowDeleteModal(false);
                   // Optionally, trigger a refresh or callback here
@@ -275,7 +315,7 @@ export function AdminVideoCard({ video, onEdit, showEdit = false, onAssignToUser
                 }}
                 disabled={isDeleting}
               >
-                {isDeleting ? 'Deleting...' : 'Yes, Delete'}
+                {isDeleting ? "Deleting..." : "Yes, Delete"}
               </button>
             </div>
           </div>

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useUserVideosStore } from '@/store/user-videos-store';
-import { UserVideoWithVideo, UserStats } from '@/types';
+import { useEffect } from "react";
+import { useUserVideosStore } from "@/store/user-videos-store";
+import { UserVideoWithVideo, UserStats } from "@/types";
 
 export function useUserVideos(userId: string) {
   const {
@@ -12,7 +12,7 @@ export function useUserVideos(userId: string) {
     error,
     initialize,
     refresh,
-    assignVideos
+    assignVideos,
   } = useUserVideosStore();
 
   useEffect(() => {
@@ -25,6 +25,6 @@ export function useUserVideos(userId: string) {
     loading: loading[userId] || false,
     error: error[userId] || null,
     refresh: () => refresh(userId),
-    assignVideos
+    assignVideos,
   };
-} 
+}

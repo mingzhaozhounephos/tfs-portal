@@ -113,7 +113,7 @@ export function VideoFormModal({
             <input
               className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus-visible:outline-none focus:outline-auto focus-visible:outline-auto focus:outline-[#EA384C] focus-visible:outline-[#EA384C]"
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={(e) => setTitle(e.target.value)}
               required
               placeholder="Enter video title"
             />
@@ -123,7 +123,7 @@ export function VideoFormModal({
             <textarea
               className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus-visible:outline-none focus:outline-auto focus-visible:outline-auto focus:outline-[#EA384C] focus-visible:outline-[#EA384C]"
               value={description}
-              onChange={e => setDescription(e.target.value)}
+              onChange={(e) => setDescription(e.target.value)}
               required
               placeholder="Enter video description"
             />
@@ -133,7 +133,7 @@ export function VideoFormModal({
             <input
               className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus-visible:outline-none focus:outline-auto focus-visible:outline-auto focus:outline-[#EA384C] focus-visible:outline-[#EA384C]"
               value={youtubeUrl}
-              onChange={e => setYoutubeUrl(e.target.value)}
+              onChange={(e) => setYoutubeUrl(e.target.value)}
               required
               placeholder="https://www.youtube.com/watch?v=..."
             />
@@ -143,11 +143,13 @@ export function VideoFormModal({
             <select
               className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus-visible:outline-none focus:outline-auto focus-visible:outline-auto focus:outline-[#EA384C] focus-visible:outline-[#EA384C]"
               value={category}
-              onChange={e => setCategory(e.target.value)}
+              onChange={(e) => setCategory(e.target.value)}
               required
             >
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
               ))}
             </select>
           </div>
@@ -156,7 +158,7 @@ export function VideoFormModal({
             <input
               className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus-visible:outline-none focus:outline-auto focus-visible:outline-auto focus:outline-[#EA384C] focus-visible:outline-[#EA384C]"
               value={duration}
-              onChange={e => setDuration(e.target.value)}
+              onChange={(e) => setDuration(e.target.value)}
               placeholder="10:00"
             />
           </div>
@@ -165,7 +167,7 @@ export function VideoFormModal({
               type="checkbox"
               id="isAnnualRenewal"
               checked={isAnnualRenewal}
-              onChange={e => setIsAnnualRenewal(e.target.checked)}
+              onChange={(e) => setIsAnnualRenewal(e.target.checked)}
               className="w-4 h-4 rounded border-gray-300"
             />
             <label htmlFor="isAnnualRenewal" className="text-sm">
@@ -176,7 +178,7 @@ export function VideoFormModal({
             <button
               type="button"
               className="px-4 py-2 rounded border"
-              style={{ borderColor: 'var(--border-default)' }}
+              style={{ borderColor: "var(--border-default)" }}
               onClick={onClose}
               disabled={isLoading}
             >
@@ -185,7 +187,7 @@ export function VideoFormModal({
             <button
               type="submit"
               className="px-4 py-2 rounded bg-[#EA384C] text-white border hover:bg-[#EC4659]"
-              style={{ borderColor: 'var(--border-default)' }}
+              style={{ borderColor: "var(--border-default)" }}
               disabled={isLoading}
             >
               {video ? "Save Changes" : "Add Video"}
@@ -195,4 +197,4 @@ export function VideoFormModal({
       </div>
     </div>
   );
-} 
+}

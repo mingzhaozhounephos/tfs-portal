@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
-import { useUsersStore } from '@/store/users-store';
+import { useEffect } from "react";
+import { useUsersStore } from "@/store/users-store";
 
 export function useUsers() {
-  const { users, loading, error, initialize, refresh, searchUsers } = useUsersStore();
+  const { users, loading, error, initialize, refresh, searchUsers } =
+    useUsersStore();
 
   useEffect(() => {
     initialize();
@@ -13,6 +14,6 @@ export function useUsers() {
     loading,
     error,
     searchUsers,
-    refresh
+    refresh,
   };
-} 
+}

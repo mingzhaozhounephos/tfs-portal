@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import { supabase } from '@/lib/supabase';
-import { User } from '@/types';
-import { toast } from 'sonner';
+import { create } from "zustand";
+import { supabase } from "@/lib/supabase";
+import { User } from "@/types";
+import { toast } from "sonner";
 
 interface UsersStore {
   users: User[];
@@ -29,21 +29,21 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
     try {
       // Fetch initial data
       const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("users")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      set({ 
+      set({
         users: data as User[],
         initialized: true,
-        loading: false 
+        loading: false,
       });
     } catch (err) {
-      set({ 
+      set({
         error: err as Error,
-        loading: false 
+        loading: false,
       });
     }
   },
@@ -52,20 +52,20 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
     set({ loading: true });
     try {
       const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("users")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      set({ 
+      set({
         users: data as User[],
-        loading: false 
+        loading: false,
       });
     } catch (err) {
-      set({ 
+      set({
         error: err as Error,
-        loading: false 
+        loading: false,
       });
     }
   },
@@ -73,9 +73,9 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
   searchUsers: (query: string) => {
     const { users } = get();
     return users.filter(
-      user =>
+      (user) =>
         user.full_name?.toLowerCase().includes(query.toLowerCase()) ||
-        (user.email?.toLowerCase() || '').includes(query.toLowerCase())
+        (user.email?.toLowerCase() || "").includes(query.toLowerCase()),
     );
-  }
-})); 
+  },
+}));

@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/hooks/use-auth';
+import React, { useEffect, useRef } from "react";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/use-auth";
 
 // Extend the Window interface for YT and onYouTubeIframeAPIReady
 declare global {
@@ -18,7 +18,13 @@ interface TrainingVideoModalProps {
   videoId: string; // Supabase record id
 }
 
-export function TrainingVideoModal({ open, onClose, title, youtubeId, videoId }: TrainingVideoModalProps) {
+export function TrainingVideoModal({
+  open,
+  onClose,
+  title,
+  youtubeId,
+  videoId,
+}: TrainingVideoModalProps) {
   const playerRef = useRef<any>(null);
   const { user } = useAuth();
 
@@ -28,16 +34,16 @@ export function TrainingVideoModal({ open, onClose, title, youtubeId, videoId }:
 
     // Load the YouTube IFrame API if not already loaded
     if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
       document.body.appendChild(tag);
     }
 
     // This will be called by the YouTube API when it's ready
     window.onYouTubeIframeAPIReady = () => {
-      playerRef.current = new window.YT.Player('player', {
-        height: '390',
-        width: '640',
+      playerRef.current = new window.YT.Player("player", {
+        height: "390",
+        width: "640",
         videoId: youtubeId,
         playerVars: { autoplay: 1 },
         events: {
@@ -46,16 +52,16 @@ export function TrainingVideoModal({ open, onClose, title, youtubeId, videoId }:
               // Mark as completed in users_videos
               if (!user) return;
               const { data: userVideo, error } = await supabase
-                .from('users_videos')
-                .select('id')
-                .eq('user', user.id)
-                .eq('video', videoId)
+                .from("users_videos")
+                .select("id")
+                .eq("user", user.id)
+                .eq("video", videoId)
                 .single();
               if (!error && userVideo) {
                 await supabase
-                  .from('users_videos')
-                  .update({ is_completed: true, last_action: 'completed' })
-                  .eq('id', userVideo.id);
+                  .from("users_videos")
+                  .update({ is_completed: true, last_action: "completed" })
+                  .eq("id", userVideo.id);
               }
             }
           },
@@ -96,4 +102,4 @@ export function TrainingVideoModal({ open, onClose, title, youtubeId, videoId }:
       </div>
     </div>
   );
-} 
+}

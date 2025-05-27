@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export default function ResetPasswordPage() {
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState<string | null>(null);
   const router = useRouter();
@@ -17,19 +17,19 @@ export default function ResetPasswordPage() {
     setHasError(null);
 
     if (password !== confirmPassword) {
-      setHasError('Passwords do not match.');
+      setHasError("Passwords do not match.");
       return;
     }
 
     if (password.length < 6) {
-      setHasError('Password must be at least 6 characters long.');
+      setHasError("Password must be at least 6 characters long.");
       return;
     }
 
     setIsLoading(true);
 
     const { error } = await supabase.auth.updateUser({
-      password: password
+      password: password,
     });
 
     setIsLoading(false);
@@ -39,11 +39,11 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    toast.success('Password updated successfully!', {
-      description: 'You can now log in with your new password.',
+    toast.success("Password updated successfully!", {
+      description: "You can now log in with your new password.",
     });
 
-    router.replace('/login');
+    router.replace("/login");
   }
 
   return (
@@ -57,7 +57,9 @@ export default function ResetPasswordPage() {
         <div />
         <div className="mb-4">
           <p className="text-sm">
-            &quot;This platform has revolutionized how we train our drivers. The video assignments and tracking features have improved our compliance and safety records significantly.&quot;
+            &quot;This platform has revolutionized how we train our drivers. The
+            video assignments and tracking features have improved our compliance
+            and safety records significantly.&quot;
           </p>
           <p className="text-xs mt-2">Sofia Davis, Fleet Manager</p>
         </div>
@@ -76,7 +78,10 @@ export default function ResetPasswordPage() {
             className="bg-white border border-gray-200 rounded-md p-6 space-y-4"
           >
             <div>
-              <label htmlFor="password" className="block text-sm font-medium mb-1">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium mb-1"
+              >
                 New Password
               </label>
               <input
@@ -86,11 +91,14 @@ export default function ResetPasswordPage() {
                 required
                 className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium mb-1">
+              <label
+                htmlFor="confirm-password"
+                className="block text-sm font-medium mb-1"
+              >
                 Confirm Password
               </label>
               <input
@@ -100,12 +108,10 @@ export default function ResetPasswordPage() {
                 required
                 className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm"
                 value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
+                onChange={(e) => setConfirmPassword(e.target.value)}
               />
             </div>
-            {hasError && (
-              <p className="text-red-600 text-xs">{hasError}</p>
-            )}
+            {hasError && <p className="text-red-600 text-xs">{hasError}</p>}
             <button
               type="submit"
               className="w-full bg-neutral-900 text-white rounded-md py-2 font-semibold"
@@ -129,4 +135,4 @@ export default function ResetPasswordPage() {
       </div>
     </div>
   );
-} 
+}

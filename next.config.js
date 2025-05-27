@@ -3,12 +3,12 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'img.youtube.com',
-        pathname: '/vi/**',
+        protocol: "https",
+        hostname: "img.youtube.com",
+        pathname: "/vi/**",
       },
     ],
   },
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;

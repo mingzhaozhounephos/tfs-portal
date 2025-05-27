@@ -12,4 +12,4 @@ export default function ManageVideosPage() {
       </div>
     </div>
   );
-} 
+}
