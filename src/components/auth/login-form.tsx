@@ -136,7 +136,33 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
                   className="w-full bg-[#EA384C] text-white rounded-md py-2 font-semibold transition hover:bg-[#d92d3a] focus:outline-none focus:ring-2 focus:ring-[#EA384C] focus:ring-offset-2"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Processing..." : "Login"}
+                  {isLoading ? (
+                    <span className="flex items-center gap-2 justify-center">
+                      <svg
+                        className="w-4 h-4 animate-spin"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                        ></path>
+                      </svg>
+                      Processing
+                    </span>
+                  ) : (
+                    "Login"
+                  )}
                 </button>
               </form>
               <p className="text-sm text-center mt-4">
