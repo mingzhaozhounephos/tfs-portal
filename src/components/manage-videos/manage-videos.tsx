@@ -27,7 +27,7 @@ export function ManageVideos() {
         const { data, error } = await supabase
           .from("videos")
           .select("*")
-          .eq("admin_user_id", session.user.id)
+          // .eq("admin_user_id", session.user.id)
           .order("created_at", { ascending: false });
         if (!error && data) setVideos(data);
 
@@ -40,19 +40,19 @@ export function ManageVideos() {
               event: "*",
               schema: "public",
               table: "videos",
-              filter: `admin_user_id=eq.${session.user.id}`,
+              // filter: `admin_user_id=eq.${session.user.id}`,
             },
             (payload) => {
               // Refetch videos on any change
               supabase
                 .from("videos")
                 .select("*")
-                .eq("admin_user_id", session.user.id)
+                // .eq("admin_user_id", session.user.id)
                 .order("created_at", { ascending: false })
                 .then(({ data, error }) => {
                   if (!error && data) setVideos(data);
                 });
-            },
+            }
           )
           .subscribe();
       }
@@ -70,7 +70,7 @@ export function ManageVideos() {
       (selectedTag === "All Videos" ||
         v.category?.toLowerCase() === selectedTag.toLowerCase()) &&
       (v.title?.toLowerCase().includes(search.toLowerCase()) ||
-        v.description?.toLowerCase().includes(search.toLowerCase())),
+        v.description?.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (

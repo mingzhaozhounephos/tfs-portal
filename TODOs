@@ -12,10 +12,10 @@ D - watching video in driver dashboard, open the modal just like the way to see 
 
 D - when watching video, when watch nearly the end of the video, set the is_completed to true.
 
+D - Refactoring the UI based on https://preview--tfs-driver-hub-online.lovable.app/
 
--------------------------------------------------------------------------------------------
-Refactoring the UI based on https://preview--tfs-driver-hub-online.lovable.app/
+D - refactor the code according to Tyler's suggestion.
 
-login and signup - show error in a popup in the bottom right of the page.
+Show toasters for actions
+    login and signup - show error in a popup in the bottom right of the page.
 
-refactor the code according to Tyler's suggestion.
