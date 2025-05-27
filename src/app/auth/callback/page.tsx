@@ -46,12 +46,19 @@ export default function AuthCallback() {
                   full_name: fullName,
                   role: role,
                 }]);
-              
-              // If user is coming from invitation, redirect to password reset
-              if (userMeta.from_invitation) {
-                router.replace('/auth/reset-password');
-                return;
-              }
+            } else {
+              await supabase
+                .from('users')
+                .update({
+                  is_active: true,
+                })
+                .eq('id', userId);
+            }
+
+            // If user is coming from invitation, redirect to password reset
+            if (userMeta.from_invitation) {
+              router.replace('/auth/reset-password');
+              return;
             }
           }
           router.replace('/dashboard');

@@ -5,6 +5,7 @@ import { UserCard } from "./user-card";
 import { AssignVideoModal } from "./assign-video-modal";
 import { useUsers } from "@/hooks/use-users";
 import { User } from "@/types";
+import { UsersRealtimeListener } from './users-realtime-listener';
 
 export function ManageUsers() {
   const [search, setSearch] = useState("");
@@ -14,7 +15,12 @@ export function ManageUsers() {
   const [selectedVideoTitle, setSelectedVideoTitle] = useState<string>("");
   const { users, loading, error, searchUsers, refresh } = useUsers();
 
-  const filteredUsers = searchUsers(search);
+  const filteredUsers = searchUsers(search).slice().sort((a, b) => {
+    if (a.is_active === b.is_active) return 0;
+    if (a.is_active === false) return 1;
+    if (b.is_active === false) return -1;
+    return 0;
+  });
 
   const handleAssignVideo = (userId: string) => {
     setSelectedVideoId(userId);
@@ -80,6 +86,8 @@ export function ManageUsers() {
         videoTitle={selectedVideoTitle}
         assignedCount={0}
       />
+
+      <UsersRealtimeListener />
     </div>
   );
 } 

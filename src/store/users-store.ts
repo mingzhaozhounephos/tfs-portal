@@ -40,37 +40,6 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
         initialized: true,
         loading: false 
       });
-
-      // Subscribe to real-time changes
-      const channel = supabase
-        .channel('users-changes')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'users' },
-          async (payload) => {
-            // Refresh data when changes occur
-            const { data, error } = await supabase
-              .from('users')
-              .select('*')
-              .order('created_at', { ascending: false });
-
-            if (!error && data) {
-              set({ users: data as User[] });
-            }
-
-            // Show notification only for INSERT events
-            if (payload.eventType === 'INSERT') {
-              toast.success('User Added', {
-                description: 'The new user has been added successfully.',
-                duration: 3000,
-              });
-            }
-          }
-        )
-        .subscribe();
-
-      // Store cleanup function in state
-      set({ cleanup: () => supabase.removeChannel(channel) });
     } catch (err) {
       set({ 
         error: err as Error,

@@ -14,7 +14,11 @@ export function UserCard({ user, onAssignVideo }: UserCardProps) {
   const router = useRouter();
 
   return (
-    <div className="bg-white rounded-xl shadow p-6 flex flex-col gap-2 border" style={{ borderColor: 'var(--border-default)' }}>
+    <div className="bg-white rounded-xl shadow p-6 flex flex-col gap-2 border relative" style={{ borderColor: 'var(--border-default)' }}>
+      {/* Inactive badge */}
+      {user.is_active === false && (
+        <span className="absolute top-2 right-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded z-20">inactive</span>
+      )}
       <div className="flex items-center gap-3 mb-2">
         <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
           <Users size={28} />
