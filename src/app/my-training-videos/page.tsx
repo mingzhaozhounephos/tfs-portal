@@ -13,11 +13,11 @@ interface Video {
   category: string;
   description: string;
   image: string;
-  created_at: string;
+  created_at: string | Date;
   duration: string;
-  youtube_url: string;
-  assigned_date?: string;
-  last_watched?: string;
+  youtube_url?: string;
+  assigned_date?: string | Date;
+  last_watched?: string | Date;
   renewal_required?: boolean;
   renewal_due?: string;
   is_completed?: boolean;
@@ -34,7 +34,7 @@ const FILTERS = [
   { label: "Office", value: "office" },
 ];
 
-function isAnnualRenewalDue(video) {
+function isAnnualRenewalDue(video: Video) {
   if (!video.is_annual_renewal || !video.assigned_date) return false;
   const assigned = new Date(video.assigned_date);
   const now = new Date();
