@@ -97,9 +97,9 @@ export const useVideosStore = create<VideosStore>((set, get) => ({
     const { videos } = get();
     return videos.filter(
       (video) =>
-        video.title.toLowerCase().includes(query.toLowerCase()) ||
-        video.description.toLowerCase().includes(query.toLowerCase()) ||
-        video.category.toLowerCase().includes(query.toLowerCase()),
+        (video.title?.toLowerCase().includes(query.toLowerCase()) ?? false) ||
+        (video.description?.toLowerCase().includes(query.toLowerCase()) ?? false) ||
+        (video.category?.toLowerCase().includes(query.toLowerCase()) ?? false),
     );
   },
 
