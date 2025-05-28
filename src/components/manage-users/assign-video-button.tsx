@@ -34,7 +34,7 @@ export function AssignVideoButton({ user }: AssignVideoButtonProps) {
             strokeLinecap="round"
           />
         </svg>
-        Assign Video
+        Assign Videos
       </button>
 
       <AssignVideosModal
@@ -42,7 +42,7 @@ export function AssignVideoButton({ user }: AssignVideoButtonProps) {
         onClose={() => setIsModalOpen(false)}
         user={user}
         assignedVideoIds={videos.map((v) =>
-          typeof v.video === "string" ? v.video : v.video.id,
+          typeof v.video === "string" ? v.video : v.video.id
         )}
         onSave={handleSave}
       />

@@ -12,7 +12,8 @@ interface AssignVideosModalProps {
   assignedVideoIds: string[];
   onSave: (selectedVideoIds: string[]) => Promise<void>;
 }
-
+// TODO: still allow the Assign Video button to be clicked even if no videos are selected as user
+// might want to delete the assigned videos
 export function AssignVideosModal({
   isOpen,
   onClose,
@@ -42,10 +43,10 @@ export function AssignVideosModal({
   const filteredVideos = videos.filter(
     (v) =>
       (v.title?.toLowerCase() || "").includes(search.toLowerCase()) ||
-      (v.description?.toLowerCase() || "").includes(search.toLowerCase()),
+      (v.description?.toLowerCase() || "").includes(search.toLowerCase())
   );
   const categories = Array.from(
-    new Set(filteredVideos.map((v) => v.category || "")),
+    new Set(filteredVideos.map((v) => v.category || ""))
   );
   const videosByCategory = categories.map((cat) => ({
     category: cat,
@@ -59,7 +60,7 @@ export function AssignVideosModal({
   const handleSelectAll = () => {
     if (allSelected)
       setSelected(
-        selected.filter((id) => !filteredVideos.some((v) => v.id === id)),
+        selected.filter((id) => !filteredVideos.some((v) => v.id === id))
       );
     else
       setSelected([
@@ -86,7 +87,7 @@ export function AssignVideosModal({
   };
   const handleVideoSelect = (id: string) => {
     setSelected((sel) =>
-      sel.includes(id) ? sel.filter((x) => x !== id) : [...sel, id],
+      sel.includes(id) ? sel.filter((x) => x !== id) : [...sel, id]
     );
   };
 
@@ -171,7 +172,7 @@ export function AssignVideosModal({
                 groupIds.length > 0 &&
                 groupIds.every((id) => selected.includes(id));
               const groupAssignedCount = group.videos.filter((v) =>
-                assignedVideoIds.includes(v.id),
+                assignedVideoIds.includes(v.id)
               ).length;
               return (
                 <div key={group.category} className="mb-4">
@@ -202,7 +203,9 @@ export function AssignVideosModal({
                       return (
                         <div
                           key={video.id}
-                          className={`flex items-center px-3 py-2 ${isAssigned ? "bg-green-50" : ""}`}
+                          className={`flex items-center px-3 py-2 ${
+                            isAssigned ? "bg-green-50" : ""
+                          }`}
                         >
                           <input
                             type="checkbox"

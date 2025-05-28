@@ -88,6 +88,28 @@ export default function UserDetailsPage() {
         onNavigate={() => {}}
       />
       <div className="flex-1 h-screen overflow-y-auto p-8">
+        <div className="flex items-start justify-between w-full mb-4">
+          <img
+            src="/images/Logo.jpg"
+            alt="TFS Express Logistics"
+            className="h-8 w-auto mb-2"
+          />
+        </div>
+        <button
+          onClick={() => router.push("/manage-users")}
+          className="flex items-center gap-2 mb-4 bg-[#EA384C] text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-[#EC4659]"
+        >
+          <svg width="18" height="18" fill="none" viewBox="0 0 18 18">
+            <path
+              d="M11.25 14.25L6.75 9L11.25 3.75"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Back to Users
+        </button>
         <UserDetailsCards user={user} />
         <div className="flex items-center justify-between mt-8 mb-4">
           <h2 className="text-xl font-bold text-black">Assigned Videos</h2>
