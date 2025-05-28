@@ -260,7 +260,7 @@ export function AssignVideosModal({
             </button>
             <button
               onClick={handleSave}
-              disabled={selected.length === 0 || saving}
+              disabled={saving}
               className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Save Assignments
