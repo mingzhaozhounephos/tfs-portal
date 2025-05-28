@@ -13,6 +13,12 @@ import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDate } from "@/lib/format-date";
 import { TrainingVideoModal } from "@/components/training-videos/training-video-modal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface AdminVideoCardProps {
   video: {
@@ -33,7 +39,7 @@ interface AdminVideoCardProps {
 function getYouTubeId(url?: string) {
   if (!url) return "";
   const match = url.match(
-    /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
   );
   return match ? match[1] : "";
 }
@@ -147,36 +153,64 @@ export function AdminVideoCard({
       {/* Pencil icon for edit */}
       {showEdit && (
         <div className="absolute top-3 right-3 flex gap-2">
-          <button
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED] hover:bg-[#FFD6DB] transition"
-            onClick={onEdit}
-            aria-label="Edit video"
-          >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#EA384C"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="lucide lucide-pencil w-5 h-5"
-            >
-              <path d="M18 2a2.828 2.828 0 1 1 4 4L7 21l-4 1 1-4Z" />
-              <path d="M16 5 19 8" />
-            </svg>
-          </button>
-          <button
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED] hover:bg-[#FFD6DB] transition"
-            onClick={() => setShowDeleteModal(true)}
-            aria-label="Delete video"
-          >
-            <Trash2 className="w-5 h-5 text-[#EA384C]" />
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="flex items-center justify-center w-8 h-8 rounded-full bg-[#FEEBED] hover:bg-[#FFD6DB] transition"
+                aria-label="Open menu"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle cx="10" cy="4" r="1.5" fill="#333" />
+                  <circle cx="10" cy="10" r="1.5" fill="#333" />
+                  <circle cx="10" cy="16" r="1.5" fill="#333" />
+                </svg>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-36 p-0">
+              <DropdownMenuItem
+                onClick={onEdit}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-md group transition-colors group-hover:bg-[#FEEBED]"
+                style={{ color: "#222" }}
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-pencil w-4 h-4 group-hover:text-black text-black transition-colors"
+                >
+                  <path d="M18 2a2.828 2.828 0 1 1 4 4L7 21l-4 1 1-4Z" />
+                  <path d="M16 5 19 8" />
+                </svg>
+                <span className="group-hover:text-black text-black transition-colors">
+                  Edit
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setShowDeleteModal(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-b-md group transition-colors group-hover:bg-[#FEEBED]"
+                style={{ color: "#EA384C" }}
+              >
+                <Trash2 className="w-4 h-4 group-hover:text-black text-[#EA384C] transition-colors" />
+                <span className="group-hover:text-black text-[#EA384C] transition-colors">
+                  Delete
+                </span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       )}
-      <div className="font-bold">{video.title}</div>
+      <div className="font-bold pr-6">{video.title}</div>
       <div className="flex items-center gap-2 mb-1">
         <span
           className={`inline-block text-xs font-semibold rounded-full px-3 py-0.5
@@ -184,10 +218,10 @@ export function AdminVideoCard({
               video.category?.toLowerCase() === "office"
                 ? "bg-purple-100 text-purple-700 border border-purple-200"
                 : video.category?.toLowerCase() === "truck"
-                  ? "bg-green-100 text-green-700 border border-green-200"
-                  : video.category?.toLowerCase() === "van"
-                    ? "bg-blue-100 text-blue-700 border border-blue-200"
-                    : "bg-gray-100 text-gray-700 border border-gray-200"
+                ? "bg-green-100 text-green-700 border border-green-200"
+                : video.category?.toLowerCase() === "van"
+                ? "bg-blue-100 text-blue-700 border border-blue-200"
+                : "bg-gray-100 text-gray-700 border border-gray-200"
             }`}
           style={{ minWidth: "fit-content" }}
         >
