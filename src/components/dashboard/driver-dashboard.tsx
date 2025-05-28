@@ -18,7 +18,6 @@ interface Video {
   youtube_url?: string;
   assigned_date?: string | Date;
   last_watched?: string | Date;
-  renewal_required?: boolean;
   renewal_due?: string;
   is_completed?: boolean;
   modified_date?: string;
@@ -60,7 +59,7 @@ export function DriverDashboard() {
           ...item.video,
           assigned_date: item.assigned_date,
           last_watched: item.last_watched,
-          renewal_required: item.renewal_required,
+          is_annual_renewal: item.is_annual_renewal,
           renewal_due: item.renewal_due,
           is_completed: item.is_completed,
           modified_date: item.modified_date,

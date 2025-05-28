@@ -15,7 +15,6 @@ interface TrainingVideo {
   assigned_date?: string | Date;
   last_watched?: string | Date;
   youtube_url?: string;
-  renewal_required?: boolean;
   renewal_due?: string;
   is_completed?: boolean;
   modified_date?: string;
@@ -31,7 +30,7 @@ interface TrainingVideosGridProps {
 function getYouTubeId(url?: string) {
   if (!url) return "";
   const match = url.match(
-    /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
   );
   return match ? match[1] : "";
 }
@@ -124,10 +123,10 @@ export function TrainingVideosGrid({
                   (video.category?.toLowerCase() === "office"
                     ? "bg-purple-100 text-purple-700 border border-purple-200"
                     : video.category?.toLowerCase() === "truck"
-                      ? "bg-green-100 text-green-700 border border-green-200"
-                      : video.category?.toLowerCase() === "van"
-                        ? "bg-blue-100 text-blue-700 border border-blue-200"
-                        : "bg-gray-100 text-gray-700 border border-gray-200")
+                    ? "bg-green-100 text-green-700 border border-green-200"
+                    : video.category?.toLowerCase() === "van"
+                    ? "bg-blue-100 text-blue-700 border border-blue-200"
+                    : "bg-gray-100 text-gray-700 border border-gray-200")
                 }
                 style={{ minWidth: "fit-content" }}
               >

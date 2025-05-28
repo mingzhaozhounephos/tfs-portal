@@ -31,16 +31,16 @@ export function AssignedVideosToggle({
     const pending = videos.filter((v) => !v.is_completed).length;
     const completed = videos.filter((v) => v.is_completed).length;
     const renewal = videos.filter(
-      (v) => typeof v.video === "object" && v.video.renewal_required,
+      (v) => typeof v.video === "object" && v.video.is_annual_renewal
     ).length;
     const van = videos.filter(
-      (v) => typeof v.video === "object" && v.video.category === "van",
+      (v) => typeof v.video === "object" && v.video.category === "van"
     ).length;
     const truck = videos.filter(
-      (v) => typeof v.video === "object" && v.video.category === "truck",
+      (v) => typeof v.video === "object" && v.video.category === "truck"
     ).length;
     const office = videos.filter(
-      (v) => typeof v.video === "object" && v.video.category === "office",
+      (v) => typeof v.video === "object" && v.video.category === "office"
     ).length;
     return {
       all: videos.length,

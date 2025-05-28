@@ -18,7 +18,6 @@ interface Video {
   youtube_url?: string;
   assigned_date?: string | Date;
   last_watched?: string | Date;
-  renewal_required?: boolean;
   renewal_due?: string;
   is_completed?: boolean;
   modified_date?: string;
@@ -66,7 +65,7 @@ export default function MyTrainingVideosPage() {
           ...item.video,
           assigned_date: item.assigned_date,
           last_watched: item.last_watched,
-          renewal_required: item.renewal_required,
+          is_annual_renewal: item.is_annual_renewal,
           renewal_due: item.renewal_due,
           is_completed: item.is_completed,
           modified_date: item.modified_date,
@@ -109,7 +108,7 @@ export default function MyTrainingVideosPage() {
   const filteredVideos = useMemo(() => {
     let result = videos;
     if (filter === "renewal") {
-      result = result.filter((v) => v.renewal_required);
+      result = result.filter((v) => v.is_annual_renewal);
     } else if (["van", "truck", "office"].includes(filter)) {
       result = result.filter((v) => v.category.toLowerCase() === filter);
     }
