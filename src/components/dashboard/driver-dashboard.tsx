@@ -29,7 +29,7 @@ interface Video {
 function getYouTubeId(url?: string) {
   if (!url) return "";
   const match = url.match(
-    /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+    /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
   );
   return match ? match[1] : "";
 }
@@ -86,7 +86,7 @@ export function DriverDashboard() {
         },
         async () => {
           await fetchVideos();
-        },
+        }
       )
       .subscribe();
     return () => {
@@ -108,7 +108,7 @@ export function DriverDashboard() {
     .sort(
       (a, b) =>
         new Date(b.modified_date!).getTime() -
-        new Date(a.modified_date!).getTime(),
+        new Date(a.modified_date!).getTime()
     )[0];
 
   let activityText = "No activity yet";
@@ -132,7 +132,10 @@ export function DriverDashboard() {
     }
 
     if (mostRecent.last_action && mostRecent.title) {
-      actionText = `${mostRecent.last_action[0].toUpperCase() + mostRecent.last_action.slice(1)} "${mostRecent.title}"`;
+      actionText = `${
+        mostRecent.last_action[0].toUpperCase() +
+        mostRecent.last_action.slice(1)
+      } "${mostRecent.title}"`;
     }
   }
 

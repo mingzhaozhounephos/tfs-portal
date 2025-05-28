@@ -96,7 +96,7 @@ export default function MyTrainingVideosPage() {
         },
         async () => {
           await fetchVideos();
-        },
+        }
       )
       .subscribe();
 
@@ -118,7 +118,7 @@ export default function MyTrainingVideosPage() {
       result = result.filter(
         (v) =>
           v.title.toLowerCase().includes(s) ||
-          v.description.toLowerCase().includes(s),
+          v.description.toLowerCase().includes(s)
       );
     }
     return result;
@@ -128,9 +128,9 @@ export default function MyTrainingVideosPage() {
   const annualRenewalCount = useMemo(
     () =>
       videos.filter(
-        (v) => v.is_annual_renewal && v.assigned_date && isAnnualRenewalDue(v),
+        (v) => v.is_annual_renewal && v.assigned_date && isAnnualRenewalDue(v)
       ).length,
-    [videos],
+    [videos]
   );
 
   // Handler to show the video modal
