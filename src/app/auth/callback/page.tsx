@@ -44,6 +44,7 @@ export default function AuthCallback() {
                   email: userEmail,
                   full_name: fullName,
                   role: role,
+                  is_active: true,
                 },
               ]);
             } else {

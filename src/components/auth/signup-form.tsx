@@ -11,6 +11,7 @@ export function SignUpForm({ onSwitchToLogin }: SignUpFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState<string | null>(null);
 
@@ -30,6 +31,10 @@ export function SignUpForm({ onSwitchToLogin }: SignUpFormProps) {
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: {
+          name: name,
+          role: "driver", // Set default role for self-registered users
+        },
       },
     });
 
@@ -53,6 +58,7 @@ export function SignUpForm({ onSwitchToLogin }: SignUpFormProps) {
     setEmail("");
     setPassword("");
     setConfirmPassword("");
+    setName("");
   }
 
   return (
@@ -104,10 +110,27 @@ export function SignUpForm({ onSwitchToLogin }: SignUpFormProps) {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label
+                    htmlFor="name"
+                    className="block text-sm font-medium mb-1 text-gray-700"
+                  >
+                    Full Name
+                  </label>
+                  <input
+                    id="name"
+                    type="text"
+                    required
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA384C]"
+                    placeholder="Enter your full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label
                     htmlFor="email"
                     className="block text-sm font-medium mb-1 text-gray-700"
                   >
-                    Username
+                    Email
                   </label>
                   <input
                     id="email"
@@ -115,7 +138,7 @@ export function SignUpForm({ onSwitchToLogin }: SignUpFormProps) {
                     autoComplete="email"
                     required
                     className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA384C]"
-                    placeholder="Enter your username"
+                    placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
