@@ -58,7 +58,7 @@ export function AssignVideoModal({
     ? users.filter(
         (user: User) =>
           user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.email?.toLowerCase().includes(searchQuery.toLowerCase()),
+          user.email?.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : users;
 
@@ -69,7 +69,7 @@ export function AssignVideoModal({
   const handleSelectAll = () => {
     if (allSelected) {
       setSelectedUsers(
-        selectedUsers.filter((id) => !filteredUsers.some((u) => u.id === id)),
+        selectedUsers.filter((id) => !filteredUsers.some((u) => u.id === id))
       );
     } else {
       setSelectedUsers([
@@ -85,7 +85,7 @@ export function AssignVideoModal({
     setSelectedUsers((prev) =>
       prev.includes(userId)
         ? prev.filter((id) => id !== userId)
-        : [...prev, userId],
+        : [...prev, userId]
     );
   };
 
@@ -142,7 +142,7 @@ export function AssignVideoModal({
             </span>
             <input
               type="text"
-              placeholder="Search videos..."
+              placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 border border-[#EA384C] rounded-lg px-4 py-2 text-sm bg-[#fafbfc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F28896] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm w-64 bg-gray-50 focus:bg-white focus:border-[#EA384C] transition"
@@ -195,7 +195,11 @@ export function AssignVideoModal({
                       </div>
                     </div>
                     <span
-                      className={`ml-2 px-2 py-0.5 rounded text-xs font-semibold ${user.role === "admin" ? "bg-gray-200 text-gray-700" : "bg-blue-100 text-blue-700"}`}
+                      className={`ml-2 px-2 py-0.5 rounded text-xs font-semibold ${
+                        user.role === "admin"
+                          ? "bg-gray-200 text-gray-700"
+                          : "bg-blue-100 text-blue-700"
+                      }`}
                     >
                       {user.role}
                     </span>
