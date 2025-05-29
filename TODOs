@@ -19,3 +19,11 @@ D - refactor the code according to Tyler's suggestion.
 Show toasters for actions
     login and signup - show error in a popup in the bottom right of the page.
 
+Manage users
+    add user, error: email rate limit exceeded
+
+Mange users
+    click 'Assign to Users' to unassign the video from the user, the list doesn't refresh.
+
+comment out if (get().initialized) return; for all the stores. to allow data refreshing when switching tabs.
+Need to have a better way of handling the data refreshing.
