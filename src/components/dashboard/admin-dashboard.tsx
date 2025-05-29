@@ -1,18 +1,13 @@
 import { JSX, useState, useEffect } from "react";
 import { SideMenu } from "@/components/side-menu/side-menu";
 import { ManageVideos } from "@/components/manage-videos/manage-videos";
-import { AdminVideoCard } from "@/components/admin-video-card/admin-video-card";
 import { ManageUsers } from "@/components/manage-users/manage-users";
 import { supabase } from "@/lib/supabase";
 import { Bell, Users, Activity, Play } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { UserCard } from "../manage-users/user-card";
-import { VideoFormModal } from "@/components/manage-videos/video-form-modal";
 
 export function AdminDashboard() {
-  const [tab, setTab] = useState<"videos" | "users">("videos");
   const [active, setActive] = useState("dashboard");
-  const [videos, setVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalVideos, setTotalVideos] = useState(0);
   const [videosThisWeek, setVideosThisWeek] = useState(0);
@@ -24,9 +19,6 @@ export function AdminDashboard() {
   const { user } = useAuth();
   const [adminName, setAdminName] = useState<string>("Administrator");
   const [adminEmail, setAdminEmail] = useState<string>("");
-  const [recentUsers, setRecentUsers] = useState<any[]>([]);
-  const [editingVideo, setEditingVideo] = useState<any>(null);
-  const [modalOpen, setModalOpen] = useState(false);
 
   function isThisWeek(dateString: string) {
     const date = new Date(dateString);
@@ -76,10 +68,9 @@ export function AdminDashboard() {
           .select("*")
           .order("created_at", { ascending: false });
         if (!error && data) {
-          setVideos(data);
           setTotalVideos(data.length);
           setVideosThisWeek(
-            data.filter((v) => v.created_at && isThisWeek(v.created_at)).length,
+            data.filter((v) => v.created_at && isThisWeek(v.created_at)).length
           );
         }
 
@@ -102,28 +93,27 @@ export function AdminDashboard() {
                 .order("created_at", { ascending: false })
                 .then(({ data, error }) => {
                   if (!error && data) {
-                    setVideos(data);
                     setTotalVideos(data.length);
                     setVideosThisWeek(
                       data.filter(
-                        (v) => v.created_at && isThisWeek(v.created_at),
-                      ).length,
+                        (v) => v.created_at && isThisWeek(v.created_at)
+                      ).length
                     );
                   }
                 });
-            },
+            }
           )
           .subscribe();
       }
       setLoading(false);
     }
-    if (active === "dashboard" && tab === "videos") {
+    if (active === "dashboard") {
       fetchVideos();
     }
     return () => {
       if (channel) supabase.removeChannel(channel);
     };
-  }, [active, tab]);
+  }, [active]);
 
   useEffect(() => {
     let channel: any;
@@ -135,10 +125,7 @@ export function AdminDashboard() {
       if (!error && data) {
         setTotalUsers(data.length);
         setUsersThisMonth(
-          data.filter((u) => u.created_at && isThisMonth(u.created_at)).length,
-        );
-        setRecentUsers(
-          data.filter((u) => u.created_at && isThisMonth(u.created_at)),
+          data.filter((u) => u.created_at && isThisMonth(u.created_at)).length
         );
       }
       // Real-time subscription
@@ -157,17 +144,12 @@ export function AdminDashboard() {
                   setTotalUsers(data.length);
                   setUsersThisMonth(
                     data.filter(
-                      (u) => u.created_at && isThisMonth(u.created_at),
-                    ).length,
-                  );
-                  setRecentUsers(
-                    data.filter(
-                      (u) => u.created_at && isThisMonth(u.created_at),
-                    ),
+                      (u) => u.created_at && isThisMonth(u.created_at)
+                    ).length
                   );
                 }
               });
-          },
+          }
         )
         .subscribe();
     }
@@ -205,14 +187,14 @@ export function AdminDashboard() {
                 if (!error && data) {
                   const total = data.length;
                   const completed = data.filter(
-                    (uv: any) => uv.is_completed,
+                    (uv: any) => uv.is_completed
                   ).length;
                   const rate =
                     total === 0 ? 0 : Math.round((completed / total) * 100);
                   setCompletionRate(`${rate}%`);
                 }
               });
-          },
+          }
         )
         .subscribe();
     }
@@ -233,7 +215,7 @@ export function AdminDashboard() {
       if (!error && data) {
         const watched = data.filter((uv: any) => uv.last_watched).length;
         const watchedThisWeek = data.filter(
-          (uv: any) => uv.last_watched && isThisWeek(uv.last_watched),
+          (uv: any) => uv.last_watched && isThisWeek(uv.last_watched)
         ).length;
         setVideosWatched(watched);
         setVideosWatchedThisWeek(watchedThisWeek);
@@ -251,16 +233,16 @@ export function AdminDashboard() {
               .then(({ data, error }) => {
                 if (!error && data) {
                   const watched = data.filter(
-                    (uv: any) => uv.last_watched,
+                    (uv: any) => uv.last_watched
                   ).length;
                   const watchedThisWeek = data.filter(
-                    (uv: any) => uv.last_watched && isThisWeek(uv.last_watched),
+                    (uv: any) => uv.last_watched && isThisWeek(uv.last_watched)
                   ).length;
                   setVideosWatched(watched);
                   setVideosWatchedThisWeek(watchedThisWeek);
                 }
               });
-          },
+          }
         )
         .subscribe();
     }
@@ -343,81 +325,6 @@ export function AdminDashboard() {
                 }
               />
             </div>
-            {/* Toggle */}
-            <div
-              className="flex w-fit rounded-lg p-1 mb-4 shadow-sm"
-              style={{ backgroundColor: "#F1F5F9" }}
-            >
-              <button
-                className={`px-4 py-1 rounded-lg transition font-medium
-                  ${
-                    tab === "videos"
-                      ? "bg-white text-black font-bold shadow"
-                      : "bg-transparent text-gray-500 hover:text-black"
-                  }
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300
-                `}
-                onClick={() => setTab("videos")}
-                type="button"
-                aria-pressed={tab === "videos"}
-              >
-                Recent Videos
-              </button>
-              <button
-                className={`px-4 py-1 rounded-lg transition font-medium
-                  ${
-                    tab === "users"
-                      ? "bg-white text-black font-bold shadow"
-                      : "bg-transparent text-gray-500 hover:text-black"
-                  }
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300
-                `}
-                onClick={() => setTab("users")}
-                type="button"
-                aria-pressed={tab === "users"}
-              >
-                Recent Users
-              </button>
-            </div>
-            {/* Content */}
-            {tab === "videos" ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {videos.map((video, i) => (
-                  <AdminVideoCard
-                    key={i}
-                    video={video}
-                    showEdit={true}
-                    onEdit={() => {
-                      setEditingVideo(video);
-                      setModalOpen(true);
-                    }}
-                    onAssignToUsers={() => {
-                      /* handle assign to users */
-                    }}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {recentUsers.map((user, i) => (
-                  <UserCard
-                    key={user.id || i}
-                    user={user}
-                    onAssignVideo={() => {}}
-                  />
-                ))}
-              </div>
-            )}
-            {/* Video Edit Modal */}
-            <VideoFormModal
-              open={modalOpen}
-              onClose={() => setModalOpen(false)}
-              onSuccess={() => {
-                /* Optionally refresh videos here */
-              }}
-              video={editingVideo}
-              adminUserId={user?.id || ""}
-            />
           </>
         )}
       </main>
