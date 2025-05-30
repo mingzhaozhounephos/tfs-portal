@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Users,
-  Calendar,
-  Video,
-  CheckCircle,
-  Mail,
-  RefreshCw,
-} from "lucide-react";
+import { Users, Video, CheckCircle, RefreshCw } from "lucide-react";
 import { User, UserWithRole } from "@/types";
 import { useUserVideos } from "@/hooks/use-user-videos";
 import { format } from "date-fns";

@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { Users, Calendar, ListChecks, PlusCircle } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { UserFormModal } from "./user-form-modal";
 import { UserCard } from "./user-card";
 import { AssignVideoModal } from "./assign-video-modal";
 import { useUsers } from "@/hooks/use-users";
-import { UserWithRole } from "@/types";
 import { UsersRealtimeListener } from "./users-realtime-listener";
 
 export function ManageUsers() {
