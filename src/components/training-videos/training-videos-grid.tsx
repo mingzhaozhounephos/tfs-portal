@@ -3,6 +3,7 @@ import Image from "next/image";
 import { formatDate } from "@/lib/format-date";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/lib/supabase";
+import { getYouTubeId, getYouTubeThumbnail } from "@/lib/youtube";
 
 interface TrainingVideo {
   id: string;
@@ -25,18 +26,6 @@ interface TrainingVideo {
 interface TrainingVideosGridProps {
   videos: TrainingVideo[];
   onStartTraining?: (video: TrainingVideo) => void;
-}
-
-function getYouTubeId(url?: string) {
-  if (!url) return "";
-  const match = url.match(
-    /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
-  );
-  return match ? match[1] : "";
-}
-
-function getYouTubeThumbnail(videoId: string) {
-  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 }
 
 function isAnnualRenewalDue(video: TrainingVideo): boolean {

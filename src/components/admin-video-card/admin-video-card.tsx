@@ -13,6 +13,7 @@ import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDate } from "@/lib/format-date";
 import { TrainingVideoModal } from "@/components/training-videos/training-video-modal";
+import { getYouTubeId, getYouTubeThumbnail } from "@/lib/youtube";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,18 +35,6 @@ interface AdminVideoCardProps {
   onEdit?: () => void;
   showEdit?: boolean;
   onAssignToUsers?: () => void;
-}
-
-function getYouTubeId(url?: string) {
-  if (!url) return "";
-  const match = url.match(
-    /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
-  );
-  return match ? match[1] : "";
-}
-
-function getYouTubeThumbnail(videoId: string) {
-  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 }
 
 export function AdminVideoCard({

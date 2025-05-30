@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { formatDate } from "@/lib/format-date";
 import { SideMenu } from "@/components/side-menu/side-menu";
 import { TrainingVideosGrid } from "@/components/training-videos/training-videos-grid";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserRole } from "@/hooks/use-user-role";
 import { TrainingVideoModal } from "@/components/training-videos/training-video-modal";
+import { getYouTubeId } from "@/lib/youtube";
 
 interface Video {
   id: string;
@@ -23,18 +23,6 @@ interface Video {
   modified_date?: string;
   last_action?: string;
   is_annual_renewal?: boolean;
-}
-
-function getYouTubeId(url?: string) {
-  if (!url) return "";
-  const match = url.match(
-    /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
-  );
-  return match ? match[1] : "";
-}
-
-function getYouTubeThumbnail(videoId: string) {
-  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 }
 
 export function DriverDashboard() {
