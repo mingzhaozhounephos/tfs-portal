@@ -261,9 +261,35 @@ export function AssignVideosModal({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-sm font-medium text-white bg-[#EA384C] rounded-md hover:bg-[#d92d3a]00 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Save Assignments
+              {saving ? (
+                <span className="flex items-center gap-2 justify-center">
+                  <svg
+                    className="w-4 h-4 animate-spin"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    ></path>
+                  </svg>
+                  Saving
+                </span>
+              ) : (
+                "Save Assignments"
+              )}
             </button>
           </div>
         </div>

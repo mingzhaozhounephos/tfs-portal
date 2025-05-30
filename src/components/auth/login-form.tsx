@@ -133,7 +133,7 @@ export function LoginForm({ onSwitchToSignUp }: LoginFormProps) {
                 {hasError && <p className="text-red-600 text-xs">{hasError}</p>}
                 <button
                   type="submit"
-                  className="w-full bg-[#EA384C] text-white rounded-md py-2 font-semibold transition hover:bg-[#d92d3a] focus:outline-none focus:ring-2 focus:ring-[#EA384C] focus:ring-offset-2"
+                  className="w-full bg-[#EA384C] text-white rounded-md py-2 font-semibold transition hover:bg-[#d92d3a] focus:outline-none focus:ring-2 focus:ring-[#EA384C] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={isLoading}
                 >
                   {isLoading ? (
