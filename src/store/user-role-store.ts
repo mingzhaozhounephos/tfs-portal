@@ -40,9 +40,9 @@ export const useUserRoleStore = create<UserRoleStore>((set, get) => ({
       }
 
       const { data: userRole, error: roleError } = await supabase
-        .from("users")
+        .from("user_roles")
         .select("role")
-        .eq("id", session.user.id)
+        .eq("user", session.user.id)
         .single();
 
       if (roleError) throw roleError;
@@ -64,9 +64,9 @@ export const useUserRoleStore = create<UserRoleStore>((set, get) => ({
 
         if (session) {
           const { data: userRole, error: roleError } = await supabase
-            .from("users")
+            .from("user_roles")
             .select("role")
-            .eq("id", session.user.id)
+            .eq("user", session.user.id)
             .single();
 
           if (!roleError) {
@@ -109,9 +109,9 @@ export const useUserRoleStore = create<UserRoleStore>((set, get) => ({
       }
 
       const { data: userRole, error: roleError } = await supabase
-        .from("users")
+        .from("user_roles")
         .select("role")
-        .eq("id", session.user.id)
+        .eq("user", session.user.id)
         .single();
 
       if (roleError) throw roleError;

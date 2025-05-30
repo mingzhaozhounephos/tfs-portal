@@ -6,7 +6,7 @@ import {
   Mail,
   Trash2,
 } from "lucide-react";
-import { User } from "@/types";
+import { User, UserWithRole } from "@/types";
 import { useUserVideos } from "@/hooks/use-user-videos";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface UserCardProps {
-  user: User;
+  user: UserWithRole;
   onAssignVideo: (userId: string) => void;
 }
 
@@ -42,6 +42,8 @@ export function UserCard({ user, onAssignVideo }: UserCardProps) {
       if (user.role === "admin") {
         await supabase.from("videos").delete().eq("admin_user_id", user.id);
       }
+      // Delete the user role record
+      await supabase.from("user_roles").delete().eq("user", user.id);
       // Delete the user from the 'users' table
       await supabase.from("users").delete().eq("id", user.id);
 

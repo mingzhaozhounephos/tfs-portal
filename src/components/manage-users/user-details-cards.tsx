@@ -8,9 +8,11 @@ import {
   Mail,
   RefreshCw,
 } from "lucide-react";
-import { User } from "@/types";
+import { User, UserWithRole } from "@/types";
 import { useUserVideos } from "@/hooks/use-user-videos";
 import { format } from "date-fns";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface UserDetailsCardsProps {
   user: User;
@@ -18,9 +20,32 @@ interface UserDetailsCardsProps {
 
 export function UserDetailsCards({ user }: UserDetailsCardsProps) {
   const { stats, loading, videos } = useUserVideos(user.id);
+  const [userWithRole, setUserWithRole] = useState<UserWithRole | null>(null);
+
+  useEffect(() => {
+    async function fetchUserRole() {
+      const { data: userRole } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user", user.id)
+        .single();
+
+      if (userRole) {
+        setUserWithRole({
+          ...user,
+          role: userRole.role,
+        });
+      }
+    }
+    fetchUserRole();
+  }, [user]);
 
   // Calculate completed videos count
   const completedVideos = videos.filter((v) => v.is_completed).length;
+
+  if (!userWithRole) {
+    return null;
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-9 gap-4 mb-8 grid-flow-col md:auto-cols-fr">
@@ -39,23 +64,23 @@ export function UserDetailsCards({ user }: UserDetailsCardsProps) {
           {/* Name, Email, Badge */}
           <div className="flex flex-col justify-center">
             <div className="font-bold text-2xl text-black leading-tight mb-1">
-              {user.full_name || user.email}
+              {userWithRole.full_name || userWithRole.email}
             </div>
             <div className="text-gray-500 text-base mb-2 break-all">
-              {user.email}
+              {userWithRole.email}
             </div>
             <span
               className="inline-block border border-gray-300 rounded-full px-3 py-0.5 bg-white text-black text-xs font-bold w-fit"
               style={{ borderColor: "var(--border-default)" }}
             >
-              {user.role}
+              {userWithRole.role}
             </span>
           </div>
         </div>
         <div className="text-gray-500 text-sm mb-1">Joined</div>
         <div className="text-black text-xl font-semibold mb-4">
-          {user.created_at
-            ? format(new Date(user.created_at), "MMM yyyy")
+          {userWithRole.created_at
+            ? format(new Date(userWithRole.created_at), "MMM yyyy")
             : "-"}
         </div>
         <div className="text-gray-500 text-sm mb-1">Training Progress</div>
@@ -91,7 +116,10 @@ export function UserDetailsCards({ user }: UserDetailsCardsProps) {
         <div className="text-gray-500 text-base">
           {loading
             ? ""
-            : `${stats.numAssigned - Math.round((stats.completion * stats.numAssigned) / 100)} pending completion`}
+            : `${
+                stats.numAssigned -
+                Math.round((stats.completion * stats.numAssigned) / 100)
+              } pending completion`}
         </div>
       </div>
       {/* Completion Rate Card */}

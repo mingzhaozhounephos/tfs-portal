@@ -31,11 +31,23 @@ export default async function handler(
     .maybeSingle();
 
   if (!existingUser) {
-    const { error: insertError } = await supabaseAdmin
+    const { data: newUser, error: insertError } = await supabaseAdmin
       .from("users")
-      .insert([{ email, full_name: name, role, is_active: false }]);
+      .insert([{ email, full_name: name, is_active: false }])
+      .select()
+      .single();
+
     if (insertError) {
       return res.status(400).json({ error: insertError.message });
+    }
+
+    // Create user role record
+    const { error: roleError } = await supabaseAdmin
+      .from("user_roles")
+      .insert([{ user: newUser.id, role }]);
+
+    if (roleError) {
+      return res.status(400).json({ error: roleError.message });
     }
   }
 

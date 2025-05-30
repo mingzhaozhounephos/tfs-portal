@@ -2,10 +2,15 @@ import { Database } from "./supabase";
 
 // Base types from Supabase
 export type User = Database["public"]["Tables"]["users"]["Row"];
+export type UserRole = Database["public"]["Tables"]["user_roles"]["Row"];
 export type Video = Database["public"]["Tables"]["videos"]["Row"];
 export type UserVideo = Database["public"]["Tables"]["users_videos"]["Row"];
 
 // Extended types for joined data
+export interface UserWithRole extends User {
+  role: string | null;
+}
+
 export interface UserVideoWithVideo extends Omit<UserVideo, "video"> {
   video: Video;
 }

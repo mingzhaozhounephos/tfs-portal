@@ -19,7 +19,12 @@ export async function GET(
   try {
     const { data, error } = await supabaseAdmin
       .from('users')
-      .select('*')
+      .select(`
+        *,
+        user_roles (
+          role
+        )
+      `)
       .eq('id', params.id)
       .single();
 
@@ -30,7 +35,14 @@ export async function GET(
       throw error;
     }
 
-    return NextResponse.json(data);
+    // Transform the data to include role directly
+    const transformedData = {
+      ...data,
+      role: data.user_roles?.[0]?.role || null
+    };
+    delete transformedData.user_roles;
+
+    return NextResponse.json(transformedData);
   } catch (error) {
     console.error('Error fetching user:', error);
     return NextResponse.json(

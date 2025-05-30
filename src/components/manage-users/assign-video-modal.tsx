@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useUsers } from "@/hooks/use-users";
 import { useUserVideosStore } from "@/store/user-videos-store";
-import { User } from "@/types";
+import { User, UserWithRole } from "@/types";
 import { createPortal } from "react-dom";
 import { supabase } from "@/lib/supabase";
 
@@ -28,11 +28,36 @@ export function AssignVideoModal({
   const [loadingAssigned, setLoadingAssigned] = useState(false);
   const { users, loading, error, searchUsers } = useUsers();
   const { assignVideos } = useUserVideosStore();
+  const [usersWithRoles, setUsersWithRoles] = useState<UserWithRole[]>([]);
 
   useEffect(() => {
     setMounted(true);
     return () => setMounted(false);
   }, []);
+
+  // Fetch user roles when users change
+  useEffect(() => {
+    async function fetchUserRoles() {
+      if (users.length > 0) {
+        const { data: userRoles } = await supabase
+          .from("user_roles")
+          .select("user, role")
+          .in(
+            "user",
+            users.map((u) => u.id)
+          );
+
+        if (userRoles) {
+          const usersWithRoles = users.map((user) => ({
+            ...user,
+            role: userRoles.find((ur) => ur.user === user.id)?.role || null,
+          }));
+          setUsersWithRoles(usersWithRoles);
+        }
+      }
+    }
+    fetchUserRoles();
+  }, [users]);
 
   // Fetch assigned users when modal opens or videoId changes
   useEffect(() => {
@@ -55,12 +80,12 @@ export function AssignVideoModal({
 
   // Filtered users for search
   const filteredUsers = searchQuery
-    ? users.filter(
-        (user: User) =>
+    ? usersWithRoles.filter(
+        (user) =>
           user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           user.email?.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : users;
+    : usersWithRoles;
 
   // Select All logic
   const allSelected =
@@ -173,7 +198,7 @@ export function AssignVideoModal({
               {filteredUsers.length === 0 ? (
                 <div className="p-4 text-gray-500 text-sm">No users found.</div>
               ) : (
-                filteredUsers.map((user: User) => (
+                filteredUsers.map((user) => (
                   <div
                     key={user.id}
                     className="flex items-center h-14 px-3 cursor-pointer hover:bg-gray-50"

@@ -4,7 +4,7 @@ import { UserFormModal } from "./user-form-modal";
 import { UserCard } from "./user-card";
 import { AssignVideoModal } from "./assign-video-modal";
 import { useUsers } from "@/hooks/use-users";
-import { User } from "@/types";
+import { UserWithRole } from "@/types";
 import { UsersRealtimeListener } from "./users-realtime-listener";
 
 export function ManageUsers() {

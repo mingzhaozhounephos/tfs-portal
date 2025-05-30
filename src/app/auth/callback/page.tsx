@@ -11,22 +11,30 @@ export default function AuthCallback() {
     async function handleAuth() {
       const hash = window.location.hash.substring(1);
       const params = new URLSearchParams(hash);
+      const accessToken = params.get("access_token");
+      const refreshToken = params.get("refresh_token");
 
-      const access_token = params.get("access_token");
-      const refresh_token = params.get("refresh_token");
-
-      if (access_token && refresh_token) {
-        const { data, error } = await supabase.auth.setSession({
-          access_token,
-          refresh_token,
+      if (accessToken && refreshToken) {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
         });
 
-        if (!error) {
-          const userId = data.session?.user.id;
-          const userEmail = data.session?.user.email;
-          const userMeta = data.session?.user.user_metadata || {};
-          const fullName = userMeta.name || null;
-          const role = userMeta.role || null;
+        if (error) {
+          console.error("Error setting session:", error);
+          router.replace("/login");
+          return;
+        }
+
+        if (session) {
+          const userId = session.user.id;
+          const userEmail = session.user.email;
+          const userMeta = session.user.user_metadata;
+          const fullName = userMeta.name;
+          const role = userMeta.role;
 
           if (userId && userEmail) {
             // Check if user record exists
@@ -37,14 +45,21 @@ export default function AuthCallback() {
               .maybeSingle();
 
             if (!existing) {
-              // No record: insert new user with id from auth session, full_name, and role
+              // No record: insert new user with id from auth session and full_name
               await supabase.from("users").insert([
                 {
                   id: userId,
                   email: userEmail,
                   full_name: fullName,
-                  role: role,
                   is_active: true,
+                },
+              ]);
+
+              // Create user role record
+              await supabase.from("user_roles").insert([
+                {
+                  user: userId,
+                  role: role,
                 },
               ]);
             } else {
