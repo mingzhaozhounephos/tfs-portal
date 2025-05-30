@@ -1,7 +1,7 @@
 "use client";
 
-import { SideMenu } from "@/components/side-menu/side-menu";
-import { ManageVideos } from "@/components/manage-videos/manage-videos";
+import { SideMenu } from "@/components/side-menu";
+import { ManageVideos } from "@/components/manage-videos/manage-videos-main";
 
 export default function ManageVideosPage() {
   return (

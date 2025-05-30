@@ -1,6 +1,6 @@
 "use client";
 
-import { SideMenu } from "@/components/side-menu/side-menu";
+import { SideMenu } from "@/components/side-menu";
 import { User } from "@/types";
 import { UserDetailsClient } from "@/components/manage-users/user-details-client";
 import { UserDetailsCards } from "@/components/manage-users/user-details-cards";

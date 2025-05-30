@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useUserVideos } from "@/hooks/use-user-videos";
-import { AdminVideoCard } from "@/components/admin-video-card/admin-video-card";
+import { AdminVideoCard } from "@/components/share/admin-video-card";
 import { UserVideoWithVideo } from "@/types";
 
 interface AssignedVideosListProps {

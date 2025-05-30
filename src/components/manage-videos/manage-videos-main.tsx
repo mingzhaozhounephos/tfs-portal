@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { VideoFormModal } from "./video-form-modal";
 import { supabase } from "@/lib/supabase";
-import { AdminVideoCard } from "@/components/admin-video-card/admin-video-card";
+import { AdminVideoCard } from "@/components/share/admin-video-card";
 
 const tags = ["All Videos", "Van", "Truck", "Office"];
 

@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { SideMenu } from "@/components/side-menu/side-menu";
-import { TrainingVideosGrid } from "@/components/training-videos/training-videos-grid";
+import { SideMenu } from "@/components/side-menu";
+import { TrainingVideosGrid } from "@/components/share/training-videos-grid";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
-import { TrainingVideoModal } from "@/components/training-videos/training-video-modal";
+import { TrainingVideoModal } from "@/components/share/training-video-modal";
 
 interface Video {
   id: string;

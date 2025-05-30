@@ -2,7 +2,7 @@ import { useState } from "react";
 import { PlusCircle } from "lucide-react";
 import { UserFormModal } from "./user-form-modal";
 import { UserCard } from "./user-card";
-import { AssignVideoModal } from "./assign-video-modal";
+import { AssignVideoModal } from "../share/assign-video-modal";
 import { useUsers } from "@/hooks/use-users";
 import { UsersRealtimeListener } from "./users-realtime-listener";
 

@@ -26,6 +26,8 @@ add user, error: email rate limit exceeded
 
 D - have a separate table for user's role and refactor the code
 
+D - refactor components folder for clarity, scalability, and modularity
+
 create policies for all tables
 
 Mange users

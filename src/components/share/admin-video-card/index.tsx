@@ -7,12 +7,12 @@ import {
   PlayCircle,
   Trash2,
 } from "lucide-react";
-import { AssignVideoModal } from "@/components/manage-users/assign-video-modal";
+import { AssignVideoModal } from "@/components/share/assign-video-modal";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDate } from "@/lib/format-date";
-import { TrainingVideoModal } from "@/components/training-videos/training-video-modal";
+import { TrainingVideoModal } from "@/components/share/training-video-modal";
 import { getYouTubeId, getYouTubeThumbnail } from "@/lib/youtube";
 import {
   DropdownMenu,

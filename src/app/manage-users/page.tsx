@@ -1,7 +1,7 @@
 "use client";
 
-import { SideMenu } from "@/components/side-menu/side-menu";
-import { ManageUsers } from "@/components/manage-users/manage-users";
+import { SideMenu } from "@/components/side-menu";
+import { ManageUsers } from "@/components/manage-users/manage-users-main";
 
 export default function ManageUsersPage() {
   return (
