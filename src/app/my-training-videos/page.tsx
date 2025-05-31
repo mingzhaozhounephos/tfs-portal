@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { SideMenu } from "@/components/side-menu";
 import { TrainingVideosGrid } from "@/components/share/training-videos-grid";
 import { useAuth } from "@/hooks/use-auth";
+import { useRole } from "@/hooks/use-role";
 import { TrainingVideoModal } from "@/components/share/training-video-modal";
 import { TrainingVideo } from "@/types";
 import { useDriverUsersVideos } from "@/hooks/use-driver-users-videos";
@@ -28,7 +29,8 @@ export default function MyTrainingVideosPage() {
   const [filter, setFilter] = useState("all");
   const [showModal, setShowModal] = useState(false);
   const [modalVideo, setModalVideo] = useState<TrainingVideo | null>(null);
-  const { user } = useAuth();
+  const { userDetails } = useAuth();
+  const role = useRole();
   const { assignments, loading } = useDriverUsersVideos();
 
   // Transform assignments to videos with image
@@ -90,11 +92,7 @@ export default function MyTrainingVideosPage() {
 
   return (
     <div className="flex bg-white min-h-screen h-screen">
-      <SideMenu
-        role="driver"
-        active="my-training-videos"
-        onNavigate={() => {}}
-      />
+      <SideMenu role={role} active="my-training-videos" onNavigate={() => {}} />
       <main className="flex-1 p-8 h-screen overflow-y-auto relative">
         {loading && (
           <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-50">

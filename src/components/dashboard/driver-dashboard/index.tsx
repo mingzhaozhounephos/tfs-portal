@@ -2,7 +2,7 @@ import { useState } from "react";
 import { SideMenu } from "@/components/side-menu";
 import { TrainingVideosGrid } from "@/components/share/training-videos-grid";
 import { useAuth } from "@/hooks/use-auth";
-import { useUserRole } from "@/hooks/use-user-role";
+import { useRole } from "@/hooks/use-role";
 import { TrainingVideoModal } from "@/components/share/training-video-modal";
 import { getYouTubeId } from "@/lib/youtube";
 import { useDriverUsersVideos } from "@/hooks/use-driver-users-videos";
@@ -10,7 +10,7 @@ import { TrainingVideo } from "@/types";
 
 export function DriverDashboard() {
   const { userDetails } = useAuth();
-  const { role } = useUserRole();
+  const role = useRole();
   const { assignments, loading } = useDriverUsersVideos();
   const [showModal, setShowModal] = useState(false);
   const [modalVideo, setModalVideo] = useState<TrainingVideo | null>(null);
@@ -89,11 +89,7 @@ export function DriverDashboard() {
 
   return (
     <div className="flex bg-white min-h-screen h-screen">
-      <SideMenu
-        role={role || "driver"}
-        active="dashboard"
-        onNavigate={() => {}}
-      />
+      <SideMenu role={role} active="dashboard" onNavigate={() => {}} />
       <main className="flex-1 p-8 h-screen overflow-y-auto relative">
         {loading && (
           <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-50">
