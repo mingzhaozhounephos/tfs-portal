@@ -29,31 +29,31 @@ export function ManageVideos() {
     getAdminUserId();
   }, []);
 
-  // Log state changes in useEffect
-  useEffect(() => {
-    console.log("ManageVideos state updated:", {
-      videosCount: videos.length,
-      loading,
-      search,
-      selectedTag,
-    });
-  }, [videos, loading, search, selectedTag]);
+  // // Log state changes in useEffect
+  // useEffect(() => {
+  //   console.log("ManageVideos state updated:", {
+  //     videosCount: videos.length,
+  //     loading,
+  //     search,
+  //     selectedTag,
+  //   });
+  // }, [videos, loading, search, selectedTag]);
 
-  // Monitor Supabase connection
-  useEffect(() => {
-    const channel = supabase
-      .channel("system")
-      .on("system", { event: "*" }, (payload) => {
-        console.log("Supabase system event:", payload);
-      })
-      .subscribe((status) => {
-        console.log("Supabase connection status:", status);
-      });
+  // // Monitor Supabase connection
+  // useEffect(() => {
+  //   const channel = supabase
+  //     .channel("system")
+  //     .on("system", { event: "*" }, (payload) => {
+  //       console.log("Supabase system event:", payload);
+  //     })
+  //     .subscribe((status) => {
+  //       console.log("Supabase connection status:", status);
+  //     });
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+  //   return () => {
+  //     supabase.removeChannel(channel);
+  //   };
+  // }, []);
 
   // Filter videos based on search and selected tag
   const filteredVideos = videos.filter(
