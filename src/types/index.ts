@@ -11,6 +11,10 @@ export interface UserWithRole extends User {
   role: string | null;
 }
 
+export interface UserWithDetails extends User {
+  role_info: UserRole | null;
+}
+
 export interface UserVideoWithVideo extends Omit<UserVideo, "video"> {
   video: Video;
 }

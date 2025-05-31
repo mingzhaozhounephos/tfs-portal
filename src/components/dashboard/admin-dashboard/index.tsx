@@ -1,38 +1,22 @@
-import { JSX, useState, useEffect } from "react";
+import { JSX, useState } from "react";
 import { SideMenu } from "@/components/side-menu";
 import { ManageVideos } from "@/components/manage-videos/manage-videos-main";
 import { ManageUsers } from "@/components/manage-users/manage-users-main";
 import { useAuth } from "@/hooks/use-auth";
 import { Bell, Users, Activity, Play } from "lucide-react";
 import { useAdminDashboard } from "@/hooks/use-admin-dashboard";
-import { supabase } from "@/lib/supabase";
 
 export function AdminDashboard() {
   const [active, setActive] = useState("dashboard");
-  const { user } = useAuth();
-  const [adminName, setAdminName] = useState<string>("Administrator");
-  const [adminEmail, setAdminEmail] = useState<string>("");
-  const { stats, loading } = useAdminDashboard();
+  const { userDetails, loading: authLoading } = useAuth();
+  const { stats, loading: statsLoading } = useAdminDashboard();
 
-  useEffect(() => {
-    async function fetchAdminInfo() {
-      if (!user?.id) return;
-      const { data, error } = await supabase
-        .from("users")
-        .select("full_name, email")
-        .eq("id", user.id)
-        .single();
-      if (!error && data) {
-        setAdminName(data.full_name?.trim() ? data.full_name : "Administrator");
-        setAdminEmail(data.email || "");
-      }
-    }
-    fetchAdminInfo();
-  }, [user]);
+  const loading = authLoading || statsLoading;
+  const role = (userDetails?.role_info?.role || "admin") as "admin" | "driver";
 
   return (
     <div className="flex bg-white min-h-screen h-screen">
-      <SideMenu role="admin" active={active} onNavigate={setActive} />
+      <SideMenu role={role} active={active} onNavigate={setActive} />
       <main className="flex-1 p-8 h-screen overflow-y-auto relative">
         {active === "manage-videos" ? (
           <ManageVideos />
@@ -53,7 +37,8 @@ export function AdminDashboard() {
                   <h1 className="text-3xl font-bold">Dashboard</h1>
                 </div>
                 <div className="text-sm text-gray-600 ml-4 whitespace-nowrap">
-                  Welcome, {adminName} ({adminEmail})
+                  Welcome, {userDetails?.full_name?.trim() || "Administrator"} (
+                  {userDetails?.email})
                 </div>
               </div>
             </div>
