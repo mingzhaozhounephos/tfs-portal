@@ -28,11 +28,13 @@ export const useVideosStore = create<VideosStore>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from("videos")
-        .select(`
+        .select(
+          `
           *,
           assigned_count:users_videos(count),
           completed_count:users_videos(count).filter(is_completed.eq.true)
-        `)
+        `
+        )
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -40,9 +42,11 @@ export const useVideosStore = create<VideosStore>((set, get) => ({
       const transformedData = data.map((video: any) => ({
         ...video,
         num_of_assigned_users: video.assigned_count[0]?.count || 0,
-        completion_rate: video.assigned_count[0]?.count 
-          ? ((video.completed_count[0]?.count || 0) / video.assigned_count[0].count) * 100 
-          : 0
+        completion_rate: video.assigned_count[0]?.count
+          ? ((video.completed_count[0]?.count || 0) /
+              video.assigned_count[0].count) *
+            100
+          : 0,
       }));
 
       set({
@@ -59,24 +63,28 @@ export const useVideosStore = create<VideosStore>((set, get) => ({
           async () => {
             const { data, error } = await supabase
               .from("videos")
-              .select(`
+              .select(
+                `
                 *,
                 assigned_count:users_videos(count),
                 completed_count:users_videos(count).filter(is_completed.eq.true)
-              `)
+              `
+              )
               .order("created_at", { ascending: false });
 
             if (!error && data) {
               const transformedData = data.map((video: any) => ({
                 ...video,
                 num_of_assigned_users: video.assigned_count[0]?.count || 0,
-                completion_rate: video.assigned_count[0]?.count 
-                  ? ((video.completed_count[0]?.count || 0) / video.assigned_count[0].count) * 100 
-                  : 0
+                completion_rate: video.assigned_count[0]?.count
+                  ? ((video.completed_count[0]?.count || 0) /
+                      video.assigned_count[0].count) *
+                    100
+                  : 0,
               }));
               set({ videos: transformedData as VideoWithStats[] });
             }
-          },
+          }
         )
         .subscribe();
 
@@ -90,35 +98,87 @@ export const useVideosStore = create<VideosStore>((set, get) => ({
   },
 
   refresh: async () => {
+    console.log("Starting refresh, setting loading to true");
     set({ loading: true });
     try {
-      const { data, error } = await supabase
+      console.log("Fetching data from Supabase...");
+
+      // Add timeout to the query
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(
+          () => reject(new Error("Query timeout after 10 seconds")),
+          10000
+        );
+      });
+
+      const queryPromise = supabase
         .from("videos")
-        .select(`
+        .select(
+          `
           *,
           assigned_count:users_videos(count),
           completed_count:users_videos(count).filter(is_completed.eq.true)
-        `)
+        `
+        )
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      // Race between the query and timeout
+      const { data, error } = (await Promise.race([
+        queryPromise,
+        timeoutPromise.then(() => ({
+          data: null,
+          error: new Error("Query timeout"),
+        })),
+      ])) as { data: any; error: any };
 
+      if (error) {
+        console.error("Supabase query error:", error);
+        throw error;
+      }
+
+      if (!data) {
+        console.error("No data returned from Supabase");
+        throw new Error("No data returned from query");
+      }
+
+      console.log("Data fetched successfully, transforming...");
       const transformedData = data.map((video: any) => ({
         ...video,
         num_of_assigned_users: video.assigned_count[0]?.count || 0,
-        completion_rate: video.assigned_count[0]?.count 
-          ? ((video.completed_count[0]?.count || 0) / video.assigned_count[0].count) * 100 
-          : 0
+        completion_rate: video.assigned_count[0]?.count
+          ? ((video.completed_count[0]?.count || 0) /
+              video.assigned_count[0].count) *
+            100
+          : 0,
       }));
 
-      set({
+      console.log("Data transformed, updating store state...");
+      // Update all state at once
+      const newState = {
         videos: transformedData as VideoWithStats[],
         loading: false,
+        error: null,
+      };
+      set(newState);
+
+      // Log the state after update using get()
+      console.log("Store state after update:", {
+        videosCount: get().videos.length,
+        loading: get().loading,
+        error: get().error,
       });
     } catch (err) {
-      set({
+      console.error("Refresh failed:", err);
+      const errorState = {
         error: err as Error,
         loading: false,
+      };
+      set(errorState);
+
+      // Log the state after error update
+      console.log("Store state after error:", {
+        loading: get().loading,
+        error: get().error,
       });
     }
   },
@@ -128,8 +188,9 @@ export const useVideosStore = create<VideosStore>((set, get) => ({
     return videos.filter(
       (video) =>
         (video.title?.toLowerCase().includes(query.toLowerCase()) ?? false) ||
-        (video.description?.toLowerCase().includes(query.toLowerCase()) ?? false) ||
-        (video.category?.toLowerCase().includes(query.toLowerCase()) ?? false),
+        (video.description?.toLowerCase().includes(query.toLowerCase()) ??
+          false) ||
+        (video.category?.toLowerCase().includes(query.toLowerCase()) ?? false)
     );
   },
 

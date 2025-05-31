@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { VideoFormModal } from "./video-form-modal";
 import { supabase } from "@/lib/supabase";
 import { AdminVideoCard } from "@/components/share/admin-video-card";
@@ -29,8 +29,31 @@ export function ManageVideos() {
     getAdminUserId();
   }, []);
 
-  console.log("videos: ");
-  console.log(videos);
+  // Log state changes in useEffect
+  useEffect(() => {
+    console.log("ManageVideos state updated:", {
+      videosCount: videos.length,
+      loading,
+      search,
+      selectedTag,
+    });
+  }, [videos, loading, search, selectedTag]);
+
+  // Monitor Supabase connection
+  useEffect(() => {
+    const channel = supabase
+      .channel("system")
+      .on("system", { event: "*" }, (payload) => {
+        console.log("Supabase system event:", payload);
+      })
+      .subscribe((status) => {
+        console.log("Supabase connection status:", status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   // Filter videos based on search and selected tag
   const filteredVideos = videos.filter(
@@ -40,9 +63,6 @@ export function ManageVideos() {
       (v.title?.toLowerCase().includes(search.toLowerCase()) ||
         v.description?.toLowerCase().includes(search.toLowerCase()))
   );
-
-  console.log("filteredVideos: ");
-  console.log(filteredVideos);
 
   return (
     <div className="flex-1 bg-white p-8 min-h-screen">
