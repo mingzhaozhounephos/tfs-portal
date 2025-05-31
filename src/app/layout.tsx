@@ -15,7 +15,7 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="antialiased">
+      <body className="antialiased vsc-initialized" suppressHydrationWarning>
         {children}
         <Toaster position="top-right" />
       </body>
