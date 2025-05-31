@@ -33,7 +33,7 @@ export function AdminDashboard() {
   return (
     <div className="flex bg-white min-h-screen h-screen">
       <SideMenu role="admin" active={active} onNavigate={setActive} />
-      <main className="flex-1 p-8 h-screen overflow-y-auto">
+      <main className="flex-1 p-8 h-screen overflow-y-auto relative">
         {active === "manage-videos" ? (
           <ManageVideos />
         ) : active === "manage-users" ? (
@@ -58,53 +58,54 @@ export function AdminDashboard() {
               </div>
             </div>
             {/* Widgets */}
-            {loading ? (
-              <div className="text-center py-4">Loading dashboard stats...</div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <Widget
-                  title="Total Videos"
-                  value={String(stats.totalVideos)}
-                  sub={`+${stats.videosThisWeek} videos added this week`}
-                  icon={
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
-                      <Bell className="w-5 h-5 text-[#EA384C]" />
-                    </div>
-                  }
-                />
-                <Widget
-                  title="Total Users"
-                  value={String(stats.totalUsers)}
-                  sub={`+${stats.usersThisMonth} users added this month`}
-                  icon={
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
-                      <Users className="w-5 h-5 text-[#EA384C]" />
-                    </div>
-                  }
-                />
-                <Widget
-                  title="Completion Rate"
-                  value={`${stats.completionRate}%`}
-                  sub=""
-                  icon={
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
-                      <Activity className="w-5 h-5 text-[#EA384C]" />
-                    </div>
-                  }
-                  progress={stats.completionRate}
-                />
-                <Widget
-                  title="Videos Watched"
-                  value={String(stats.totalVideosWatched)}
-                  sub={`+${stats.videosWatchedThisWeek} videos watched this week`}
-                  icon={
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
-                      <Play className="w-5 h-5 text-[#EA384C]" />
-                    </div>
-                  }
-                />
-              </div>
-            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 relative">
+              <Widget
+                title="Total Videos"
+                value={String(stats.totalVideos)}
+                sub={`+${stats.videosThisWeek} videos added this week`}
+                icon={
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
+                    <Bell className="w-5 h-5 text-[#EA384C]" />
+                  </div>
+                }
+              />
+              <Widget
+                title="Total Users"
+                value={String(stats.totalUsers)}
+                sub={`+${stats.usersThisMonth} users added this month`}
+                icon={
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
+                    <Users className="w-5 h-5 text-[#EA384C]" />
+                  </div>
+                }
+              />
+              <Widget
+                title="Completion Rate"
+                value={`${stats.completionRate}%`}
+                sub=""
+                icon={
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
+                    <Activity className="w-5 h-5 text-[#EA384C]" />
+                  </div>
+                }
+                progress={stats.completionRate}
+              />
+              <Widget
+                title="Videos Watched"
+                value={String(stats.totalVideosWatched)}
+                sub={`+${stats.videosWatchedThisWeek} videos watched this week`}
+                icon={
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FEEBED]">
+                    <Play className="w-5 h-5 text-[#EA384C]" />
+                  </div>
+                }
+              />
+              {loading && (
+                <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EA384C]" />
+                </div>
+              )}
+            </div>
           </>
         )}
       </main>
