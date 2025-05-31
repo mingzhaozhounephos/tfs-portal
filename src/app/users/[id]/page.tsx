@@ -11,6 +11,7 @@ import { AssignVideoButton } from "@/components/manage-users/assign-video-button
 
 export default function UserDetailsPage() {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { role } = useUserRole();
   const params = useParams();
@@ -19,6 +20,7 @@ export default function UserDetailsPage() {
 
   useEffect(() => {
     async function fetchUser() {
+      setLoading(true);
       try {
         const response = await fetch(`/api/users/${id}`);
         if (!response.ok) {
@@ -33,6 +35,8 @@ export default function UserDetailsPage() {
       } catch (error) {
         console.error("Error fetching user:", error);
         setError("Failed to load user details. Please try again later.");
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -65,21 +69,6 @@ export default function UserDetailsPage() {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="flex h-screen min-h-screen">
-        <SideMenu
-          role={role || "admin"}
-          active="manage-users"
-          onNavigate={() => {}}
-        />
-        <div className="flex-1 h-screen overflow-y-auto flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex h-screen min-h-screen">
       <SideMenu
@@ -87,7 +76,7 @@ export default function UserDetailsPage() {
         active="manage-users"
         onNavigate={() => {}}
       />
-      <div className="flex-1 h-screen overflow-y-auto p-8">
+      <div className="flex-1 h-screen overflow-y-auto p-8 relative">
         <div className="flex items-start justify-between w-full mb-4">
           <img
             src="/images/Logo.jpg"
@@ -110,12 +99,21 @@ export default function UserDetailsPage() {
           </svg>
           Back to Users
         </button>
-        <UserDetailsCards user={user} />
-        <div className="flex items-center justify-between mt-8 mb-4">
-          <h2 className="text-xl font-bold text-black">Assigned Videos</h2>
-          <AssignVideoButton user={user} />
-        </div>
-        <UserDetailsClient user={user} />
+        {user && (
+          <>
+            <UserDetailsCards user={user} />
+            <div className="flex items-center justify-between mt-8 mb-4">
+              <h2 className="text-xl font-bold text-black">Assigned Videos</h2>
+              <AssignVideoButton user={user} />
+            </div>
+            <UserDetailsClient user={user} />
+          </>
+        )}
+        {loading && (
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EA384C]" />
+          </div>
+        )}
       </div>
     </div>
   );

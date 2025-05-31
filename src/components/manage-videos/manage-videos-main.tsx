@@ -16,6 +16,15 @@ export function ManageVideos() {
   // Use the videos hook instead of managing state directly
   const { videos, loading, searchVideos, refresh } = useVideos();
 
+  // Filter videos based on search and selected tag
+  const filteredVideos = videos.filter(
+    (v) =>
+      (selectedTag === "All Videos" ||
+        v.category?.toLowerCase() === selectedTag.toLowerCase()) &&
+      (v.title?.toLowerCase().includes(search.toLowerCase()) ||
+        v.description?.toLowerCase().includes(search.toLowerCase()))
+  );
+
   // Get admin user id on mount
   useEffect(() => {
     async function getAdminUserId() {
@@ -28,41 +37,6 @@ export function ManageVideos() {
     }
     getAdminUserId();
   }, []);
-
-  // // Log state changes in useEffect
-  // useEffect(() => {
-  //   console.log("ManageVideos state updated:", {
-  //     videosCount: videos.length,
-  //     loading,
-  //     search,
-  //     selectedTag,
-  //   });
-  // }, [videos, loading, search, selectedTag]);
-
-  // // Monitor Supabase connection
-  // useEffect(() => {
-  //   const channel = supabase
-  //     .channel("system")
-  //     .on("system", { event: "*" }, (payload) => {
-  //       console.log("Supabase system event:", payload);
-  //     })
-  //     .subscribe((status) => {
-  //       console.log("Supabase connection status:", status);
-  //     });
-
-  //   return () => {
-  //     supabase.removeChannel(channel);
-  //   };
-  // }, []);
-
-  // Filter videos based on search and selected tag
-  const filteredVideos = videos.filter(
-    (v) =>
-      (selectedTag === "All Videos" ||
-        v.category?.toLowerCase() === selectedTag.toLowerCase()) &&
-      (v.title?.toLowerCase().includes(search.toLowerCase()) ||
-        v.description?.toLowerCase().includes(search.toLowerCase()))
-  );
 
   return (
     <div className="flex-1 bg-white p-8 min-h-screen">
@@ -141,9 +115,7 @@ export function ManageVideos() {
           </button>
         ))}
       </div>
-      {loading ? (
-        <div className="text-center py-4">Loading videos...</div>
-      ) : (
+      <div className="relative">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {filteredVideos.map((video, i) => (
             <AdminVideoCard
@@ -160,7 +132,12 @@ export function ManageVideos() {
             />
           ))}
         </div>
-      )}
+        {loading && (
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EA384C]" />
+          </div>
+        )}
+      </div>
       <VideoFormModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}

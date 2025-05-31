@@ -71,13 +71,7 @@ export function ManageUsers() {
           />
         </div>
       </div>
-      {loading ? (
-        <div>Loading...</div>
-      ) : error ? (
-        <div className="text-center py-8 text-red-500">
-          Error: {error.message}
-        </div>
-      ) : (
+      <div className="relative">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {filteredUsers.map((user) => (
             <UserCard
@@ -87,7 +81,12 @@ export function ManageUsers() {
             />
           ))}
         </div>
-      )}
+        {loading && (
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EA384C]" />
+          </div>
+        )}
+      </div>
 
       <UserFormModal
         open={modalOpen}
