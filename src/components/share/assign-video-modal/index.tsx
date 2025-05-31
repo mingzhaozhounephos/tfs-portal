@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { useUsers } from "@/hooks/use-users";
-import { useUserVideosStore } from "@/store/user-videos-store";
+import { useUsersVideos } from "@/hooks/use-users-videos";
 import { UserWithRole } from "@/types";
 import { createPortal } from "react-dom";
-import { supabase } from "@/lib/supabase";
 
 interface AssignVideoModalProps {
   isOpen: boolean;
@@ -25,33 +24,35 @@ export function AssignVideoModal({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
-  const [loadingAssigned, setLoadingAssigned] = useState(false);
-  const { users, loading, error, searchUsers } = useUsers();
-  const { assignVideos } = useUserVideosStore();
+  const {
+    users,
+    loading: usersLoading,
+    error: usersError,
+    searchUsers,
+  } = useUsers();
+  const {
+    getAssignmentsForVideo,
+    assignVideos,
+    loading: assignmentsLoading,
+    error: assignmentsError,
+  } = useUsersVideos();
 
   useEffect(() => {
     setMounted(true);
     return () => setMounted(false);
   }, []);
 
-  // Fetch assigned users when modal opens or videoId changes
+  // Update selected users when assignments change
   useEffect(() => {
     if (!isOpen || !videoId) return;
-    setLoadingAssigned(true);
-    // Fetch assigned users for this video
-    supabase
-      .from("users_videos")
-      .select("user")
-      .eq("video", videoId)
-      .then(({ data, error }) => {
-        if (!error && data) {
-          setSelectedUsers(data.map((row: { user: string }) => row.user));
-        }
-        setLoadingAssigned(false);
-      });
-  }, [isOpen, videoId]);
+    const assignments = getAssignmentsForVideo(videoId);
+    setSelectedUsers(assignments.map((a) => a.user.id));
+  }, [isOpen, videoId, getAssignmentsForVideo]);
 
   if (!isOpen) return null;
+
+  const loading = usersLoading || assignmentsLoading;
+  const error = usersError || assignmentsError;
 
   // Filtered users for search
   const filteredUsers = searchQuery
@@ -89,16 +90,26 @@ export function AssignVideoModal({
     );
   };
 
-  // Enable button if there are selected users or if there are currently assigned users (to allow unassigning all)
-  const canAssign = selectedUsers.length > 0 || assignedCount > 0;
+  // Enable button if:
+  // 1. There are selected users to assign
+  // 2. There are currently assigned users (to allow unassigning)
+  // 3. There were initially assigned users but now none are selected (to allow unassigning all)
+  const hasInitialAssignments = assignedCount > 0;
+  const hasSelectedUsers = selectedUsers.length > 0;
+  const canAssign = hasSelectedUsers || hasInitialAssignments;
 
   const handleAssign = async () => {
     try {
-      await assignVideos(videoId, selectedUsers);
+      // Close modal first to prevent any race conditions
       onClose();
+      // Then perform the assignment
+      await assignVideos(videoId, selectedUsers);
+      // Finally notify parent of completion
       onAfterAssign?.();
     } catch (err) {
       console.error("Failed to assign videos:", err);
+      // If there's an error, we don't want to keep the modal closed
+      // The parent component will handle reopening if needed
     }
   };
 

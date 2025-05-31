@@ -206,12 +206,15 @@ export function AdminVideoCard({
       </button>
       <AssignVideoModal
         isOpen={assignModalOpen}
-        onClose={() => setAssignModalOpen(false)}
+        onClose={() => {
+          setAssignModalOpen(false);
+        }}
         videoId={video.id}
         videoTitle={video.title || ""}
         assignedCount={video.num_of_assigned_users}
         onAfterAssign={() => {
-          // The store will handle the refresh automatically through real-time subscription
+          // Ensure modal stays closed after assignment
+          setAssignModalOpen(false);
         }}
       />
       {/* YouTube Modal */}
