@@ -12,7 +12,52 @@ interface UsersStore {
   initialize: () => Promise<void>;
   refresh: () => Promise<void>;
   searchUsers: (query: string) => UserWithRole[];
-  updateUserRole: (userId: string, newRole: "admin" | "driver") => Promise<void>;
+  updateUserRole: (
+    userId: string,
+    newRole: "admin" | "driver"
+  ) => Promise<void>;
+}
+
+// Create a singleton promise to prevent multiple simultaneous initializations
+let initializationPromise: Promise<void> | null = null;
+let isInitializing = false;
+
+// Helper function to fetch users with roles
+async function fetchUsersWithRoles() {
+  // Add timeout to the query
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(
+      () => reject(new Error("Query timeout after 10 seconds")),
+      10000
+    );
+  });
+
+  const queryPromise = supabase
+    .from("users")
+    .select(
+      `
+      *,
+      user_roles!inner(role)
+    `
+    )
+    .order("created_at", { ascending: false });
+
+  // Race between the query and timeout
+  const { data, error } = (await Promise.race([
+    queryPromise,
+    timeoutPromise.then(() => ({
+      data: null,
+      error: new Error("Query timeout"),
+    })),
+  ])) as { data: any; error: any };
+
+  if (error) throw error;
+  if (!data) throw new Error("No data returned from query");
+
+  return data.map((user: any) => ({
+    ...user,
+    role: user.user_roles?.[0]?.role || null,
+  })) as UserWithRole[];
 }
 
 export const useUsersStore = create<UsersStore>((set, get) => ({
@@ -23,72 +68,83 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
   cleanup: undefined,
 
   initialize: async () => {
-    // If already initialized, don't fetch again
-    if (get().initialized) return;
-
-    set({ loading: true });
-    try {
-      // Fetch users with their roles
-      const { data: users, error: usersError } = await supabase
-        .from("users")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (usersError) throw usersError;
-
-      // Fetch all user roles
-      const { data: userRoles, error: rolesError } = await supabase
-        .from("user_roles")
-        .select("user, role");
-
-      if (rolesError) throw rolesError;
-
-      // Combine users with their roles
-      const usersWithRoles: UserWithRole[] = users.map((user: User) => ({
-        ...user,
-        role: userRoles.find((ur) => ur.user === user.id)?.role || null,
-      }));
-
-      set({
-        users: usersWithRoles,
-        initialized: true,
-        loading: false,
-      });
-    } catch (err) {
-      set({
-        error: err as Error,
-        loading: false,
-      });
+    // If already initialized, return immediately
+    if (get().initialized) {
+      return;
     }
+
+    // If initialization is in progress, wait for it
+    if (isInitializing) {
+      if (initializationPromise) {
+        await initializationPromise;
+      }
+      return;
+    }
+
+    // Set initialization flag
+    isInitializing = true;
+
+    // Create new initialization promise
+    initializationPromise = (async () => {
+      try {
+        // Double check initialization state after async gap
+        if (get().initialized) {
+          return;
+        }
+
+        set({ loading: true });
+
+        const usersWithRoles = await fetchUsersWithRoles();
+
+        // Subscribe to real-time changes
+        const channel = supabase
+          .channel("users-changes")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "users" },
+            async () => {
+              get().refresh();
+            }
+          )
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "user_roles" },
+            async () => {
+              get().refresh();
+            }
+          )
+          .subscribe();
+
+        set({
+          users: usersWithRoles,
+          initialized: true,
+          loading: false,
+          error: null,
+          cleanup: () => supabase.removeChannel(channel),
+        });
+      } catch (err) {
+        set({
+          error: err as Error,
+          loading: false,
+        });
+      } finally {
+        isInitializing = false;
+        initializationPromise = null;
+      }
+    })();
+
+    // Wait for initialization to complete
+    await initializationPromise;
   },
 
   refresh: async () => {
     set({ loading: true });
     try {
-      // Fetch users with their roles
-      const { data: users, error: usersError } = await supabase
-        .from("users")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (usersError) throw usersError;
-
-      // Fetch all user roles
-      const { data: userRoles, error: rolesError } = await supabase
-        .from("user_roles")
-        .select("user, role");
-
-      if (rolesError) throw rolesError;
-
-      // Combine users with their roles
-      const usersWithRoles: UserWithRole[] = users.map((user: User) => ({
-        ...user,
-        role: userRoles.find((ur) => ur.user === user.id)?.role || null,
-      }));
-
+      const usersWithRoles = await fetchUsersWithRoles();
       set({
         users: usersWithRoles,
         loading: false,
+        error: null,
       });
     } catch (err) {
       set({
@@ -103,7 +159,7 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
     return users.filter(
       (user) =>
         user.full_name?.toLowerCase().includes(query.toLowerCase()) ||
-        (user.email?.toLowerCase() || "").includes(query.toLowerCase()),
+        (user.email?.toLowerCase() || "").includes(query.toLowerCase())
     );
   },
 
