@@ -113,10 +113,13 @@ export function AssignedVideosList({
             title: userVideo.video.title || "-",
             category: userVideo.video.category || "-",
             description: userVideo.video.description || "-",
-            image: "", // Note: image field is not in the database schema
             created_at: userVideo.video.created_at || new Date().toISOString(),
             duration: userVideo.video.duration || "-",
-            youtube_url: userVideo.video.youtube_url || undefined,
+            youtube_url: userVideo.video.youtube_url || null,
+            num_of_assigned_users: 0, // These are not relevant in the assigned videos list
+            completion_rate: 0,
+            admin_user_id: userVideo.video.admin_user_id,
+            is_annual_renewal: userVideo.video.is_annual_renewal || false,
           }}
           showEdit={false}
         />

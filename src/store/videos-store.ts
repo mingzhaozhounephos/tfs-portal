@@ -1,17 +1,17 @@
 import { create } from "zustand";
 import { supabase } from "@/lib/supabase";
-import { Video } from "@/types";
+import { VideoWithStats } from "@/types";
 
 interface VideosStore {
-  videos: Video[];
+  videos: VideoWithStats[];
   loading: boolean;
   error: Error | null;
   initialized: boolean;
   cleanup?: () => void;
   initialize: () => Promise<void>;
   refresh: () => Promise<void>;
-  searchVideos: (query: string) => Video[];
-  getVideoById: (id: string) => Video | undefined;
+  searchVideos: (query: string) => VideoWithStats[];
+  getVideoById: (id: string) => VideoWithStats | undefined;
 }
 
 export const useVideosStore = create<VideosStore>((set, get) => ({
@@ -22,46 +22,64 @@ export const useVideosStore = create<VideosStore>((set, get) => ({
   cleanup: undefined,
 
   initialize: async () => {
-    // If already initialized, don't fetch again
     if (get().initialized) return;
 
     set({ loading: true });
     try {
-      // Fetch initial data
       const { data, error } = await supabase
         .from("videos")
-        .select("*")
+        .select(`
+          *,
+          assigned_count:users_videos(count),
+          completed_count:users_videos(count).filter(is_completed.eq.true)
+        `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
+      const transformedData = data.map((video: any) => ({
+        ...video,
+        num_of_assigned_users: video.assigned_count[0]?.count || 0,
+        completion_rate: video.assigned_count[0]?.count 
+          ? ((video.completed_count[0]?.count || 0) / video.assigned_count[0].count) * 100 
+          : 0
+      }));
+
       set({
-        videos: data as Video[],
+        videos: transformedData as VideoWithStats[],
         initialized: true,
         loading: false,
       });
 
-      // Subscribe to real-time changes
       const channel = supabase
         .channel("videos-changes")
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "videos" },
           async () => {
-            // Refresh data when changes occur
             const { data, error } = await supabase
               .from("videos")
-              .select("*")
+              .select(`
+                *,
+                assigned_count:users_videos(count),
+                completed_count:users_videos(count).filter(is_completed.eq.true)
+              `)
               .order("created_at", { ascending: false });
 
             if (!error && data) {
-              set({ videos: data as Video[] });
+              const transformedData = data.map((video: any) => ({
+                ...video,
+                num_of_assigned_users: video.assigned_count[0]?.count || 0,
+                completion_rate: video.assigned_count[0]?.count 
+                  ? ((video.completed_count[0]?.count || 0) / video.assigned_count[0].count) * 100 
+                  : 0
+              }));
+              set({ videos: transformedData as VideoWithStats[] });
             }
           },
         )
         .subscribe();
 
-      // Store cleanup function in state
       set({ cleanup: () => supabase.removeChannel(channel) });
     } catch (err) {
       set({
@@ -76,13 +94,25 @@ export const useVideosStore = create<VideosStore>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from("videos")
-        .select("*")
+        .select(`
+          *,
+          assigned_count:users_videos(count),
+          completed_count:users_videos(count).filter(is_completed.eq.true)
+        `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
+      const transformedData = data.map((video: any) => ({
+        ...video,
+        num_of_assigned_users: video.assigned_count[0]?.count || 0,
+        completion_rate: video.assigned_count[0]?.count 
+          ? ((video.completed_count[0]?.count || 0) / video.assigned_count[0].count) * 100 
+          : 0
+      }));
+
       set({
-        videos: data as Video[],
+        videos: transformedData as VideoWithStats[],
         loading: false,
       });
     } catch (err) {

@@ -15,6 +15,13 @@ export interface UserVideoWithVideo extends Omit<UserVideo, "video"> {
   video: Video;
 }
 
+// Extended Video type with aggregated fields
+export interface VideoWithStats extends Video {
+  // Only add the new aggregated fields that don't exist in the base Video type
+  num_of_assigned_users: number;
+  completion_rate: number;
+}
+
 // Stats interface remains unchanged as it's not directly related to database schema
 export interface UserStats {
   numAssigned: number;

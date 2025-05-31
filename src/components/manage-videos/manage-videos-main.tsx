@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { VideoFormModal } from "./video-form-modal";
 import { supabase } from "@/lib/supabase";
 import { AdminVideoCard } from "@/components/share/admin-video-card";
+import { useVideos } from "@/hooks/use-videos";
 
 const tags = ["All Videos", "Van", "Truck", "Office"];
 
@@ -11,60 +12,27 @@ export function ManageVideos() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingVideo, setEditingVideo] = useState<any>(null);
   const [adminUserId, setAdminUserId] = useState<string>("");
-  const [videos, setVideos] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // Fetch admin user id and videos on mount
+  // Use the videos hook instead of managing state directly
+  const { videos, loading, searchVideos, refresh } = useVideos();
+
+  // Get admin user id on mount
   useEffect(() => {
-    let channel: any;
-    async function fetchUserAndVideos() {
+    async function getAdminUserId() {
       const {
         data: { session },
       } = await supabase.auth.getSession();
       if (session) {
         setAdminUserId(session.user.id);
-        // Fetch videos for this admin
-        const { data, error } = await supabase
-          .from("videos")
-          .select("*")
-          // .eq("admin_user_id", session.user.id)
-          .order("created_at", { ascending: false });
-        if (!error && data) setVideos(data);
-
-        // Real-time subscription
-        channel = supabase
-          .channel("videos-admin")
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "videos",
-              // filter: `admin_user_id=eq.${session.user.id}`,
-            },
-            (payload) => {
-              // Refetch videos on any change
-              supabase
-                .from("videos")
-                .select("*")
-                // .eq("admin_user_id", session.user.id)
-                .order("created_at", { ascending: false })
-                .then(({ data, error }) => {
-                  if (!error && data) setVideos(data);
-                });
-            }
-          )
-          .subscribe();
       }
-      setLoading(false);
     }
-    fetchUserAndVideos();
+    getAdminUserId();
+  }, []);
 
-    return () => {
-      if (channel) supabase.removeChannel(channel);
-    };
-  }, [modalOpen]);
+  console.log("videos: ");
+  console.log(videos);
 
+  // Filter videos based on search and selected tag
   const filteredVideos = videos.filter(
     (v) =>
       (selectedTag === "All Videos" ||
@@ -72,6 +40,9 @@ export function ManageVideos() {
       (v.title?.toLowerCase().includes(search.toLowerCase()) ||
         v.description?.toLowerCase().includes(search.toLowerCase()))
   );
+
+  console.log("filteredVideos: ");
+  console.log(filteredVideos);
 
   return (
     <div className="flex-1 bg-white p-8 min-h-screen">
@@ -150,27 +121,31 @@ export function ManageVideos() {
           </button>
         ))}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {filteredVideos.map((video, i) => (
-          <AdminVideoCard
-            key={i}
-            video={video}
-            showEdit={true}
-            onEdit={() => {
-              setEditingVideo(video);
-              setModalOpen(true);
-            }}
-            onAssignToUsers={() => {
-              /* handle assign to users */
-            }}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <div className="text-center py-4">Loading videos...</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {filteredVideos.map((video, i) => (
+            <AdminVideoCard
+              key={i}
+              video={video}
+              showEdit={true}
+              onEdit={() => {
+                setEditingVideo(video);
+                setModalOpen(true);
+              }}
+              onAssignToUsers={() => {
+                /* handle assign to users */
+              }}
+            />
+          ))}
+        </div>
+      )}
       <VideoFormModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSuccess={() => {
-          /* Optionally refresh videos here */
+          refresh(); // Refresh videos after successful edit/add
         }}
         video={editingVideo}
         adminUserId={adminUserId}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import {
   Calendar,
   Clock,
@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { formatDate } from "@/lib/format-date";
 import { TrainingVideoModal } from "@/components/share/training-video-modal";
 import { getYouTubeId, getYouTubeThumbnail } from "@/lib/youtube";
+import { VideoWithStats } from "@/types";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,16 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface AdminVideoCardProps {
-  video: {
-    id: string;
-    title: string;
-    category: string;
-    description: string;
-    image: string;
-    created_at: string | Date;
-    duration: string;
-    youtube_url?: string;
-  };
+  video: VideoWithStats;
   onEdit?: () => void;
   showEdit?: boolean;
   onAssignToUsers?: () => void;
@@ -47,95 +39,29 @@ export function AdminVideoCard({
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [stats, setStats] = useState({
-    assigned: 0,
-    completed: 0,
-  });
   const { user } = useAuth();
-  const youtubeId = getYouTubeId(video.youtube_url);
-  const thumbnailUrl = youtubeId
-    ? getYouTubeThumbnail(youtubeId)
-    : video.image || "";
+  const youtubeId = video.youtube_url ? getYouTubeId(video.youtube_url) : null;
+  const thumbnailUrl = youtubeId ? getYouTubeThumbnail(youtubeId) : "";
 
-  // Add a refreshStats function
-  const refreshStats = useCallback(async () => {
-    try {
-      const { data: assignedData, error: assignedError } = await supabase
-        .from("users_videos")
-        .select("*", { count: "exact" })
-        .eq("video", video.id);
-      if (assignedError) throw assignedError;
-      const { data: completedData, error: completedError } = await supabase
-        .from("users_videos")
-        .select("*", { count: "exact" })
-        .eq("video", video.id)
-        .eq("is_completed", true);
-      if (completedError) throw completedError;
-      const assignedCount = assignedData?.length || 0;
-      const completedCount = completedData?.length || 0;
-      setStats({
-        assigned: assignedCount,
-        completed: assignedCount
-          ? Math.round((completedCount / assignedCount) * 100)
-          : 0,
-      });
-    } catch (error) {
-      console.error("Error refreshing video stats:", error);
-    }
-  }, [video.id]);
-
-  useEffect(() => {
-    refreshStats();
-    // ...existing subscription code...
-  }, [video.id, refreshStats]);
-
-  async function handleOpenModal() {
-    if (!user || !video.id) return;
-
-    try {
-      // First check if the users_videos record exists
-      const {
-        data: existingRecord,
-        error,
-        status,
-      } = await supabase
-        .from("users_videos")
-        .select("*")
-        .eq("user", user.id)
-        .eq("video", video.id)
-        .single();
-
-      // Only log real errors, not 'no record found'
-      if (error && status !== 406) {
-        console.error("Error checking users_videos record:", error);
-        return;
-      }
-
-      // Only update if the record exists
-      if (existingRecord) {
-        const { error: updateError } = await supabase
-          .from("users_videos")
-          .update({
-            last_watched: new Date().toISOString(),
-            modified_date: new Date().toISOString(),
-            last_action: existingRecord.is_completed ? "completed" : "watched",
-            assigned_date: existingRecord.assigned_date,
-          })
-          .eq("user", user.id)
-          .eq("video", video.id);
-
-        if (updateError) {
-          console.error("Error updating users_videos:", updateError);
-          return;
-        }
-      }
-    } catch (error) {
-      console.error("Error in handleOpenModal:", error);
-      return;
-    }
-
+  const handleOpenModal = () => {
     setShowModal(true);
-  }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("videos")
+        .delete()
+        .eq("id", video.id);
+      if (error) throw error;
+      setShowDeleteModal(false);
+    } catch (error) {
+      console.error("Error deleting video:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="group bg-white rounded-xl shadow p-4 flex flex-col gap-2 relative border border-transparent hover:border-[#EA384C] hover:shadow-lg transition-all duration-200">
@@ -199,7 +125,7 @@ export function AdminVideoCard({
           </DropdownMenu>
         </div>
       )}
-      <div className="font-bold pr-6">{video.title}</div>
+      <div className="font-bold pr-6">{video.title || "Untitled"}</div>
       <div className="flex items-center gap-2 mb-1">
         <span
           className={`inline-block text-xs font-semibold rounded-full px-3 py-0.5
@@ -214,7 +140,7 @@ export function AdminVideoCard({
             }`}
           style={{ minWidth: "fit-content" }}
         >
-          {video.category}
+          {video.category || "Uncategorized"}
         </span>
       </div>
       <div
@@ -227,15 +153,15 @@ export function AdminVideoCard({
           textOverflow: "ellipsis",
         }}
       >
-        {video.description}
+        {video.description || "No description available"}
       </div>
       <div
         className="relative aspect-video w-full overflow-hidden rounded-lg cursor-pointer"
         onClick={() => youtubeId && handleOpenModal()}
       >
         <Image
-          src={thumbnailUrl}
-          alt={video.title}
+          src={thumbnailUrl || ""}
+          alt={video.title || "Video thumbnail"}
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -258,17 +184,17 @@ export function AdminVideoCard({
         </span>
         <span className="flex items-center gap-1">
           <Clock size={16} className="text-gray-400" />
-          {video.duration}
+          {video.duration || "N/A"}
         </span>
       </div>
       <div className="flex justify-between text-xs text-gray-500">
         <span className="flex items-center gap-1">
           <Users size={16} className="text-gray-400" />
-          {stats.assigned} assigned
+          {video.num_of_assigned_users} assigned
         </span>
         <span className="flex items-center gap-1">
           <CheckCircle size={16} className="text-gray-400" />
-          {stats.completed}% completed
+          {Math.round(video.completion_rate)}% completed
         </span>
       </div>
 
@@ -282,16 +208,18 @@ export function AdminVideoCard({
         isOpen={assignModalOpen}
         onClose={() => setAssignModalOpen(false)}
         videoId={video.id}
-        videoTitle={video.title}
-        assignedCount={stats.assigned}
-        onAfterAssign={refreshStats}
+        videoTitle={video.title || ""}
+        assignedCount={video.num_of_assigned_users}
+        onAfterAssign={() => {
+          // The store will handle the refresh automatically through real-time subscription
+        }}
       />
       {/* YouTube Modal */}
       <TrainingVideoModal
         open={showModal && !!youtubeId}
         onClose={() => setShowModal(false)}
-        title={video.title}
-        youtubeId={youtubeId}
+        title={video.title || ""}
+        youtubeId={youtubeId || ""}
         videoId={video.id}
       />
       {/* Delete Confirmation Modal */}
@@ -305,10 +233,10 @@ export function AdminVideoCard({
                 Are you sure that you want to delete{" "}
                 <span className="font-bold">{video.title}</span>?
               </div>
-              {stats.assigned > 0 && (
+              {video.num_of_assigned_users > 0 && (
                 <div className="text-red-600 mt-2">
-                  This video is assigned to {stats.assigned} user
-                  {stats.assigned > 1 ? "s" : ""}.
+                  This video is assigned to {video.num_of_assigned_users} user
+                  {video.num_of_assigned_users > 1 ? "s" : ""}.
                 </div>
               )}
             </div>
@@ -322,20 +250,7 @@ export function AdminVideoCard({
               </button>
               <button
                 className="px-4 py-2 rounded bg-[#EA384C] text-white font-medium hover:bg-[#EC4659] transition"
-                onClick={async () => {
-                  setIsDeleting(true);
-                  // Delete users_videos first
-                  await supabase
-                    .from("users_videos")
-                    .delete()
-                    .eq("video", video.id);
-                  // Delete the video
-                  await supabase.from("videos").delete().eq("id", video.id);
-                  setIsDeleting(false);
-                  setShowDeleteModal(false);
-                  // Optionally, trigger a refresh or callback here
-                  window.location.reload();
-                }}
+                onClick={handleDelete}
                 disabled={isDeleting}
               >
                 {isDeleting ? "Deleting..." : "Yes, Delete"}
