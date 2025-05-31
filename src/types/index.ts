@@ -41,3 +41,20 @@ export interface DashboardStats {
   videosWatched: number;
   videosWatchedThisWeek: number;
 }
+
+export interface TrainingVideo {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  created_at: string | Date;
+  duration: string;
+  youtube_url?: string;
+  assigned_date?: string | Date;
+  last_watched?: string | Date;
+  renewal_due?: string;
+  is_completed?: boolean;
+  modified_date?: string;
+  last_action?: string;
+  is_annual_renewal?: boolean;
+}

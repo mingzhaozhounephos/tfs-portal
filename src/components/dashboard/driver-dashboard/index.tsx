@@ -1,85 +1,37 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { SideMenu } from "@/components/side-menu";
 import { TrainingVideosGrid } from "@/components/share/training-videos-grid";
-import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserRole } from "@/hooks/use-user-role";
 import { TrainingVideoModal } from "@/components/share/training-video-modal";
 import { getYouTubeId } from "@/lib/youtube";
-
-interface Video {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  image: string;
-  created_at: string | Date;
-  duration: string;
-  youtube_url?: string;
-  assigned_date?: string | Date;
-  last_watched?: string | Date;
-  renewal_due?: string;
-  is_completed?: boolean;
-  modified_date?: string;
-  last_action?: string;
-  is_annual_renewal?: boolean;
-}
+import { useDriverUsersVideos } from "@/hooks/use-driver-users-videos";
+import { TrainingVideo } from "@/types";
 
 export function DriverDashboard() {
-  const { user } = useAuth();
+  const { userDetails } = useAuth();
   const { role } = useUserRole();
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { assignments, loading } = useDriverUsersVideos();
   const [showModal, setShowModal] = useState(false);
-  const [modalVideo, setModalVideo] = useState<Video | null>(null);
+  const [modalVideo, setModalVideo] = useState<TrainingVideo | null>(null);
 
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchVideos = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("users_videos")
-          .select("*, modified_date, last_action, video:videos(*)")
-          .eq("user", user.id);
-        if (error) throw error;
-        const transformedVideos = data.map((item) => ({
-          ...item.video,
-          assigned_date: item.assigned_date,
-          last_watched: item.last_watched,
-          is_annual_renewal: item.is_annual_renewal,
-          renewal_due: item.renewal_due,
-          is_completed: item.is_completed,
-          modified_date: item.modified_date,
-          last_action: item.last_action,
-        }));
-        setVideos(transformedVideos);
-      } catch (error) {
-        console.error("Error fetching videos:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchVideos();
-    const subscription = supabase
-      .channel("users_videos_changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "users_videos",
-          filter: `user=eq.${user.id}`,
-        },
-        async () => {
-          await fetchVideos();
-        }
-      )
-      .subscribe();
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [user]);
+  // Transform assignments to the expected video format
+  const videos: TrainingVideo[] = assignments.map((item) => ({
+    id: item.video.id,
+    title: item.video.title || "",
+    category: item.video.category || "",
+    description: item.video.description || "",
+    created_at: item.video.created_at,
+    duration: item.video.duration || "",
+    youtube_url: item.video.youtube_url || undefined,
+    assigned_date: item.assigned_date || undefined,
+    last_watched: item.last_watched || undefined,
+    renewal_due: undefined, // Not in the database
+    is_completed: item.is_completed || false,
+    modified_date: item.modified_date || undefined,
+    last_action: item.last_action || undefined,
+    is_annual_renewal: item.video.is_annual_renewal || false,
+  }));
 
   // Progress calculation
   const assignedVideos = videos.length;
@@ -126,11 +78,11 @@ export function DriverDashboard() {
     }
   }
 
-  const userName = user?.user_metadata?.full_name || "Driver";
-  const userEmail = user?.email || "";
+  const userName = userDetails?.full_name || userDetails?.email || "Driver";
+  const userEmail = userDetails?.email || "";
 
   // Show modal with YouTube video
-  function handleShowVideoModal(video: Video) {
+  function handleShowVideoModal(video: TrainingVideo) {
     setModalVideo(video);
     setShowModal(true);
   }
@@ -142,7 +94,12 @@ export function DriverDashboard() {
         active="dashboard"
         onNavigate={() => {}}
       />
-      <main className="flex-1 p-8 h-screen overflow-y-auto">
+      <main className="flex-1 p-8 h-screen overflow-y-auto relative">
+        {loading && (
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-50">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#EA384C]" />
+          </div>
+        )}
         <div className="flex flex-col gap-2 items-center mb-6 w-full">
           <div className="flex items-start justify-between w-full">
             <img
@@ -214,7 +171,7 @@ export function DriverDashboard() {
             </div>
             <div className="text-2xl font-bold">{assignedVideos}</div>
             <div className="text-xs text-gray-500">
-              {assignedVideos} videos remaining
+              {assignedVideos - completedVideos} videos remaining
             </div>
           </div>
           <div className="bg-white rounded-xl p-4 shadow flex flex-col gap-2 min-h-[100px]">
@@ -246,23 +203,22 @@ export function DriverDashboard() {
         </div>
         <div className="mb-4 mt-8">
           <h2 className="text-xl font-bold mb-4">Your Training Videos</h2>
-          {loading ? (
-            <div className="text-center py-4">Loading videos...</div>
-          ) : (
+          <div className="relative">
             <TrainingVideosGrid
               videos={videos}
               onStartTraining={handleShowVideoModal}
             />
-          )}
+          </div>
         </div>
-        {/* YouTube Modal */}
-        <TrainingVideoModal
-          open={showModal && !!modalVideo?.youtube_url}
-          onClose={() => setShowModal(false)}
-          title={modalVideo?.title || ""}
-          youtubeId={getYouTubeId(modalVideo?.youtube_url)}
-          videoId={modalVideo?.id || ""}
-        />
+        {showModal && modalVideo && (
+          <TrainingVideoModal
+            open={true}
+            onClose={() => setShowModal(false)}
+            title={modalVideo.title}
+            youtubeId={getYouTubeId(modalVideo.youtube_url) || ""}
+            videoId={modalVideo.id}
+          />
+        )}
       </main>
     </div>
   );

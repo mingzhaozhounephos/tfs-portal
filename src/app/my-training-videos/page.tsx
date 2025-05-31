@@ -1,29 +1,12 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { SideMenu } from "@/components/side-menu";
 import { TrainingVideosGrid } from "@/components/share/training-videos-grid";
-import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
 import { TrainingVideoModal } from "@/components/share/training-video-modal";
-
-interface Video {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  image: string;
-  created_at: string | Date;
-  duration: string;
-  youtube_url?: string;
-  assigned_date?: string | Date;
-  last_watched?: string | Date;
-  renewal_due?: string;
-  is_completed?: boolean;
-  modified_date?: string;
-  last_action?: string;
-  is_annual_renewal?: boolean;
-}
+import { TrainingVideo } from "@/types";
+import { useDriverUsersVideos } from "@/hooks/use-driver-users-videos";
 
 const FILTERS = [
   { label: "All Videos", value: "all" },
@@ -33,7 +16,7 @@ const FILTERS = [
   { label: "Office", value: "office" },
 ];
 
-function isAnnualRenewalDue(video: Video) {
+function isAnnualRenewalDue(video: TrainingVideo) {
   if (!video.is_annual_renewal || !video.assigned_date) return false;
   const assigned = new Date(video.assigned_date);
   const now = new Date();
@@ -43,66 +26,33 @@ function isAnnualRenewalDue(video: Video) {
 export default function MyTrainingVideosPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
   const [showModal, setShowModal] = useState(false);
-  const [modalVideo, setModalVideo] = useState<Video | null>(null);
+  const [modalVideo, setModalVideo] = useState<TrainingVideo | null>(null);
+  const { user } = useAuth();
+  const { assignments, loading } = useDriverUsersVideos();
 
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchVideos = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("users_videos")
-          .select("*, video:videos(*)")
-          .eq("user", user.id);
-
-        if (error) throw error;
-
-        const transformedVideos = data.map((item) => ({
-          ...item.video,
-          assigned_date: item.assigned_date,
-          last_watched: item.last_watched,
-          is_annual_renewal: item.is_annual_renewal,
-          renewal_due: item.renewal_due,
-          is_completed: item.is_completed,
-          modified_date: item.modified_date,
-          last_action: item.last_action,
-        }));
-
-        setVideos(transformedVideos);
-      } catch (error) {
-        console.error("Error fetching videos:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchVideos();
-
-    // Subscribe to changes
-    const subscription = supabase
-      .channel("users_videos_changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "users_videos",
-          filter: `user=eq.${user.id}`,
-        },
-        async () => {
-          await fetchVideos();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [user]);
+  // Transform assignments to videos with image
+  const videos = useMemo(
+    () =>
+      assignments.map((item) => ({
+        id: item.video.id,
+        title: item.video.title || "",
+        category: item.video.category || "",
+        description: item.video.description || "",
+        created_at: item.video.created_at,
+        duration: item.video.duration || "",
+        youtube_url: item.video.youtube_url || undefined,
+        image: "/placeholder.webp",
+        assigned_date: item.assigned_date || undefined,
+        last_watched: item.last_watched || undefined,
+        is_annual_renewal: item.video.is_annual_renewal || false,
+        renewal_due: undefined,
+        is_completed: item.is_completed || false,
+        modified_date: item.modified_date || undefined,
+        last_action: item.last_action || undefined,
+      })),
+    [assignments]
+  );
 
   // Filtered videos
   const filteredVideos = useMemo(() => {
@@ -110,14 +60,14 @@ export default function MyTrainingVideosPage() {
     if (filter === "renewal") {
       result = result.filter((v) => v.is_annual_renewal);
     } else if (["van", "truck", "office"].includes(filter)) {
-      result = result.filter((v) => v.category.toLowerCase() === filter);
+      result = result.filter((v) => v.category?.toLowerCase() === filter);
     }
     if (search.trim()) {
       const s = search.trim().toLowerCase();
       result = result.filter(
         (v) =>
-          v.title.toLowerCase().includes(s) ||
-          v.description.toLowerCase().includes(s)
+          (v.title?.toLowerCase() || "").includes(s) ||
+          (v.description?.toLowerCase() || "").includes(s)
       );
     }
     return result;
@@ -133,7 +83,7 @@ export default function MyTrainingVideosPage() {
   );
 
   // Handler to show the video modal
-  function handleShowVideoModal(video: Video) {
+  function handleShowVideoModal(video: TrainingVideo) {
     setModalVideo(video);
     setShowModal(true);
   }
@@ -145,7 +95,12 @@ export default function MyTrainingVideosPage() {
         active="my-training-videos"
         onNavigate={() => {}}
       />
-      <main className="flex-1 p-8 h-screen overflow-y-auto">
+      <main className="flex-1 p-8 h-screen overflow-y-auto relative">
+        {loading && (
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-50">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#EA384C]" />
+          </div>
+        )}
         <div className="flex flex-col gap-2 items-start mb-2">
           <img
             src="/images/Logo.jpg"
@@ -239,14 +194,12 @@ export default function MyTrainingVideosPage() {
             </div>
           ))}
         </div>
-        {loading ? (
-          <div className="text-center py-4">Loading videos...</div>
-        ) : (
+        <div className="mb-4">
           <TrainingVideosGrid
             videos={filteredVideos}
             onStartTraining={handleShowVideoModal}
           />
-        )}
+        </div>
         <TrainingVideoModal
           open={showModal && !!modalVideo?.youtube_url}
           onClose={() => setShowModal(false)}

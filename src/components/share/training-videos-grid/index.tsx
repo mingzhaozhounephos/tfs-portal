@@ -4,24 +4,7 @@ import { formatDate } from "@/lib/format-date";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/lib/supabase";
 import { getYouTubeId, getYouTubeThumbnail } from "@/lib/youtube";
-
-interface TrainingVideo {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  image: string;
-  created_at: string | Date;
-  duration: string;
-  assigned_date?: string | Date;
-  last_watched?: string | Date;
-  youtube_url?: string;
-  renewal_due?: string;
-  is_completed?: boolean;
-  modified_date?: string;
-  last_action?: string;
-  is_annual_renewal?: boolean;
-}
+import { TrainingVideo } from "@/types";
 
 interface TrainingVideosGridProps {
   videos: TrainingVideo[];
@@ -95,9 +78,7 @@ export function TrainingVideosGrid({
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {videos.map((video, idx) => {
         const youtubeId = getYouTubeId(video.youtube_url);
-        const thumbnailUrl = youtubeId
-          ? getYouTubeThumbnail(youtubeId)
-          : video.image || "/placeholder.webp";
+        const thumbnailUrl = youtubeId ? getYouTubeThumbnail(youtubeId) : "";
         const renewalDue = isAnnualRenewalDue(video);
         return (
           <div
