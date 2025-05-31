@@ -3,6 +3,7 @@ import { useUsers } from "@/hooks/use-users";
 import { useUsersVideos } from "@/hooks/use-users-videos";
 import { UserWithRole } from "@/types";
 import { createPortal } from "react-dom";
+import { useVideosStore } from "@/store/videos-store";
 
 interface AssignVideoModalProps {
   isOpen: boolean;
@@ -23,6 +24,9 @@ export function AssignVideoModal({
 }: AssignVideoModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [initialSelectedUsers, setInitialSelectedUsers] = useState<string[]>(
+    []
+  );
   const [mounted, setMounted] = useState(false);
   const {
     users,
@@ -36,6 +40,7 @@ export function AssignVideoModal({
     loading: assignmentsLoading,
     error: assignmentsError,
   } = useUsersVideos();
+  const { refresh: refreshVideos } = useVideosStore();
 
   useEffect(() => {
     setMounted(true);
@@ -46,7 +51,9 @@ export function AssignVideoModal({
   useEffect(() => {
     if (!isOpen || !videoId) return;
     const assignments = getAssignmentsForVideo(videoId);
-    setSelectedUsers(assignments.map((a) => a.user.id));
+    const userIds = assignments.map((a) => a.user.id);
+    setSelectedUsers(userIds);
+    setInitialSelectedUsers(userIds); // Store initial selection
   }, [isOpen, videoId, getAssignmentsForVideo]);
 
   if (!isOpen) return null;
@@ -100,16 +107,27 @@ export function AssignVideoModal({
 
   const handleAssign = async () => {
     try {
+      // Compare initial and current selections
+      const hasChanges =
+        initialSelectedUsers.length !== selectedUsers.length ||
+        !initialSelectedUsers.every((id) => selectedUsers.includes(id)) ||
+        !selectedUsers.every((id) => initialSelectedUsers.includes(id));
+
       // Close modal first to prevent any race conditions
       onClose();
+
       // Then perform the assignment
       await assignVideos(videoId, selectedUsers);
+
+      // If there were changes in assignments, refresh the videos store
+      if (hasChanges) {
+        await refreshVideos();
+      }
+
       // Finally notify parent of completion
       onAfterAssign?.();
     } catch (err) {
       console.error("Failed to assign videos:", err);
-      // If there's an error, we don't want to keep the modal closed
-      // The parent component will handle reopening if needed
     }
   };
 
