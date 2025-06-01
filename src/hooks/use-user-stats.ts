@@ -1,7 +1,5 @@
 import { useEffect } from "react";
 import { useUserStatsStore } from "@/store/user-stats-store";
-import { shallow } from "zustand/shallow";
-import { useRefreshOnVisible } from "./use-refresh-on-visible";
 import { UserWithRole } from "@/types";
 
 interface UserStatsState {
@@ -13,16 +11,11 @@ interface UserStatsState {
 }
 
 export function useUserStats(users: UserWithRole[]) {
-  const { stats, loading, error, initialize, refresh } = useUserStatsStore(
-    (state) => ({
-      stats: state.stats,
-      loading: state.loading,
-      error: state.error,
-      initialize: state.initialize,
-      refresh: state.refresh,
-    }),
-    shallow
-  );
+  const stats = useUserStatsStore((state) => state.stats);
+  const loading = useUserStatsStore((state) => state.loading);
+  const error = useUserStatsStore((state) => state.error);
+  const initialize = useUserStatsStore((state) => state.initialize);
+  const refresh = useUserStatsStore((state) => state.refresh);
 
   useEffect(() => {
     if (users.length > 0) {

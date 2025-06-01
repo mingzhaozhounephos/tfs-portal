@@ -8,12 +8,12 @@ import {
   Trash2,
 } from "lucide-react";
 import { AssignVideoModal } from "@/components/share/assign-video-modal";
-import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import { formatDate } from "@/lib/format-date";
 import { TrainingVideoModal } from "@/components/share/training-video-modal";
 import { getYouTubeId, getYouTubeThumbnail } from "@/lib/youtube";
 import { VideoWithStats } from "@/types";
+import { useVideoActions } from "@/hooks/use-video-actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,7 +37,7 @@ export function AdminVideoCard({
   const [showModal, setShowModal] = useState(false);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const { deleteVideo, isDeleting, error } = useVideoActions();
   const youtubeId = video.youtube_url ? getYouTubeId(video.youtube_url) : null;
   const thumbnailUrl = youtubeId ? getYouTubeThumbnail(youtubeId) : "";
 
@@ -46,18 +46,9 @@ export function AdminVideoCard({
   };
 
   const handleDelete = async () => {
-    setIsDeleting(true);
-    try {
-      const { error } = await supabase
-        .from("videos")
-        .delete()
-        .eq("id", video.id);
-      if (error) throw error;
+    const success = await deleteVideo(video.id);
+    if (success) {
       setShowDeleteModal(false);
-    } catch (error) {
-      console.error("Error deleting video:", error);
-    } finally {
-      setIsDeleting(false);
     }
   };
 
@@ -240,6 +231,9 @@ export function AdminVideoCard({
                   {video.num_of_assigned_users > 1 ? "s" : ""}.
                 </div>
               )}
+              {error && (
+                <div className="text-red-600 mt-2">{error.message}</div>
+              )}
             </div>
             <div className="flex gap-2 w-full justify-center mt-2">
               <button
@@ -250,11 +244,11 @@ export function AdminVideoCard({
                 Cancel
               </button>
               <button
-                className="px-4 py-2 rounded bg-[#EA384C] text-white font-medium hover:bg-[#EC4659] transition"
+                className="px-4 py-2 rounded bg-[#EA384C] text-white font-medium hover:bg-[#EC4659] transition disabled:opacity-50"
                 onClick={handleDelete}
                 disabled={isDeleting}
               >
-                {isDeleting ? "Deleting..." : "Yes, Delete"}
+                {isDeleting ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>

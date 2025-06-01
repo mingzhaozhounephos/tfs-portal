@@ -1,40 +1,22 @@
 "use client";
 
 import { Users, Video, CheckCircle, RefreshCw } from "lucide-react";
-import { User, UserWithRole } from "@/types";
+import { User } from "@/types";
 import { useUserVideos } from "@/hooks/use-user-videos";
+import { useUserRole } from "@/hooks/use-user-role";
 import { format } from "date-fns";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 
 interface UserDetailsCardsProps {
   user: User;
 }
 
 export function UserDetailsCards({ user }: UserDetailsCardsProps) {
-  const { stats, loading, videos } = useUserVideos(user.id);
-  const [userWithRole, setUserWithRole] = useState<UserWithRole | null>(null);
-
-  useEffect(() => {
-    async function fetchUserRole() {
-      const { data: userRole } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user", user.id)
-        .single();
-
-      if (userRole) {
-        setUserWithRole({
-          ...user,
-          role: userRole.role,
-        });
-      }
-    }
-    fetchUserRole();
-  }, [user]);
+  const { stats, loading: videosLoading, videos } = useUserVideos(user.id);
+  const { userWithRole, loading: roleLoading } = useUserRole(user);
 
   // Calculate completed videos count
   const completedVideos = videos.filter((v) => v.is_completed).length;
+  const loading = videosLoading || roleLoading;
 
   if (!userWithRole) {
     return null;

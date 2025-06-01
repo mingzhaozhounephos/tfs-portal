@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { supabase } from "@/lib/supabase";
-import { TrainingVideo } from "@/types";
 
 interface TrainingVideoStore {
   initialized: boolean;

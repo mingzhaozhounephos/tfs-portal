@@ -1,17 +1,6 @@
 import { useEffect } from "react";
 import { useUsersStore } from "@/store/users-store";
-import { shallow } from "zustand/shallow";
 import { useRefreshOnVisible } from "./use-refresh-on-visible";
-import { User } from "@/types";
-
-interface UsersState {
-  users: User[];
-  loading: boolean;
-  error: Error | null;
-  initialize: () => Promise<void>;
-  refresh: () => Promise<void>;
-  searchUsers: (query: string) => Promise<void>;
-}
 
 export function useUsers() {
   const users = useUsersStore((state) => state.users);

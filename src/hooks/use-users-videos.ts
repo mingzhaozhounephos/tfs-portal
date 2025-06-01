@@ -1,40 +1,17 @@
 import { useEffect } from "react";
 import { useUsersVideosStore } from "@/store/users-videos-store";
-import { shallow } from "zustand/shallow";
 import { useRefreshOnVisible } from "./use-refresh-on-visible";
-import { UserVideoWithVideo } from "@/types";
-
-interface UsersVideosState {
-  assignments: UserVideoWithVideo[];
-  loading: boolean;
-  error: Error | null;
-  initialize: () => Promise<void>;
-  refresh: () => Promise<void>;
-  getAssignmentsForVideo: (videoId: string) => UserVideoWithVideo[];
-  assignVideos: (userId: string, videoIds: string[]) => Promise<void>;
-}
 
 export function useUsersVideos() {
-  const {
-    assignments,
-    loading,
-    error,
-    initialize,
-    refresh,
-    getAssignmentsForVideo,
-    assignVideos,
-  } = useUsersVideosStore(
-    (state) => ({
-      assignments: state.assignments,
-      loading: state.loading,
-      error: state.error,
-      initialize: state.initialize,
-      refresh: state.refresh,
-      getAssignmentsForVideo: state.getAssignmentsForVideo,
-      assignVideos: state.assignVideos,
-    }),
-    shallow
+  const assignments = useUsersVideosStore((state) => state.assignments);
+  const loading = useUsersVideosStore((state) => state.loading);
+  const error = useUsersVideosStore((state) => state.error);
+  const initialize = useUsersVideosStore((state) => state.initialize);
+  const refresh = useUsersVideosStore((state) => state.refresh);
+  const getAssignmentsForVideo = useUsersVideosStore(
+    (state) => state.getAssignmentsForVideo
   );
+  const assignVideos = useUsersVideosStore((state) => state.assignVideos);
 
   useEffect(() => {
     initialize();

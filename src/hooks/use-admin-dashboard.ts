@@ -1,32 +1,13 @@
 import { useEffect } from "react";
 import { useAdminDashboardStore } from "@/store/admin-dashboard-store";
-import { shallow } from "zustand/shallow";
 import { useRefreshOnVisible } from "./use-refresh-on-visible";
 
-interface AdminDashboardState {
-  stats: {
-    totalUsers: number;
-    totalVideos: number;
-    totalAssignments: number;
-    completionRate: number;
-  };
-  loading: boolean;
-  error: Error | null;
-  initialize: () => Promise<void>;
-  refresh: () => Promise<void>;
-}
-
 export function useAdminDashboard() {
-  const { stats, loading, error, initialize, refresh } = useAdminDashboardStore(
-    (state) => ({
-      stats: state.stats,
-      loading: state.loading,
-      error: state.error,
-      initialize: state.initialize,
-      refresh: state.refresh,
-    }),
-    shallow
-  );
+  const stats = useAdminDashboardStore((state) => state.stats);
+  const loading = useAdminDashboardStore((state) => state.loading);
+  const error = useAdminDashboardStore((state) => state.error);
+  const initialize = useAdminDashboardStore((state) => state.initialize);
+  const refresh = useAdminDashboardStore((state) => state.refresh);
 
   useEffect(() => {
     initialize();

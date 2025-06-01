@@ -7,7 +7,7 @@ import {
   Trash2,
   Settings,
 } from "lucide-react";
-import { UserWithRole, UserStats, UserWithDetails } from "@/types";
+import { UserWithRole, UserStats } from "@/types";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

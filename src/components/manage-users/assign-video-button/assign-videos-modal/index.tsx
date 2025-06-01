@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useVideos } from "@/hooks/use-videos";
-import { Video, User } from "@/types";
+import { User } from "@/types";
 
 interface AssignVideosModalProps {
   isOpen: boolean;
@@ -12,8 +12,7 @@ interface AssignVideosModalProps {
   assignedVideoIds: string[];
   onSave: (selectedVideoIds: string[]) => Promise<void>;
 }
-// TODO: still allow the Assign Video button to be clicked even if no videos are selected as user
-// might want to delete the assigned videos
+
 export function AssignVideosModal({
   isOpen,
   onClose,

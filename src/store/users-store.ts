@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { supabase } from "@/lib/supabase";
-import { User, UserWithRole } from "@/types";
+import { UserWithRole } from "@/types";
 import { toast } from "sonner";
 
 interface UsersStore {

@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { useRoleStore, Role } from "@/store/role-store";
-import { shallow } from "zustand/shallow";
 import { useRefreshOnVisible } from "./use-refresh-on-visible";
 
 interface RoleState {
@@ -12,16 +11,11 @@ interface RoleState {
 }
 
 export function useRole(): Role {
-  const { role, loading, error, initialize, refresh } = useRoleStore(
-    (state: RoleState) => ({
-      role: state.role,
-      loading: state.loading,
-      error: state.error,
-      initialize: state.initialize,
-      refresh: state.refresh,
-    }),
-    shallow
-  );
+  const role = useRoleStore((state: RoleState) => state.role);
+  const loading = useRoleStore((state: RoleState) => state.loading);
+  const error = useRoleStore((state: RoleState) => state.error);
+  const initialize = useRoleStore((state: RoleState) => state.initialize);
+  const refresh = useRoleStore((state: RoleState) => state.refresh);
 
   useEffect(() => {
     initialize();

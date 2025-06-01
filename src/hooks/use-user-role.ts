@@ -1,34 +1,40 @@
-import { useEffect } from "react";
-import { useUserRoleStore } from "@/store/user-role-store";
-import { shallow } from "zustand/shallow";
-import { useRefreshOnVisible } from "./use-refresh-on-visible";
-import { Role } from "@/store/role-store";
+import { useEffect, useState } from "react";
+import { User, UserWithRole } from "@/types";
+import { supabase } from "@/lib/supabase";
 
-interface UserRoleState {
-  role: Role;
-  loading: boolean;
-  error: Error | null;
-  initialize: () => Promise<void>;
-  refresh: () => Promise<void>;
-}
-
-export function useUserRole() {
-  const { role, loading, error, initialize, refresh } = useUserRoleStore(
-    (state) => ({
-      role: state.role,
-      loading: state.loading,
-      error: state.error,
-      initialize: state.initialize,
-      refresh: state.refresh,
-    }),
-    shallow
-  );
+export function useUserRole(user: User) {
+  const [userWithRole, setUserWithRole] = useState<UserWithRole | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    initialize();
-  }, [initialize]);
+    async function fetchUserRole() {
+      try {
+        setLoading(true);
+        const { data: userRole, error } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user", user.id)
+          .single();
 
-  useRefreshOnVisible(refresh);
+        if (error) throw error;
 
-  return { role, loading, error };
+        if (userRole) {
+          setUserWithRole({
+            ...user,
+            role: userRole.role,
+          });
+        }
+      } catch (err) {
+        setError(
+          err instanceof Error ? err : new Error("Failed to fetch user role")
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchUserRole();
+  }, [user]);
+
+  return { userWithRole, loading, error };
 }

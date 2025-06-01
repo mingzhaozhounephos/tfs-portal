@@ -1,31 +1,14 @@
 import { useEffect } from "react";
 import { useDriverUsersVideosStore } from "@/store/driver-users-videos-store";
-import { shallow } from "zustand/shallow";
-import { useRefreshOnVisible } from "./use-refresh-on-visible";
-import { UserVideoWithVideo } from "@/types";
 import { useAuth } from "./use-auth";
-
-interface DriverUsersVideosState {
-  assignments: UserVideoWithVideo[];
-  loading: boolean;
-  error: Error | null;
-  initialize: (userId: string) => Promise<void>;
-  refresh: (userId: string) => Promise<void>;
-}
 
 export function useDriverUsersVideos() {
   const { user } = useAuth();
-  const { assignments, loading, error, initialize, refresh } =
-    useDriverUsersVideosStore(
-      (state) => ({
-        assignments: state.assignments,
-        loading: state.loading,
-        error: state.error,
-        initialize: state.initialize,
-        refresh: state.refresh,
-      }),
-      shallow
-    );
+  const assignments = useDriverUsersVideosStore((state) => state.assignments);
+  const loading = useDriverUsersVideosStore((state) => state.loading);
+  const error = useDriverUsersVideosStore((state) => state.error);
+  const initialize = useDriverUsersVideosStore((state) => state.initialize);
+  const refresh = useDriverUsersVideosStore((state) => state.refresh);
 
   useEffect(() => {
     if (user?.id) {

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useUsers } from "@/hooks/use-users";
 import { useUsersVideos } from "@/hooks/use-users-videos";
-import { UserWithRole } from "@/types";
 import { createPortal } from "react-dom";
 import { useVideosStore } from "@/store/videos-store";
 
@@ -104,6 +103,9 @@ export function AssignVideoModal({
   const hasInitialAssignments = assignedCount > 0;
   const hasSelectedUsers = selectedUsers.length > 0;
   const canAssign = hasSelectedUsers || hasInitialAssignments;
+  console.log("hasInitialAssignments", hasInitialAssignments);
+  console.log("hasSelectedUsers", hasSelectedUsers);
+  console.log("canAssign", canAssign);
 
   const handleAssign = async () => {
     try {

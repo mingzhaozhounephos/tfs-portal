@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useUserVideos } from "@/hooks/use-user-videos";
 import { AdminVideoCard } from "@/components/share/admin-video-card";
-import { UserVideoWithVideo } from "@/types";
 
 interface AssignedVideosListProps {
   userId: string;
@@ -19,7 +18,7 @@ export function AssignedVideosList({
   const filteredVideos = useMemo(() => {
     // First filter by user ID
     const userVideos = videos.filter((v) => v.user === userId);
-
+    console.log("userVideos: ", userVideos);
     // Then apply additional filters
     if (filter === "pending") return userVideos.filter((v) => !v.is_completed);
     if (filter === "completed") return userVideos.filter((v) => v.is_completed);

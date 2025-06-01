@@ -2,8 +2,6 @@
 
 import { useEffect } from "react";
 import { useUserVideosStore } from "@/store/user-videos-store";
-import { shallow } from "zustand/shallow";
-import { useRefreshOnVisible } from "./use-refresh-on-visible";
 import { UserVideoWithVideo } from "@/types";
 
 interface UserVideosState {
@@ -17,26 +15,13 @@ interface UserVideosState {
 }
 
 export function useUserVideos(userId: string) {
-  const {
-    userVideos,
-    stats,
-    loading,
-    error,
-    initialize,
-    refresh,
-    assignVideos,
-  } = useUserVideosStore(
-    (state) => ({
-      userVideos: state.userVideos,
-      stats: state.stats,
-      loading: state.loading,
-      error: state.error,
-      initialize: state.initialize,
-      refresh: state.refresh,
-      assignVideos: state.assignVideos,
-    }),
-    shallow
-  );
+  const userVideos = useUserVideosStore((state) => state.userVideos);
+  const stats = useUserVideosStore((state) => state.stats);
+  const loading = useUserVideosStore((state) => state.loading);
+  const error = useUserVideosStore((state) => state.error);
+  const initialize = useUserVideosStore((state) => state.initialize);
+  const refresh = useUserVideosStore((state) => state.refresh);
+  const assignVideos = useUserVideosStore((state) => state.assignVideos);
 
   useEffect(() => {
     initialize(userId);

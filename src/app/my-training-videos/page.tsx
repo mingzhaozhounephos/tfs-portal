@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { SideMenu } from "@/components/side-menu";
 import { TrainingVideosGrid } from "@/components/share/training-videos-grid";
-import { useAuth } from "@/hooks/use-auth";
+// import { useAuth } from "@/hooks/use-auth";
 import { useRole } from "@/hooks/use-role";
 import { TrainingVideoModal } from "@/components/share/training-video-modal";
 import { TrainingVideo } from "@/types";
@@ -29,7 +29,7 @@ export default function MyTrainingVideosPage() {
   const [filter, setFilter] = useState("all");
   const [showModal, setShowModal] = useState(false);
   const [modalVideo, setModalVideo] = useState<TrainingVideo | null>(null);
-  const { userDetails } = useAuth();
+  // const { userDetails } = useAuth();
   const role = useRole();
   const { assignments, loading } = useDriverUsersVideos();
 

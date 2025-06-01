@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
+import { useVideoCompletion } from "@/hooks/use-video-completion";
 
 // Extend the Window interface for YT and onYouTubeIframeAPIReady
 declare global {
@@ -27,26 +27,15 @@ export function TrainingVideoModal({
 }: TrainingVideoModalProps) {
   const playerRef = useRef<any>(null);
   const { user } = useAuth();
-
-  const markAsCompleted = async () => {
-    if (!user) return;
-    const { data: userVideo, error } = await supabase
-      .from("users_videos")
-      .select("id")
-      .eq("user", user.id)
-      .eq("video", videoId)
-      .single();
-    if (!error && userVideo) {
-      await supabase
-        .from("users_videos")
-        .update({ is_completed: true, last_action: "completed" })
-        .eq("id", userVideo.id);
-    }
-  };
+  const { markVideoAsCompleted, isCompleting, error } = useVideoCompletion();
 
   const handleManualCompletion = async () => {
-    await markAsCompleted();
-    onClose();
+    if (user) {
+      const success = await markVideoAsCompleted(user, videoId);
+      if (success) {
+        onClose();
+      }
+    }
   };
 
   // Load the YouTube IFrame API and setup the player
@@ -69,8 +58,8 @@ export function TrainingVideoModal({
         playerVars: { autoplay: 1 },
         events: {
           onStateChange: async (event: any) => {
-            if (event.data === window.YT.PlayerState.ENDED) {
-              await markAsCompleted();
+            if (event.data === window.YT.PlayerState.ENDED && user) {
+              await markVideoAsCompleted(user, videoId);
             }
           },
         },
@@ -107,6 +96,9 @@ export function TrainingVideoModal({
         <div className="aspect-video w-full">
           <div id="player" />
         </div>
+        {error && (
+          <div className="text-red-600 mt-2 text-center">{error.message}</div>
+        )}
         <div className="flex justify-end gap-4 mt-4">
           <button
             onClick={onClose}
@@ -116,9 +108,10 @@ export function TrainingVideoModal({
           </button>
           <button
             onClick={handleManualCompletion}
-            className="px-4 py-2 bg-[#EA384C] text-white rounded-lg hover:bg-[#EC4659] font-medium"
+            disabled={isCompleting}
+            className="px-4 py-2 bg-[#EA384C] text-white rounded-lg hover:bg-[#EC4659] font-medium disabled:opacity-50"
           >
-            Mark as Completed
+            {isCompleting ? "Marking as Completed..." : "Mark as Completed"}
           </button>
         </div>
       </div>

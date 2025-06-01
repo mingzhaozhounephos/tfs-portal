@@ -1,40 +1,15 @@
 import { useEffect } from "react";
 import { useVideosStore } from "@/store/videos-store";
-import { shallow } from "zustand/shallow";
 import { useRefreshOnVisible } from "./use-refresh-on-visible";
-import { Video } from "@/types";
-
-interface VideosState {
-  videos: Video[];
-  loading: boolean;
-  error: Error | null;
-  initialize: () => Promise<void>;
-  refresh: () => Promise<void>;
-  searchVideos: (query: string) => Promise<void>;
-  getVideoById: (id: string) => Video | undefined;
-}
 
 export function useVideos() {
-  const {
-    videos,
-    loading,
-    error,
-    initialize,
-    refresh,
-    searchVideos,
-    getVideoById,
-  } = useVideosStore(
-    (state) => ({
-      videos: state.videos,
-      loading: state.loading,
-      error: state.error,
-      initialize: state.initialize,
-      refresh: state.refresh,
-      searchVideos: state.searchVideos,
-      getVideoById: state.getVideoById,
-    }),
-    shallow
-  );
+  const videos = useVideosStore((state) => state.videos);
+  const loading = useVideosStore((state) => state.loading);
+  const error = useVideosStore((state) => state.error);
+  const initialize = useVideosStore((state) => state.initialize);
+  const refresh = useVideosStore((state) => state.refresh);
+  const searchVideos = useVideosStore((state) => state.searchVideos);
+  const getVideoById = useVideosStore((state) => state.getVideoById);
 
   useEffect(() => {
     initialize();
