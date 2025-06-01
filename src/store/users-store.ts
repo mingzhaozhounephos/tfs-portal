@@ -18,13 +18,6 @@ interface UsersStore {
   ) => Promise<void>;
 }
 
-// Create a singleton promise to prevent multiple simultaneous initializations
-let initializationPromise: Promise<void> | null = null;
-let isInitializing = false;
-const channelRef = {
-  current: null as ReturnType<typeof supabase.channel> | null,
-};
-
 // Helper function to fetch users with roles
 async function fetchUsersWithRoles() {
   const { data, error } = await supabase
@@ -46,10 +39,21 @@ async function fetchUsersWithRoles() {
   })) as UserWithRole[];
 }
 
-// Create a singleton channel for real-time updates
-function getOrCreateChannel() {
-  if (!channelRef.current) {
-    channelRef.current = supabase
+let lastRefresh = 0;
+const REFRESH_THROTTLE = 3000; // 3 seconds
+
+export const useUsersStore = create<UsersStore>((set, get) => ({
+  users: [],
+  loading: false,
+  error: null,
+  initialized: false,
+  cleanup: undefined,
+
+  initialize: async () => {
+    if (get().initialized) return;
+    set({ initialized: true });
+    await get().refresh();
+    const channel = supabase
       .channel("users-changes")
       .on(
         "postgres_changes",
@@ -72,80 +76,13 @@ function getOrCreateChannel() {
         }
       )
       .subscribe();
-  }
-  return channelRef.current;
-}
-
-export const useUsersStore = create<UsersStore>((set, get) => ({
-  users: [],
-  loading: false,
-  error: null,
-  initialized: false,
-  cleanup: undefined,
-
-  initialize: async () => {
-    // If already initialized, return immediately
-    if (get().initialized) {
-      return;
-    }
-
-    // If initialization is in progress, wait for it
-    if (isInitializing) {
-      if (initializationPromise) {
-        await initializationPromise;
-      }
-      return;
-    }
-
-    // Set initialization flag
-    isInitializing = true;
-
-    // Create new initialization promise
-    initializationPromise = (async () => {
-      try {
-        // Double check initialization state after async gap
-        if (get().initialized) {
-          return;
-        }
-
-        set({ loading: true });
-
-        const usersWithRoles = await fetchUsersWithRoles();
-
-        // Get or create the real-time channel
-        const channel = getOrCreateChannel();
-
-        set({
-          users: usersWithRoles,
-          initialized: true,
-          loading: false,
-          error: null,
-          cleanup: () => {
-            if (channelRef.current) {
-              supabase.removeChannel(channelRef.current);
-              channelRef.current = null;
-            }
-          },
-        });
-      } catch (err) {
-        set({
-          error: err as Error,
-          loading: false,
-        });
-      } finally {
-        isInitializing = false;
-        initializationPromise = null;
-      }
-    })();
-
-    // Wait for initialization to complete
-    await initializationPromise;
+    set({ cleanup: () => supabase.removeChannel(channel) });
   },
 
   refresh: async () => {
-    // Only refresh if initialized
-    if (!get().initialized) return;
-
+    const now = Date.now();
+    if (now - lastRefresh < REFRESH_THROTTLE) return;
+    lastRefresh = now;
     set({ loading: true });
     try {
       const usersWithRoles = await fetchUsersWithRoles();
@@ -165,7 +102,6 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
   searchUsers: (query: string) => {
     const { users } = get();
     if (!query.trim()) return users;
-
     const searchTerm = query.toLowerCase();
     return users.filter(
       (user) =>
@@ -180,16 +116,12 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
         .from("user_roles")
         .update({ role: newRole })
         .eq("user", userId);
-
       if (updateError) throw updateError;
-
-      // Update the local state
       set((state) => ({
         users: state.users.map((user) =>
           user.id === userId ? { ...user, role: newRole } : user
         ),
       }));
-
       toast.success("User role updated successfully");
     } catch (err) {
       toast.error("Failed to update user role");

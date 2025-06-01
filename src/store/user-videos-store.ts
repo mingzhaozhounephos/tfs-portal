@@ -14,6 +14,34 @@ interface UserVideosStore {
   assignVideos: (videoId: string, userIds: string[]) => Promise<void>;
 }
 
+// Helper function to fetch user videos and stats
+async function fetchUserVideosAndStats(userId: string) {
+  const [videosResponse, statsResponse] = await Promise.all([
+    supabase
+      .from("users_videos")
+      .select("*, video:videos(*)")
+      .eq("user", userId),
+    supabase.from("users_videos").select("is_completed").eq("user", userId),
+  ]);
+
+  if (videosResponse.error) throw videosResponse.error;
+  if (statsResponse.error) throw statsResponse.error;
+
+  const videos = videosResponse.data as UserVideoWithVideo[];
+  const numAssigned = statsResponse.data.length;
+  const completed = statsResponse.data.filter((uv) => uv.is_completed).length;
+  const completion =
+    numAssigned === 0 ? 0 : Math.round((completed / numAssigned) * 100);
+
+  return {
+    videos,
+    stats: { numAssigned, completion },
+  };
+}
+
+const lastRefresh: Record<string, number> = {};
+const REFRESH_THROTTLE = 3000; // 3 seconds
+
 export const useUserVideosStore = create<UserVideosStore>((set, get) => ({
   userVideos: {},
   stats: {},
@@ -23,132 +51,58 @@ export const useUserVideosStore = create<UserVideosStore>((set, get) => ({
   cleanups: {},
 
   initialize: async (userId: string) => {
-    // If already initialized for this user, don't fetch again
     if (get().initialized[userId]) return;
+    set((state) => ({
+      initialized: { ...state.initialized, [userId]: true },
+    }));
+    await get().refresh(userId);
+
+    const channel = supabase
+      .channel(`user-videos-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "users_videos",
+          filter: `user=eq.${userId}`,
+        },
+        async () => {
+          const { videos, stats } = await fetchUserVideosAndStats(userId);
+          set((state) => ({
+            userVideos: { ...state.userVideos, [userId]: videos },
+            stats: { ...state.stats, [userId]: stats },
+          }));
+        }
+      )
+      .subscribe();
 
     set((state) => ({
-      loading: { ...state.loading, [userId]: true },
+      cleanups: {
+        ...state.cleanups,
+        [userId]: () => supabase.removeChannel(channel),
+      },
     }));
-
-    try {
-      // Fetch initial data with join
-      const [videosResponse, statsResponse] = await Promise.all([
-        supabase
-          .from("users_videos")
-          .select("*, video:videos(*)")
-          .eq("user", userId),
-        supabase.from("users_videos").select("is_completed").eq("user", userId),
-      ]);
-
-      if (videosResponse.error) throw videosResponse.error;
-      if (statsResponse.error) throw statsResponse.error;
-
-      const videos = videosResponse.data as UserVideoWithVideo[];
-      const numAssigned = statsResponse.data.length;
-      const completed = statsResponse.data.filter(
-        (uv) => uv.is_completed,
-      ).length;
-      const completion =
-        numAssigned === 0 ? 0 : Math.round((completed / numAssigned) * 100);
-
-      set((state) => ({
-        userVideos: { ...state.userVideos, [userId]: videos },
-        stats: { ...state.stats, [userId]: { numAssigned, completion } },
-        initialized: { ...state.initialized, [userId]: true },
-        loading: { ...state.loading, [userId]: false },
-      }));
-
-      // Subscribe to real-time changes
-      const channel = supabase
-        .channel(`user-videos-${userId}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "users_videos",
-            filter: `user=eq.${userId}`,
-          },
-          async () => {
-            // Refresh data when changes occur
-            const [videosResponse, statsResponse] = await Promise.all([
-              supabase
-                .from("users_videos")
-                .select("*, video:videos(*)")
-                .eq("user", userId),
-              supabase
-                .from("users_videos")
-                .select("is_completed")
-                .eq("user", userId),
-            ]);
-
-            if (!videosResponse.error && !statsResponse.error) {
-              const videos = videosResponse.data as UserVideoWithVideo[];
-              const numAssigned = statsResponse.data.length;
-              const completed = statsResponse.data.filter(
-                (uv) => uv.is_completed,
-              ).length;
-              const completion =
-                numAssigned === 0
-                  ? 0
-                  : Math.round((completed / numAssigned) * 100);
-
-              set((state) => ({
-                userVideos: { ...state.userVideos, [userId]: videos },
-                stats: {
-                  ...state.stats,
-                  [userId]: { numAssigned, completion },
-                },
-              }));
-            }
-          },
-        )
-        .subscribe();
-
-      // Store cleanup function in state
-      set((state) => ({
-        cleanups: {
-          ...state.cleanups,
-          [userId]: () => supabase.removeChannel(channel),
-        },
-      }));
-    } catch (err) {
-      set((state) => ({
-        error: { ...state.error, [userId]: err as Error },
-        loading: { ...state.loading, [userId]: false },
-      }));
-    }
   },
 
   refresh: async (userId: string) => {
+    const now = Date.now();
+    if (lastRefresh[userId] && now - lastRefresh[userId] < REFRESH_THROTTLE) {
+      return;
+    }
+    lastRefresh[userId] = now;
+
     set((state) => ({
       loading: { ...state.loading, [userId]: true },
     }));
 
     try {
-      const [videosResponse, statsResponse] = await Promise.all([
-        supabase
-          .from("users_videos")
-          .select("*, video:videos(*)")
-          .eq("user", userId),
-        supabase.from("users_videos").select("is_completed").eq("user", userId),
-      ]);
-
-      if (videosResponse.error) throw videosResponse.error;
-      if (statsResponse.error) throw statsResponse.error;
-
-      const videos = videosResponse.data as UserVideoWithVideo[];
-      const numAssigned = statsResponse.data.length;
-      const completed = statsResponse.data.filter(
-        (uv) => uv.is_completed,
-      ).length;
-      const completion =
-        numAssigned === 0 ? 0 : Math.round((completed / numAssigned) * 100);
-
+      const { videos, stats } = await fetchUserVideosAndStats(userId);
       set((state) => ({
         userVideos: { ...state.userVideos, [userId]: videos },
-        stats: { ...state.stats, [userId]: { numAssigned, completion } },
+        stats: { ...state.stats, [userId]: stats },
         loading: { ...state.loading, [userId]: false },
+        error: { ...state.error, [userId]: null },
       }));
     } catch (err) {
       set((state) => ({
@@ -172,7 +126,7 @@ export const useUserVideosStore = create<UserVideosStore>((set, get) => ({
     // 2. Find users to remove (were assigned, now unselected)
     const existingUserIds = new Set(existingAssignments.map((a) => a.user));
     const usersToRemove = existingAssignments.filter(
-      (a) => !userIds.includes(a.user),
+      (a) => !userIds.includes(a.user)
     );
 
     // 3. Find users to add (newly selected)
@@ -185,7 +139,7 @@ export const useUserVideosStore = create<UserVideosStore>((set, get) => ({
         .delete()
         .in(
           "id",
-          usersToRemove.map((v) => v.id),
+          usersToRemove.map((v) => v.id)
         );
       if (deleteError) throw deleteError;
     }
@@ -198,19 +152,15 @@ export const useUserVideosStore = create<UserVideosStore>((set, get) => ({
         is_completed: false,
         assigned_date: now,
       }));
+
       const { error: insertError } = await supabase
         .from("users_videos")
         .insert(assignments);
+
       if (insertError) throw insertError;
     }
 
-    // 6. For users that remain assigned, update if needed (preserve assigned_date)
-    const usersToUpdate = existingAssignments.filter((a) =>
-      userIds.includes(a.user),
-    );
-    for (const assignment of usersToUpdate) {
-      // You can update other fields here if needed, but keep assigned_date unchanged
-      // Example: await supabase.from('users_videos').update({ ... }).eq('id', assignment.id);
-    }
+    // 6. Refresh data for all affected users
+    await Promise.all(userIds.map((userId) => get().refresh(userId)));
   },
 }));

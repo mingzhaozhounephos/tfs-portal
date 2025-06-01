@@ -2,9 +2,10 @@ import React from "react";
 import Image from "next/image";
 import { formatDate } from "@/lib/format-date";
 import { useAuth } from "@/hooks/use-auth";
-import { supabase } from "@/lib/supabase";
 import { getYouTubeId, getYouTubeThumbnail } from "@/lib/youtube";
 import { TrainingVideo } from "@/types";
+import { useTrainingVideoStore } from "@/store/training-video-store";
+import { shallow } from "zustand/shallow";
 
 interface TrainingVideosGridProps {
   videos: TrainingVideo[];
@@ -24,54 +25,22 @@ export function TrainingVideosGrid({
   onStartTraining,
 }: TrainingVideosGridProps) {
   const { user } = useAuth();
+  const { updateVideoProgress } = useTrainingVideoStore(
+    (state) => ({
+      updateVideoProgress: state.updateVideoProgress,
+    }),
+    shallow
+  );
 
   async function handleStartTraining(video: TrainingVideo) {
     if (!user || !video.id) return;
     try {
-      // Find the users_videos record for this user and video, join videos table
-      const { data: userVideo, error } = await supabase
-        .from("users_videos")
-        .select("*, video:videos(*)")
-        .eq("user", user.id)
-        .eq("video", video.id)
-        .single();
-      if (error) {
-        // Optionally handle error (e.g., not assigned)
-        return;
-      }
-      const now = new Date().toISOString();
-      // If annual renewal is due, reset assigned_date and completion
-      const isAnnualRenewal =
-        userVideo.video?.is_annual_renewal &&
-        userVideo.assigned_date &&
-        new Date().getTime() - new Date(userVideo.assigned_date).getTime() >
-          365 * 24 * 60 * 60 * 1000;
-      if (isAnnualRenewal) {
-        await supabase
-          .from("users_videos")
-          .update({
-            last_watched: now,
-            modified_date: now,
-            assigned_date: now,
-            last_action: "watched",
-            is_completed: false,
-          })
-          .eq("id", userVideo.id);
-      } else {
-        await supabase
-          .from("users_videos")
-          .update({
-            last_watched: now,
-            modified_date: now,
-            last_action: userVideo.is_completed ? "completed" : "watched",
-          })
-          .eq("id", userVideo.id);
-      }
+      await updateVideoProgress(user.id, video.id);
+      if (onStartTraining) onStartTraining(video);
     } catch (err) {
       // Optionally handle error
+      console.error("Error starting training:", err);
     }
-
-    if (onStartTraining) onStartTraining(video);
   }
 
   return (
@@ -253,38 +222,6 @@ export function TrainingVideosGrid({
                 <span>{video.duration}</span>
               </div>
             </div>
-            {/* Last Watched */}
-            {video.last_watched && (
-              <div className="flex items-center text-xs text-gray-500 mb-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-calendar w-3 h-3 mr-1"
-                >
-                  <path d="M8 2v4"></path>
-                  <path d="M16 2v4"></path>
-                  <rect width="18" height="18" x="3" y="4" rx="2"></rect>
-                  <path d="M3 10h18"></path>
-                </svg>
-                <span>
-                  Last watched:{" "}
-                  {new Date(video.last_watched).toISOString().slice(0, 10)}
-                </span>
-              </div>
-            )}
-            <button
-              className="mt-auto bg-[#EA384C] text-white rounded-lg py-2 font-medium hover:bg-[#EC4659] transition"
-              onClick={() => handleStartTraining(video)}
-            >
-              {renewalDue ? "Watch Again (Required)" : "Start Training"}
-            </button>
           </div>
         );
       })}

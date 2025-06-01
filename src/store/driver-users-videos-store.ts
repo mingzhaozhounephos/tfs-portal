@@ -3,121 +3,81 @@ import { supabase } from "@/lib/supabase";
 import { UserVideoWithVideo } from "@/types";
 
 interface DriverUsersVideosStore {
-  assignments: UserVideoWithVideo[];
+  initialized: boolean;
   loading: boolean;
   error: Error | null;
-  initialized: boolean;
+  assignments: UserVideoWithVideo[];
   cleanup?: () => void;
   initialize: (userId: string) => Promise<void>;
   refresh: (userId: string) => Promise<void>;
   getAssignmentById: (id: string) => UserVideoWithVideo | undefined;
 }
 
-// Helper function to fetch user's video assignments
-async function fetchUserVideoAssignments(userId: string) {
-  // Add timeout to the query
-  const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(
-      () => reject(new Error("Query timeout after 10 seconds")),
-      10000
-    );
-  });
+let lastRefresh = 0;
+const REFRESH_THROTTLE = 3000;
 
-  const queryPromise = supabase
+// Helper function to fetch driver user videos
+async function fetchDriverUserVideos(userId: string) {
+  const { data, error } = await supabase
     .from("users_videos")
     .select(
       `
       *,
-      user:users(*),
       video:videos(*)
     `
     )
     .eq("user", userId)
-    .order("created_at", { ascending: false });
-
-  // Race between the query and timeout
-  const { data, error } = (await Promise.race([
-    queryPromise,
-    timeoutPromise.then(() => ({
-      data: null,
-      error: new Error("Query timeout"),
-    })),
-  ])) as { data: any; error: any };
-
+    .order("modified_date", { ascending: false });
   if (error) throw error;
-  if (!data) throw new Error("No data returned from query");
-
-  return data as UserVideoWithVideo[];
+  return data || [];
 }
 
 export const useDriverUsersVideosStore = create<DriverUsersVideosStore>(
   (set, get) => ({
-    assignments: [],
+    initialized: false,
     loading: false,
     error: null,
-    initialized: false,
+    assignments: [],
     cleanup: undefined,
 
     initialize: async (userId: string) => {
       if (get().initialized) return;
-
-      set({ loading: true });
-      try {
-        const assignments = await fetchUserVideoAssignments(userId);
-
-        set({
-          assignments,
-          initialized: true,
-          loading: false,
-        });
-
-        // Set up real-time subscription for changes to this user's assignments
-        const channel = supabase
-          .channel("driver-videos-changes")
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "users_videos",
-              filter: `user=eq.${userId}`,
-            },
-            async () => {
-              const assignments = await fetchUserVideoAssignments(userId);
-              set({ assignments });
-            }
-          )
-          .subscribe();
-
-        set({ cleanup: () => supabase.removeChannel(channel) });
-      } catch (err) {
-        set({
-          error: err as Error,
-          loading: false,
-        });
-      }
+      set({ initialized: true });
+      await get().refresh(userId);
+      const channel = supabase
+        .channel("driver-users-videos-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "users_videos",
+            filter: `user=eq.${userId}`,
+          },
+          async () => {
+            const assignments = await fetchDriverUserVideos(userId);
+            set({ assignments });
+          }
+        )
+        .subscribe();
+      set({ cleanup: () => supabase.removeChannel(channel) });
     },
 
     refresh: async (userId: string) => {
+      const now = Date.now();
+      if (now - lastRefresh < REFRESH_THROTTLE) return;
+      lastRefresh = now;
       set({ loading: true });
       try {
-        const assignments = await fetchUserVideoAssignments(userId);
-        set({
-          assignments,
-          loading: false,
-          error: null,
-        });
+        const assignments = await fetchDriverUserVideos(userId);
+        set({ assignments, loading: false, error: null });
       } catch (err) {
-        set({
-          error: err as Error,
-          loading: false,
-        });
+        set({ loading: false, error: err as Error });
       }
     },
 
     getAssignmentById: (id: string) => {
-      const { assignments } = get();
-      return assignments.find((assignment) => assignment.id === id);
+      return get().assignments.find((assignment) => assignment.id === id);
     },
   })
 );

@@ -1,60 +1,47 @@
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect } from "react";
 import { useDriverUsersVideosStore } from "@/store/driver-users-videos-store";
+import { shallow } from "zustand/shallow";
+import { useRefreshOnVisible } from "./use-refresh-on-visible";
+import { UserVideoWithVideo } from "@/types";
 import { useAuth } from "./use-auth";
 
+interface DriverUsersVideosState {
+  assignments: UserVideoWithVideo[];
+  loading: boolean;
+  error: Error | null;
+  initialize: (userId: string) => Promise<void>;
+  refresh: (userId: string) => Promise<void>;
+}
+
 export function useDriverUsersVideos() {
-  const {
-    assignments,
-    loading,
-    error,
-    initialize,
-    refresh,
-    getAssignmentById,
-  } = useDriverUsersVideosStore();
-
   const { user } = useAuth();
-  const isRefreshing = useRef(false);
-  const lastRefreshTime = useRef(0);
-  const MIN_REFRESH_INTERVAL = 2000;
+  const { assignments, loading, error, initialize, refresh } =
+    useDriverUsersVideosStore(
+      (state) => ({
+        assignments: state.assignments,
+        loading: state.loading,
+        error: state.error,
+        initialize: state.initialize,
+        refresh: state.refresh,
+      }),
+      shallow
+    );
 
-  // Initialize on mount
   useEffect(() => {
     if (user?.id) {
       initialize(user.id);
     }
   }, [initialize, user?.id]);
 
-  // Memoize the refresh callback with debouncing
-  const handleVisibilityChange = useCallback(() => {
-    if (document.visibilityState === "visible" && user?.id) {
-      const now = Date.now();
-      if (
-        !isRefreshing.current &&
-        now - lastRefreshTime.current > MIN_REFRESH_INTERVAL
-      ) {
-        isRefreshing.current = true;
-        lastRefreshTime.current = now;
-
-        refresh(user.id).finally(() => {
-          isRefreshing.current = false;
-        });
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible" && user?.id) {
+        refresh(user.id);
       }
-    }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
   }, [refresh, user?.id]);
 
-  // Handle visibility changes
-  useEffect(() => {
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [handleVisibilityChange]);
-
-  return {
-    assignments,
-    loading,
-    error,
-    getAssignmentById,
-    refresh: user?.id ? () => refresh(user.id) : undefined,
-  };
+  return { assignments, loading, error };
 }

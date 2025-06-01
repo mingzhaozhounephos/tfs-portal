@@ -39,6 +39,9 @@ async function fetchUserStats(users: UserWithRole[]) {
   return stats;
 }
 
+let lastRefresh = 0;
+const REFRESH_THROTTLE = 3000; // 3 seconds
+
 export const useUserStatsStore = create<UserStatsStore>((set, get) => ({
   stats: {},
   loading: false,
@@ -48,45 +51,33 @@ export const useUserStatsStore = create<UserStatsStore>((set, get) => ({
 
   initialize: async (users: UserWithRole[]) => {
     if (get().initialized) return;
+    set({ initialized: true });
+    await get().refresh(users);
 
-    set({ loading: true });
-    try {
-      const stats = await fetchUserStats(users);
+    const channel = supabase
+      .channel("users-videos-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "users_videos" },
+        async () => {
+          const newStats = await fetchUserStats(users);
+          set({ stats: newStats });
+        }
+      )
+      .subscribe();
 
-      // Subscribe to real-time changes
-      const channel = supabase
-        .channel("users-videos-changes")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "users_videos" },
-          async () => {
-            const newStats = await fetchUserStats(users);
-            set({ stats: newStats });
-          }
-        )
-        .subscribe();
-
-      set({
-        stats,
-        loading: false,
-        initialized: true,
-        cleanup: () => supabase.removeChannel(channel),
-      });
-    } catch (err) {
-      set({
-        error: err as Error,
-        loading: false,
-      });
-    }
+    set({ cleanup: () => supabase.removeChannel(channel) });
   },
 
   refresh: async (users: UserWithRole[]) => {
-    if (!get().initialized) return;
+    const now = Date.now();
+    if (now - lastRefresh < REFRESH_THROTTLE) return;
+    lastRefresh = now;
 
     set({ loading: true });
     try {
       const stats = await fetchUserStats(users);
-      set({ stats, loading: false });
+      set({ stats, loading: false, error: null });
     } catch (err) {
       set({
         error: err as Error,

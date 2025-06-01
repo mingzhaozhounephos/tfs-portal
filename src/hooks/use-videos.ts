@@ -1,5 +1,18 @@
-import { useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useVideosStore } from "@/store/videos-store";
+import { shallow } from "zustand/shallow";
+import { useRefreshOnVisible } from "./use-refresh-on-visible";
+import { Video } from "@/types";
+
+interface VideosState {
+  videos: Video[];
+  loading: boolean;
+  error: Error | null;
+  initialize: () => Promise<void>;
+  refresh: () => Promise<void>;
+  searchVideos: (query: string) => Promise<void>;
+  getVideoById: (id: string) => Video | undefined;
+}
 
 export function useVideos() {
   const {
@@ -10,38 +23,24 @@ export function useVideos() {
     refresh,
     searchVideos,
     getVideoById,
-  } = useVideosStore();
+  } = useVideosStore(
+    (state) => ({
+      videos: state.videos,
+      loading: state.loading,
+      error: state.error,
+      initialize: state.initialize,
+      refresh: state.refresh,
+      searchVideos: state.searchVideos,
+      getVideoById: state.getVideoById,
+    }),
+    shallow
+  );
 
-  // Initialize on mount
   useEffect(() => {
     initialize();
   }, [initialize]);
 
-  // Memoize the refresh callback to prevent unnecessary re-renders
-  const handleVisibilityChange = useCallback(() => {
-    if (document.visibilityState === "visible") {
-      console.log("Tab became visible, refreshing videos...");
-      refresh();
-    }
-  }, [refresh]);
+  useRefreshOnVisible(refresh);
 
-  // Handle visibility changes
-  useEffect(() => {
-    // Add visibility change listener
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    // Cleanup function
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [handleVisibilityChange]);
-
-  return {
-    videos,
-    loading,
-    error,
-    searchVideos,
-    getVideoById,
-    refresh,
-  };
+  return { videos, loading, error, searchVideos, getVideoById, refresh };
 }

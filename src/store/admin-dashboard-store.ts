@@ -121,6 +121,9 @@ async function fetchDashboardStats() {
   }
 }
 
+let lastRefresh = 0;
+const REFRESH_THROTTLE = 3000; // 3 seconds
+
 export const useAdminDashboardStore = create<AdminDashboardStore>(
   (set, get) => ({
     stats: {
@@ -139,101 +142,63 @@ export const useAdminDashboardStore = create<AdminDashboardStore>(
 
     initialize: async () => {
       if (get().initialized) return;
-
-      set({ loading: true });
-      try {
-        const stats = (await Promise.race([
-          fetchDashboardStats(),
-          new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error("Query timeout")), 10000)
-          ),
-        ])) as AdminDashboardStats;
-
-        set({
-          stats,
-          initialized: true,
-          loading: false,
-        });
-
-        // Set up real-time subscription
-        const channel = supabase
-          .channel("admin-dashboard-changes")
-          .on(
-            "postgres_changes",
-            { event: "*", schema: "public", table: "videos" },
-            async () => {
-              try {
-                const stats = await fetchDashboardStats();
-                set({ stats });
-              } catch (error) {
-                console.error(
-                  "Error updating stats after videos change:",
-                  error
-                );
-              }
+      set({ initialized: true });
+      await get().refresh();
+      const channel = supabase
+        .channel("admin-dashboard-changes")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "videos" },
+          async () => {
+            try {
+              const stats = await fetchDashboardStats();
+              set({ stats });
+            } catch (error) {
+              console.error("Error updating stats after videos change:", error);
             }
-          )
-          .on(
-            "postgres_changes",
-            { event: "*", schema: "public", table: "users" },
-            async () => {
-              try {
-                const stats = await fetchDashboardStats();
-                set({ stats });
-              } catch (error) {
-                console.error(
-                  "Error updating stats after users change:",
-                  error
-                );
-              }
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "users" },
+          async () => {
+            try {
+              const stats = await fetchDashboardStats();
+              set({ stats });
+            } catch (error) {
+              console.error("Error updating stats after users change:", error);
             }
-          )
-          .on(
-            "postgres_changes",
-            { event: "*", schema: "public", table: "users_videos" },
-            async () => {
-              try {
-                const stats = await fetchDashboardStats();
-                set({ stats });
-              } catch (error) {
-                console.error(
-                  "Error updating stats after users_videos change:",
-                  error
-                );
-              }
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "users_videos" },
+          async () => {
+            try {
+              const stats = await fetchDashboardStats();
+              set({ stats });
+            } catch (error) {
+              console.error(
+                "Error updating stats after users_videos change:",
+                error
+              );
             }
-          )
-          .subscribe();
-
-        set({ cleanup: () => supabase.removeChannel(channel) });
-      } catch (err) {
-        set({
-          error: err as Error,
-          loading: false,
-        });
-      }
+          }
+        )
+        .subscribe();
+      set({ cleanup: () => supabase.removeChannel(channel) });
     },
 
     refresh: async () => {
+      const now = Date.now();
+      if (now - lastRefresh < REFRESH_THROTTLE) return;
+      lastRefresh = now;
       set({ loading: true });
       try {
-        const stats = (await Promise.race([
-          fetchDashboardStats(),
-          new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error("Query timeout")), 10000)
-          ),
-        ])) as AdminDashboardStats;
-
-        set({
-          stats,
-          loading: false,
-          error: null,
-        });
+        const stats = await fetchDashboardStats();
+        set({ stats, loading: false, error: null });
       } catch (err) {
-        set({
-          error: err as Error,
-          loading: false,
-        });
+        set({ error: err as Error, loading: false });
       }
     },
   })

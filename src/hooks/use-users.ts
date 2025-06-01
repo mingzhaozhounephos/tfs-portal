@@ -1,57 +1,31 @@
-import { useEffect, useCallback, useMemo } from "react";
+import { useEffect } from "react";
 import { useUsersStore } from "@/store/users-store";
+import { shallow } from "zustand/shallow";
+import { useRefreshOnVisible } from "./use-refresh-on-visible";
+import { User } from "@/types";
+
+interface UsersState {
+  users: User[];
+  loading: boolean;
+  error: Error | null;
+  initialize: () => Promise<void>;
+  refresh: () => Promise<void>;
+  searchUsers: (query: string) => Promise<void>;
+}
 
 export function useUsers() {
-  const store = useUsersStore();
-  const { users, loading, error, initialize, refresh, searchUsers } = store;
+  const users = useUsersStore((state) => state.users);
+  const loading = useUsersStore((state) => state.loading);
+  const error = useUsersStore((state) => state.error);
+  const initialize = useUsersStore((state) => state.initialize);
+  const refresh = useUsersStore((state) => state.refresh);
+  const searchUsers = useUsersStore((state) => state.searchUsers);
 
-  // Initialize only once when the component mounts
   useEffect(() => {
-    let mounted = true;
+    initialize();
+  }, [initialize]);
 
-    const init = async () => {
-      if (!store.initialized && mounted) {
-        await initialize();
-      }
-    };
+  useRefreshOnVisible(refresh);
 
-    init();
-
-    return () => {
-      mounted = false;
-    };
-  }, []); // Empty dependency array since we only want to run this once
-
-  // Memoize the refresh callback
-  const handleVisibilityChange = useCallback(() => {
-    if (document.visibilityState === "visible" && store.initialized) {
-      refresh();
-    }
-  }, [refresh, store.initialized]);
-
-  // Handle visibility changes
-  useEffect(() => {
-    if (store.initialized) {
-      document.addEventListener("visibilitychange", handleVisibilityChange);
-      return () => {
-        document.removeEventListener(
-          "visibilitychange",
-          handleVisibilityChange
-        );
-      };
-    }
-  }, [handleVisibilityChange, store.initialized]);
-
-  // Memoize the return value to prevent unnecessary re-renders
-  return useMemo(
-    () => ({
-      users,
-      loading,
-      error,
-      searchUsers,
-      refresh,
-      initialized: store.initialized,
-    }),
-    [users, loading, error, searchUsers, refresh, store.initialized]
-  );
+  return { users, loading, error, searchUsers, refresh };
 }

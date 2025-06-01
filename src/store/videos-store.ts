@@ -16,15 +16,7 @@ interface VideosStore {
 
 // Helper function to fetch videos with stats
 async function fetchVideosWithStats() {
-  // Add timeout to the query
-  const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(
-      () => reject(new Error("Query timeout after 10 seconds")),
-      10000
-    );
-  });
-
-  const queryPromise = supabase
+  const { data, error } = await supabase
     .from("videos")
     .select(
       `
@@ -33,16 +25,8 @@ async function fetchVideosWithStats() {
       completed_count:users_videos(count).filter(is_completed.eq.true)
     `
     )
-    .order("created_at", { ascending: false });
-
-  // Race between the query and timeout
-  const { data, error } = (await Promise.race([
-    queryPromise,
-    timeoutPromise.then(() => ({
-      data: null,
-      error: new Error("Query timeout"),
-    })),
-  ])) as { data: any; error: any };
+    .order("created_at", { ascending: false })
+    .limit(50); // Add pagination limit
 
   if (error) throw error;
   if (!data) throw new Error("No data returned from query");
@@ -58,6 +42,9 @@ async function fetchVideosWithStats() {
   })) as VideoWithStats[];
 }
 
+let lastRefresh = 0;
+const REFRESH_THROTTLE = 3000; // 3 seconds
+
 export const useVideosStore = create<VideosStore>((set, get) => ({
   videos: [],
   loading: false,
@@ -67,39 +54,26 @@ export const useVideosStore = create<VideosStore>((set, get) => ({
 
   initialize: async () => {
     if (get().initialized) return;
-
-    set({ loading: true });
-    try {
-      const transformedData = await fetchVideosWithStats();
-
-      set({
-        videos: transformedData,
-        initialized: true,
-        loading: false,
-      });
-
-      const channel = supabase
-        .channel("videos-changes")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "videos" },
-          async () => {
-            const transformedData = await fetchVideosWithStats();
-            set({ videos: transformedData });
-          }
-        )
-        .subscribe();
-
-      set({ cleanup: () => supabase.removeChannel(channel) });
-    } catch (err) {
-      set({
-        error: err as Error,
-        loading: false,
-      });
-    }
+    set({ initialized: true });
+    await get().refresh();
+    const channel = supabase
+      .channel("videos-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "videos" },
+        async () => {
+          const transformedData = await fetchVideosWithStats();
+          set({ videos: transformedData });
+        }
+      )
+      .subscribe();
+    set({ cleanup: () => supabase.removeChannel(channel) });
   },
 
   refresh: async () => {
+    const now = Date.now();
+    if (now - lastRefresh < REFRESH_THROTTLE) return;
+    lastRefresh = now;
     set({ loading: true });
     try {
       const transformedData = await fetchVideosWithStats();
@@ -118,12 +92,13 @@ export const useVideosStore = create<VideosStore>((set, get) => ({
 
   searchVideos: (query: string) => {
     const { videos } = get();
+    if (!query.trim()) return videos;
+    const searchTerm = query.toLowerCase();
     return videos.filter(
       (video) =>
-        (video.title?.toLowerCase().includes(query.toLowerCase()) ?? false) ||
-        (video.description?.toLowerCase().includes(query.toLowerCase()) ??
-          false) ||
-        (video.category?.toLowerCase().includes(query.toLowerCase()) ?? false)
+        video.title?.toLowerCase().includes(searchTerm) ||
+        video.description?.toLowerCase().includes(searchTerm) ||
+        video.category?.toLowerCase().includes(searchTerm)
     );
   },
 
