@@ -7,7 +7,7 @@ import {
   Trash2,
   Settings,
 } from "lucide-react";
-import { User, UserWithRole, UserStats, UserWithDetails } from "@/types";
+import { UserWithRole, UserStats, UserWithDetails } from "@/types";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -22,17 +22,11 @@ import {
 
 interface UserCardProps {
   user: UserWithRole;
-  currentUser: UserWithDetails | null;
   onAssignVideo: (userId: string) => void;
   stats: UserStats;
 }
 
-export function UserCard({
-  user,
-  currentUser,
-  onAssignVideo,
-  stats,
-}: UserCardProps) {
+export function UserCard({ user, onAssignVideo, stats }: UserCardProps) {
   const router = useRouter();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -162,7 +156,7 @@ export function UserCard({
       </button>
 
       {/* Dropdown Menu */}
-      {currentUser && user.id !== currentUser.id && (
+      {
         <div className="absolute top-3 right-3 flex gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -206,7 +200,7 @@ export function UserCard({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      )}
+      }
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (

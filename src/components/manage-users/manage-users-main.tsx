@@ -6,7 +6,6 @@ import { AssignVideoModal } from "../share/assign-video-modal";
 import { useUsers } from "@/hooks/use-users";
 import { useUserStats } from "@/hooks/use-user-stats";
 import { UsersRealtimeListener } from "./users-realtime-listener";
-import { useAuth } from "@/hooks/use-auth";
 
 export function ManageUsers() {
   const [search, setSearch] = useState("");
@@ -22,7 +21,6 @@ export function ManageUsers() {
     refresh,
   } = useUsers();
   const { stats, loading: statsLoading } = useUserStats(users);
-  const { userDetails: currentUser } = useAuth();
 
   const filteredUsers = searchUsers(search)
     .slice()
@@ -89,7 +87,6 @@ export function ManageUsers() {
             <UserCard
               key={user.id}
               user={user}
-              currentUser={currentUser}
               onAssignVideo={(userId) => handleAssignVideo(userId)}
               stats={stats[user.id] || { numAssigned: 0, completion: 0 }}
             />
