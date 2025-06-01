@@ -28,28 +28,32 @@ D - have a separate table for user's role and refactor the code
 
 D - refactor components folder for clarity, scalability, and modularity
 
-create policies for all tables
+D - create policies for all tables
+
+D - after adding useUsersStore, things become lagged, is it because the state is used by so many compoents?
+like in the user-card
 
 D - Mange users
 click 'Assign to Users' to unassign the video from the user, the list doesn't refresh.
 
-comment out if (get().initialized) return; for all the stores. to allow data refreshing when switching tabs.
-Need to have a better way of handling the data refreshing.
+D - create a 'Mark as Completed' button to allow driver manually complete the video.
+
+D - tab swithing and refreshing.
 
 D - update UI for reset password
 
 D - user-details
 click 'Assign Videos' -> update the UI of the 'Save Assignments' button
 
-add functionality to update user role
+D - add functionality to update user role
 
 D - show the spinner svg for buttons
 
 D - Improve the UI for page loading
 
-On the dashboard, in order to get the number of users assigned to each video, it looks like you're making a separate call to the database for each video. A more scalable and efficient approach would be to use aggregate queries. Here is a good article on them: https://supabase.com/blog/postgrest-aggregate-functions
+D - On the dashboard, in order to get the number of users assigned to each video, it looks like you're making a separate call to the database for each video. A more scalable and efficient approach would be to use aggregate queries. Here is a good article on them: https://supabase.com/blog/postgrest-aggregate-functions
 
-Small one with an easy fix, it looks like you've dumped your database into the schema.sql file, which is fine, but it looks like there's a large number of newline characters in there, which makes it difficult to maintain. There are also a couple of empty migration files in your repo.
+D - Small one with an easy fix, it looks like you've dumped your database into the schema.sql file, which is fine, but it looks like there's a large number of newline characters in there, which makes it difficult to maintain. There are also a couple of empty migration files in your repo.
 
 Testing required.
 D - Another small one, it looks like you have two api routes, one in the pages directory, and one in the app directory. it's best to stick to one pages structure so I would just move the contents of your pages directory into /app.
