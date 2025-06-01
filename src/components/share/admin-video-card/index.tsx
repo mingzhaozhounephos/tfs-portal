@@ -10,7 +10,6 @@ import {
 import { AssignVideoModal } from "@/components/share/assign-video-modal";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
-import { useAuth } from "@/hooks/use-auth";
 import { formatDate } from "@/lib/format-date";
 import { TrainingVideoModal } from "@/components/share/training-video-modal";
 import { getYouTubeId, getYouTubeThumbnail } from "@/lib/youtube";
@@ -39,7 +38,6 @@ export function AdminVideoCard({
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const { user } = useAuth();
   const youtubeId = video.youtube_url ? getYouTubeId(video.youtube_url) : null;
   const thumbnailUrl = youtubeId ? getYouTubeThumbnail(youtubeId) : "";
 
