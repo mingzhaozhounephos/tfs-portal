@@ -7,13 +7,11 @@ import {
   Trash2,
   Settings,
 } from "lucide-react";
-import { User, UserWithRole } from "@/types";
-import { useUserVideos } from "@/hooks/use-user-videos";
+import { User, UserWithRole, UserStats, UserWithDetails } from "@/types";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/hooks/use-auth";
 import { useUsersStore } from "@/store/users-store";
 import {
   DropdownMenu,
@@ -24,13 +22,18 @@ import {
 
 interface UserCardProps {
   user: UserWithRole;
+  currentUser: UserWithDetails | null;
   onAssignVideo: (userId: string) => void;
+  stats: UserStats;
 }
 
-export function UserCard({ user, onAssignVideo }: UserCardProps) {
-  const { stats, loading } = useUserVideos(user.id);
+export function UserCard({
+  user,
+  currentUser,
+  onAssignVideo,
+  stats,
+}: UserCardProps) {
   const router = useRouter();
-  const { user: currentUser } = useAuth();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showManageModal, setShowManageModal] = useState(false);
@@ -133,7 +136,7 @@ export function UserCard({ user, onAssignVideo }: UserCardProps) {
           </span>
           <span className="flex items-center gap-1">
             <Video size={14} className="text-gray-400" />
-            {loading ? "-" : `${stats.numAssigned} videos assigned`}
+            {`${stats.numAssigned} videos assigned`}
           </span>
         </div>
         <div className="flex flex-col gap-2 flex-1 items-start">
@@ -145,7 +148,7 @@ export function UserCard({ user, onAssignVideo }: UserCardProps) {
           </span>
           <span className="flex items-center gap-1">
             <CheckCircle size={14} className="text-gray-400" />
-            {loading ? "-" : `${stats.completion}% completed`}
+            {`${stats.completion}% completed`}
           </span>
         </div>
       </div>

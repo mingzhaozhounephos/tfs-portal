@@ -21,18 +21,13 @@ interface UsersStore {
 // Create a singleton promise to prevent multiple simultaneous initializations
 let initializationPromise: Promise<void> | null = null;
 let isInitializing = false;
+const channelRef = {
+  current: null as ReturnType<typeof supabase.channel> | null,
+};
 
 // Helper function to fetch users with roles
 async function fetchUsersWithRoles() {
-  // Add timeout to the query
-  const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(
-      () => reject(new Error("Query timeout after 10 seconds")),
-      10000
-    );
-  });
-
-  const queryPromise = supabase
+  const { data, error } = await supabase
     .from("users")
     .select(
       `
@@ -42,15 +37,6 @@ async function fetchUsersWithRoles() {
     )
     .order("created_at", { ascending: false });
 
-  // Race between the query and timeout
-  const { data, error } = (await Promise.race([
-    queryPromise,
-    timeoutPromise.then(() => ({
-      data: null,
-      error: new Error("Query timeout"),
-    })),
-  ])) as { data: any; error: any };
-
   if (error) throw error;
   if (!data) throw new Error("No data returned from query");
 
@@ -58,6 +44,36 @@ async function fetchUsersWithRoles() {
     ...user,
     role: user.user_roles?.[0]?.role || null,
   })) as UserWithRole[];
+}
+
+// Create a singleton channel for real-time updates
+function getOrCreateChannel() {
+  if (!channelRef.current) {
+    channelRef.current = supabase
+      .channel("users-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "users" },
+        async () => {
+          const store = useUsersStore.getState();
+          if (store.initialized) {
+            store.refresh();
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "user_roles" },
+        async () => {
+          const store = useUsersStore.getState();
+          if (store.initialized) {
+            store.refresh();
+          }
+        }
+      )
+      .subscribe();
+  }
+  return channelRef.current;
 }
 
 export const useUsersStore = create<UsersStore>((set, get) => ({
@@ -96,31 +112,20 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
 
         const usersWithRoles = await fetchUsersWithRoles();
 
-        // Subscribe to real-time changes
-        const channel = supabase
-          .channel("users-changes")
-          .on(
-            "postgres_changes",
-            { event: "*", schema: "public", table: "users" },
-            async () => {
-              get().refresh();
-            }
-          )
-          .on(
-            "postgres_changes",
-            { event: "*", schema: "public", table: "user_roles" },
-            async () => {
-              get().refresh();
-            }
-          )
-          .subscribe();
+        // Get or create the real-time channel
+        const channel = getOrCreateChannel();
 
         set({
           users: usersWithRoles,
           initialized: true,
           loading: false,
           error: null,
-          cleanup: () => supabase.removeChannel(channel),
+          cleanup: () => {
+            if (channelRef.current) {
+              supabase.removeChannel(channelRef.current);
+              channelRef.current = null;
+            }
+          },
         });
       } catch (err) {
         set({
@@ -138,6 +143,9 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
   },
 
   refresh: async () => {
+    // Only refresh if initialized
+    if (!get().initialized) return;
+
     set({ loading: true });
     try {
       const usersWithRoles = await fetchUsersWithRoles();
@@ -156,16 +164,18 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
 
   searchUsers: (query: string) => {
     const { users } = get();
+    if (!query.trim()) return users;
+
+    const searchTerm = query.toLowerCase();
     return users.filter(
       (user) =>
-        user.full_name?.toLowerCase().includes(query.toLowerCase()) ||
-        (user.email?.toLowerCase() || "").includes(query.toLowerCase())
+        user.full_name?.toLowerCase().includes(searchTerm) ||
+        (user.email?.toLowerCase() || "").includes(searchTerm)
     );
   },
 
   updateUserRole: async (userId: string, newRole: "admin" | "driver") => {
     try {
-      // Update the role in user_roles table where user matches userId
       const { error: updateError } = await supabase
         .from("user_roles")
         .update({ role: newRole })

@@ -4,7 +4,9 @@ import { UserFormModal } from "./user-form-modal";
 import { UserCard } from "./user-card";
 import { AssignVideoModal } from "../share/assign-video-modal";
 import { useUsers } from "@/hooks/use-users";
+import { useUserStats } from "@/hooks/use-user-stats";
 import { UsersRealtimeListener } from "./users-realtime-listener";
+import { useAuth } from "@/hooks/use-auth";
 
 export function ManageUsers() {
   const [search, setSearch] = useState("");
@@ -12,7 +14,15 @@ export function ManageUsers() {
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [selectedVideoTitle, setSelectedVideoTitle] = useState<string>("");
-  const { users, loading, error, searchUsers, refresh } = useUsers();
+  const {
+    users,
+    loading: usersLoading,
+    error: usersError,
+    searchUsers,
+    refresh,
+  } = useUsers();
+  const { stats, loading: statsLoading } = useUserStats(users);
+  const { userDetails: currentUser } = useAuth();
 
   const filteredUsers = searchUsers(search)
     .slice()
@@ -28,6 +38,8 @@ export function ManageUsers() {
     setSelectedVideoTitle("Selected Video"); // This should be replaced with actual video title
     setAssignModalOpen(true);
   };
+
+  const loading = usersLoading || statsLoading;
 
   return (
     <div className="flex-1 p-8 bg-white min-h-screen">
@@ -77,7 +89,9 @@ export function ManageUsers() {
             <UserCard
               key={user.id}
               user={user}
+              currentUser={currentUser}
               onAssignVideo={(userId) => handleAssignVideo(userId)}
+              stats={stats[user.id] || { numAssigned: 0, completion: 0 }}
             />
           ))}
         </div>
