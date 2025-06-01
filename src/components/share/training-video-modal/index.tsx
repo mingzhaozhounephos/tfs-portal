@@ -28,6 +28,27 @@ export function TrainingVideoModal({
   const playerRef = useRef<any>(null);
   const { user } = useAuth();
 
+  const markAsCompleted = async () => {
+    if (!user) return;
+    const { data: userVideo, error } = await supabase
+      .from("users_videos")
+      .select("id")
+      .eq("user", user.id)
+      .eq("video", videoId)
+      .single();
+    if (!error && userVideo) {
+      await supabase
+        .from("users_videos")
+        .update({ is_completed: true, last_action: "completed" })
+        .eq("id", userVideo.id);
+    }
+  };
+
+  const handleManualCompletion = async () => {
+    await markAsCompleted();
+    onClose();
+  };
+
   // Load the YouTube IFrame API and setup the player
   useEffect(() => {
     if (!open || !youtubeId) return;
@@ -49,20 +70,7 @@ export function TrainingVideoModal({
         events: {
           onStateChange: async (event: any) => {
             if (event.data === window.YT.PlayerState.ENDED) {
-              // Mark as completed in users_videos
-              if (!user) return;
-              const { data: userVideo, error } = await supabase
-                .from("users_videos")
-                .select("id")
-                .eq("user", user.id)
-                .eq("video", videoId)
-                .single();
-              if (!error && userVideo) {
-                await supabase
-                  .from("users_videos")
-                  .update({ is_completed: true, last_action: "completed" })
-                  .eq("id", userVideo.id);
-              }
+              await markAsCompleted();
             }
           },
         },
@@ -98,6 +106,20 @@ export function TrainingVideoModal({
         <div className="font-bold text-lg mb-2">{title}</div>
         <div className="aspect-video w-full">
           <div id="player" />
+        </div>
+        <div className="flex justify-end gap-4 mt-4">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleManualCompletion}
+            className="px-4 py-2 bg-[#EA384C] text-white rounded-lg hover:bg-[#EC4659] font-medium"
+          >
+            Mark as Completed
+          </button>
         </div>
       </div>
     </div>
