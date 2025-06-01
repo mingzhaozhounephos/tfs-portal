@@ -4,9 +4,7 @@ import { SideMenu } from "@/components/side-menu";
 import { User } from "@/types";
 import { UserDetailsClient } from "@/components/manage-users/user-details-client";
 import { UserDetailsCards } from "@/components/manage-users/user-details-cards";
-import { useAuth } from "@/hooks/use-auth";
-import { useRole } from "@/hooks/use-role";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AssignVideoButton } from "@/components/manage-users/assign-video-button";
 
@@ -14,8 +12,6 @@ export default function UserDetailsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { userDetails } = useAuth();
-  const role = useRole();
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
@@ -50,7 +46,7 @@ export default function UserDetailsPage() {
   if (error) {
     return (
       <div className="flex h-screen min-h-screen">
-        <SideMenu role={role} active="manage-users" onNavigate={() => {}} />
+        <SideMenu role={"admin"} active="manage-users" onNavigate={() => {}} />
         <div className="flex-1 h-screen overflow-y-auto flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-2xl font-semibold text-red-600 mb-4">Error</h2>
@@ -69,7 +65,7 @@ export default function UserDetailsPage() {
 
   return (
     <div className="flex h-screen min-h-screen">
-      <SideMenu role={role} active="manage-users" onNavigate={() => {}} />
+      <SideMenu role={"admin"} active="manage-users" onNavigate={() => {}} />
       <div className="flex-1 h-screen overflow-y-auto p-8 relative">
         <div className="flex items-start justify-between w-full mb-4">
           <img
