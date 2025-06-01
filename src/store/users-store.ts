@@ -165,10 +165,11 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
 
   updateUserRole: async (userId: string, newRole: "admin" | "driver") => {
     try {
-      // Update the role in user_roles table
+      // Update the role in user_roles table where user matches userId
       const { error: updateError } = await supabase
         .from("user_roles")
-        .upsert({ user: userId, role: newRole });
+        .update({ role: newRole })
+        .eq("user", userId);
 
       if (updateError) throw updateError;
 

@@ -5,6 +5,7 @@ import {
   CheckCircle,
   Mail,
   Trash2,
+  Settings,
 } from "lucide-react";
 import { User, UserWithRole } from "@/types";
 import { useUserVideos } from "@/hooks/use-user-videos";
@@ -13,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
+import { useUsersStore } from "@/store/users-store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +33,12 @@ export function UserCard({ user, onAssignVideo }: UserCardProps) {
   const { user: currentUser } = useAuth();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showManageModal, setShowManageModal] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<"admin" | "driver">(
+    (user.role as "admin" | "driver") || "driver"
+  );
+  const [isUpdating, setIsUpdating] = useState(false);
+  const updateUserRole = useUsersStore((state) => state.updateUserRole);
 
   const handleDelete = async () => {
     if (!user) return;
@@ -67,6 +75,25 @@ export function UserCard({ user, onAssignVideo }: UserCardProps) {
     } finally {
       setIsDeleting(false);
       setShowDeleteModal(false);
+    }
+  };
+
+  const handleUpdateRole = async () => {
+    if (selectedRole === user.role) {
+      setShowManageModal(false);
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      console.log("user.id: ", user.id);
+      console.log("selectedRole: ", selectedRole);
+      await updateUserRole(user.id, selectedRole);
+      setShowManageModal(false);
+    } catch (error) {
+      console.error("Error updating user role:", error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -155,6 +182,15 @@ export function UserCard({ user, onAssignVideo }: UserCardProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-36 p-0">
               <DropdownMenuItem
+                onClick={() => setShowManageModal(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium group transition-colors group-hover:bg-[#FEEBED]"
+              >
+                <Settings className="w-4 h-4 text-gray-600 group-hover:text-black transition-colors" />
+                <span className="text-gray-600 group-hover:text-black transition-colors">
+                  Manage
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
                 onClick={() => setShowDeleteModal(true)}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-b-md group transition-colors group-hover:bg-[#FEEBED]"
                 style={{ color: "#EA384C" }}
@@ -220,6 +256,78 @@ export function UserCard({ user, onAssignVideo }: UserCardProps) {
                   </span>
                 ) : (
                   "Yes, Delete"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manage User Modal */}
+      {showManageModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md flex flex-col items-center">
+            <div className="mb-4 text-center">
+              <Settings className="w-10 h-10 text-[#EA384C] mx-auto mb-2" />
+              <div className="text-lg font-semibold mb-2">Manage User</div>
+              <div className="text-gray-600">
+                {user.full_name || user.email}
+                <br />
+                <span className="text-sm text-gray-500">{user.email}</span>
+              </div>
+            </div>
+            <div className="w-full mb-4">
+              <label className="block text-sm font-medium mb-2">Role</label>
+              <select
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA384C]"
+                value={selectedRole}
+                onChange={(e) =>
+                  setSelectedRole(e.target.value as "admin" | "driver")
+                }
+              >
+                <option value="driver">Driver</option>
+                <option value="admin">Administrator</option>
+              </select>
+            </div>
+            <div className="flex gap-2 w-full justify-center mt-2">
+              <button
+                className="px-4 py-2 rounded bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition"
+                onClick={() => setShowManageModal(false)}
+                disabled={isUpdating}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 rounded bg-[#EA384C] text-white font-medium hover:bg-[#EC4659] transition"
+                onClick={handleUpdateRole}
+                disabled={isUpdating}
+              >
+                {isUpdating ? (
+                  <span className="flex items-center gap-2 justify-center">
+                    <svg
+                      className="w-4 h-4 animate-spin"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                      ></path>
+                    </svg>
+                    Saving...
+                  </span>
+                ) : (
+                  "Save"
                 )}
               </button>
             </div>

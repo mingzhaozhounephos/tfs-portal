@@ -30,7 +30,7 @@ D - refactor components folder for clarity, scalability, and modularity
 
 create policies for all tables
 
-Mange users
+D - Mange users
 click 'Assign to Users' to unassign the video from the user, the list doesn't refresh.
 
 comment out if (get().initialized) return; for all the stores. to allow data refreshing when switching tabs.
@@ -41,15 +41,11 @@ D - update UI for reset password
 D - user-details
 click 'Assign Videos' -> update the UI of the 'Save Assignments' button
 
-update UI of all buttons as the 'Save Assignments'
-
 add functionality to update user role
 
-show the spinner svg in all buttons
+D - show the spinner svg for buttons
 
-change loading... to full page spinner like the user-details page
-mange-users - loading...
-My Training Videos - Loading videos...
+D - Improve the UI for page loading
 
 On the dashboard, in order to get the number of users assigned to each video, it looks like you're making a separate call to the database for each video. A more scalable and efficient approach would be to use aggregate queries. Here is a good article on them: https://supabase.com/blog/postgrest-aggregate-functions
 
