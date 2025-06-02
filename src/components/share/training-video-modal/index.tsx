@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useVideoCompletion } from "@/hooks/use-video-completion";
 
@@ -28,6 +28,7 @@ export function TrainingVideoModal({
   const playerRef = useRef<any>(null);
   const { user } = useAuth();
   const { markVideoAsCompleted, isCompleting, error } = useVideoCompletion();
+  const [videoEnded, setVideoEnded] = useState(false);
 
   const handleManualCompletion = async () => {
     if (user) {
@@ -58,8 +59,8 @@ export function TrainingVideoModal({
         playerVars: { autoplay: 1 },
         events: {
           onStateChange: async (event: any) => {
-            if (event.data === window.YT.PlayerState.ENDED && user) {
-              await markVideoAsCompleted(user, videoId);
+            if (event.data === window.YT.PlayerState.ENDED) {
+              setVideoEnded(true);
             }
           },
         },
@@ -108,7 +109,7 @@ export function TrainingVideoModal({
           </button>
           <button
             onClick={handleManualCompletion}
-            disabled={isCompleting}
+            disabled={isCompleting || !videoEnded}
             className="px-4 py-2 bg-[#EA384C] text-white rounded-lg hover:bg-[#EC4659] font-medium disabled:opacity-50"
           >
             {isCompleting ? "Marking as Completed..." : "Mark as Completed"}
