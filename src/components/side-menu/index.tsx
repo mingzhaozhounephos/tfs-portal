@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { useAuthStore } from "@/store/auth-store";
 import clsx from "clsx";
 import { Home, Video, Users as UsersIcon, LogOut } from "lucide-react";
 
@@ -38,9 +39,17 @@ export function SideMenu({ role, active, onNavigate }: SideMenuProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const items = role === "admin" ? adminItems : driverItems;
+  const { user, userDetails } = useAuthStore();
 
   async function handleLogout() {
     await supabase.auth.signOut();
+    useAuthStore.setState({
+      user: null,
+      userDetails: null,
+      loading: false,
+      error: null,
+      initialized: false,
+    });
     router.replace("/login");
   }
 
@@ -73,7 +82,7 @@ export function SideMenu({ role, active, onNavigate }: SideMenuProps) {
       <aside
         className={clsx(
           "fixed z-50 md:static top-0 left-0 h-full w-64 bg-white border-r flex flex-col transition-transform",
-          open ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+          open ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
         style={{
           minHeight: "100vh",
@@ -120,7 +129,7 @@ export function SideMenu({ role, active, onNavigate }: SideMenuProps) {
                 "flex items-center w-full px-4 py-2 rounded-lg text-left gap-2 font-medium",
                 active === item.route
                   ? "bg-[#EA384C] text-white"
-                  : "hover:bg-[#ea384c1a] text-black",
+                  : "hover:bg-[#ea384c1a] text-black"
               )}
               onClick={() => {
                 setOpen(false);

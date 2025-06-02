@@ -118,7 +118,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         .select(
           `
           *,
-          role_info:user_roles(*)
+          role_info:user_roles!inner(*)
         `
         )
         .eq("id", userId)
