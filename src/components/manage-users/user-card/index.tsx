@@ -6,6 +6,7 @@ import {
   Mail,
   Trash2,
   Settings,
+  Send,
 } from "lucide-react";
 import { UserWithRole, UserStats } from "@/types";
 import { format } from "date-fns";
@@ -13,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useUsersStore } from "@/store/users-store";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +37,7 @@ export function UserCard({ user, onAssignVideo, stats }: UserCardProps) {
     (user.role as "admin" | "driver") || "driver"
   );
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isSendingInvite, setIsSendingInvite] = useState(false);
   const updateUserRole = useUsersStore((state) => state.updateUserRole);
 
   const handleDelete = async () => {
@@ -52,21 +55,21 @@ export function UserCard({ user, onAssignVideo, stats }: UserCardProps) {
       // Delete the user from the 'users' table
       await supabase.from("users").delete().eq("id", user.id);
 
-      // Delete user from authentication // TODO: resume if we allow to delete user from authentication
-      // const response = await fetch("/api/delete-user", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({ userId: user.id }),
-      // });
+      // Delete user from authentication
+      const response = await fetch("/api/delete-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: user.id }),
+      });
 
-      // if (!response.ok) {
-      //   const error = await response.json();
-      //   throw new Error(
-      //     error.message || "Failed to delete user from authentication"
-      //   );
-      // }
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(
+          error.message || "Failed to delete user from authentication"
+        );
+      }
     } catch (error) {
       console.error("Error deleting user records:", error);
     } finally {
@@ -91,6 +94,37 @@ export function UserCard({ user, onAssignVideo, stats }: UserCardProps) {
       console.error("Error updating user role:", error);
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleSendInvite = async () => {
+    if (!user.email) return;
+    
+    setIsSendingInvite(true);
+    try {
+      const response = await fetch("/api/invite-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: user.email,
+          name: user.full_name || user.email,
+          role: user.role,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to send invitation");
+      }
+
+      toast.success("Invitation sent successfully!");
+    } catch (error) {
+      console.error("Error sending invitation:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to send invitation");
+    } finally {
+      setIsSendingInvite(false);
     }
   };
 
@@ -178,6 +212,18 @@ export function UserCard({ user, onAssignVideo, stats }: UserCardProps) {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-36 p-0">
+              {!user.is_active && (
+                <DropdownMenuItem
+                  onClick={handleSendInvite}
+                  disabled={isSendingInvite}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium group transition-colors group-hover:bg-[#FEEBED]"
+                >
+                  <Send className="w-4 h-4 text-gray-600 group-hover:text-black transition-colors" />
+                  <span className="text-gray-600 group-hover:text-black transition-colors">
+                    {isSendingInvite ? "Sending..." : "Send Invite"}
+                  </span>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
                 onClick={() => setShowManageModal(true)}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium group transition-colors group-hover:bg-[#FEEBED]"
