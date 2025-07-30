@@ -7,6 +7,7 @@ import {
   Trash2,
   Settings,
   Send,
+  Key,
 } from "lucide-react";
 import { UserWithRole, UserStats } from "@/types";
 import { format } from "date-fns";
@@ -38,6 +39,7 @@ export function UserCard({ user, onAssignVideo, stats }: UserCardProps) {
   );
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSendingInvite, setIsSendingInvite] = useState(false);
+  const [isSendingResetPassword, setIsSendingResetPassword] = useState(false);
   const updateUserRole = useUsersStore((state) => state.updateUserRole);
 
   const handleDelete = async () => {
@@ -99,7 +101,7 @@ export function UserCard({ user, onAssignVideo, stats }: UserCardProps) {
 
   const handleSendInvite = async () => {
     if (!user.email) return;
-    
+
     setIsSendingInvite(true);
     try {
       const response = await fetch("/api/invite-user", {
@@ -122,9 +124,44 @@ export function UserCard({ user, onAssignVideo, stats }: UserCardProps) {
       toast.success("Invitation sent successfully!");
     } catch (error) {
       console.error("Error sending invitation:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to send invitation");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to send invitation"
+      );
     } finally {
       setIsSendingInvite(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!user.email) return;
+
+    setIsSendingResetPassword(true);
+    try {
+      const response = await fetch("/api/reset-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: user.email,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to send reset password email");
+      }
+
+      toast.success("Reset password email sent successfully!");
+    } catch (error) {
+      console.error("Error sending reset password email:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to send reset password email"
+      );
+    } finally {
+      setIsSendingResetPassword(false);
     }
   };
 
@@ -221,6 +258,18 @@ export function UserCard({ user, onAssignVideo, stats }: UserCardProps) {
                   <Send className="w-4 h-4 text-gray-600 group-hover:text-black transition-colors" />
                   <span className="text-gray-600 group-hover:text-black transition-colors">
                     {isSendingInvite ? "Sending..." : "Send Invite"}
+                  </span>
+                </DropdownMenuItem>
+              )}
+              {user.is_active && (
+                <DropdownMenuItem
+                  onClick={handleResetPassword}
+                  disabled={isSendingResetPassword}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium group transition-colors group-hover:bg-[#FEEBED]"
+                >
+                  <Key className="w-4 h-4 text-gray-600 group-hover:text-black transition-colors" />
+                  <span className="text-gray-600 group-hover:text-black transition-colors">
+                    {isSendingResetPassword ? "Sending..." : "Reset Password"}
                   </span>
                 </DropdownMenuItem>
               )}
