@@ -31,6 +31,7 @@ export function DriverDashboard() {
     modified_date: item.modified_date || undefined,
     last_action: item.last_action || undefined,
     is_annual_renewal: item.video.is_annual_renewal || false,
+    completed_date: item.completed_date || undefined,
   }));
 
   // Progress calculation

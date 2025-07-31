@@ -57,4 +57,5 @@ export interface TrainingVideo {
   modified_date?: string;
   last_action?: string;
   is_annual_renewal?: boolean;
+  completed_date?: string | Date;
 }
