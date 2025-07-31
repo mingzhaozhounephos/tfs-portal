@@ -27,7 +27,11 @@ export function useVideoCompletion() {
       // Then update it to completed
       const { error: updateError } = await supabase
         .from("users_videos")
-        .update({ is_completed: true, last_action: "completed" })
+        .update({
+          is_completed: true,
+          last_action: "completed",
+          completed_date: new Date().toISOString(),
+        })
         .eq("id", userVideo.id);
 
       if (updateError) throw updateError;

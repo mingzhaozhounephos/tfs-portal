@@ -55,6 +55,7 @@ export const useTrainingVideoStore = create<TrainingVideoStore>((set, get) => ({
             assigned_date: now,
             last_action: "watched",
             is_completed: false,
+            completed_date: null,
           })
           .eq("id", userVideo.id);
       } else {
