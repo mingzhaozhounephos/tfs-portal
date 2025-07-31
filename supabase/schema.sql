@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS "public"."users_videos" (
     "is_completed" boolean DEFAULT false,
     "last_watched" timestamp with time zone,
     "modified_date" timestamp with time zone,
+    "completed_date" timestamp with time zone,
     "last_action" "text",
     "assigned_date" timestamp with time zone
 );
